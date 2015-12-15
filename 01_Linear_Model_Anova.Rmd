@@ -1,0 +1,337 @@
+---
+title: "Meeting with Rick White"
+author: "Anna A. Hippmann"
+date: "May 22nd, 2015"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Libraries used
+``` {r libraries, eval=TRUE}
+library(lsmeans)
+library(phia)
+library(visreg)
+library(dplyr)
+library(ggplot2)
+```
+
+### Overview
+
+<a id="BackUP"></a>
+
+* What I did with [Rick White](#RickWhite)
+  + `z_all <- lm()` with all main effects and interaction - [z_all](#z_all)
+  + `z <- lm()` without Species:Cu.level interaction - [z](#z)
+  + `anova(z)` anova indicating where to look for significant effects and interacitons - [`anova(z)`](#anova_z)
+
+## Run Down of what we did in SCARL meeting in May 2015
+
+
+
+I met with Rick White of SCARL at UBC to discuss my approach to analyze my physiological data statistically. The main question was, whether I would need to use a mixed effects model or a fixed effects model. Then how to actually go about analyzing it practically (i.e.which program/ package to use etc)
+
+As per my experimental set up, I have **3 fixed effects**:
+
+1) Species _(as I choose these 2 strains on purpose to test for differences between them)_
+2) Fe-level
+3) Cu-level
+
+For this I will need to use 
+
+1) the **function `lm()` = linear model**. 
+2) then use `anova()` on the `lm object`
+3) then use `lsmeans()` on the `lm object` _(to do all the different pariwise comparisons to my heart's desire)_
+
+Let's start by loading in my data and having a look at it:
+
+```{r data input, eval=TRUE}
+#I used the original "ALL_PhysiologicalData_2015_04.txt" and added columns "Treatment" and "Merged" to it, then saved the ensuing file under "ALL_PhysiologicalData_2015_04_withMerged_Variable.txt", so I can use it for all my plots
+
+mydata <- read.delim("ALL_PhysiologicalData_2015_04_withMerged_Variable.txt", sep="\t", header=T)
+
+mean.df <- read.delim("Physiological_Data_Mean_Values.txt", sep="\t", header=T)
+
+str(mydata)
+```
+
+```{r graph_Growthrate, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, Growthrate.dd.1 ))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="", x ="")+
+  geom_point(data=mean.df , aes(Treatment, Growthrate.dd.1, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")
+
+```
+
+##### 1) Recreating what I did with Rick White
+
+<a id="RickWhite"></a>
+
+[Back Up](#BackUP)
+
+I first want to look at the growth rate and determine what influences growth rate. I will use `lm() to get a model which will take into account the different factors to predict the resulting growth rate.
+
+__When testing for the different effects:__
+
+* "__+__" means "_test for main effects_"
+* "__:__" means "_test for interacting effects_"
+* "__\*__" means "_test for both main and interacting effects_"
+
+<a id="z_all"></a>
+
+[Back Up](#BackUP)
+
+```{r lm growthrate_allMain and Interaction, eval=TRUE}
+z_all <- lm(data=mydata, Growthrate.dd.1~(Species*Fe.level*Cu.level)) #this will model the Growth rate dependend on the 
+#three main effects (Species, Fe.level, Cu.level) and will include all possible interactions
+summary(z_all)
+
+```
+
+To look at the actual differences, we need to look at the `anova` table:
+
+```{r lm growthrate_allMain and Interaction_ANOVA, eval=TRUE}
+anova(z_all) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for all main effects and interactions, we see that
+
+* __Species__ does have a significant effect on growth rate
+* __Fe. level__ has an effect on growthrate
+* __Cu level__ has an effect on growthrate (F (1,16) = 152.75, p.val <0.00001)
+* there is an __interaction__ between __Species and Fe LEVEL__ (F(1,16) = 22.47, p.val = 0.0002)
+    + i.e. depending on the Species the growthrate is different under similar Fe conditions
+* there is NOT INTERACTION between Species and CU LEVEL
+    + i.e. this is somewhat what I had aimed for as this means that both Species have a similar growthrate reduction under the same Cu.level -> this way I can see how their proteomic and physiological response is similar or different!
+* there is an __interaction__ between __Fe LEVEL and Cu LEVEL__ (F(1,16) = 8.29, p.val = 0.01) 
+
+__NOTE:__ the anova table only tells me that there are differences e.g. between the Species. IT DOES NOT TELL ME depending on what variables etc... for that we need to do pairwise comparisons.
+
+__FIRST THOUGH__: as we saw in the `anova` table that there is __no interaction between Cu.level and Species__, we can __take the interaction term OUT__ when we make the linear model. Let's see how this will change the model
+
+
+<a id="z"></a>
+
+[Back Up](#BackUP)
+
+```{r lm growthrate_allMain just known interaction, eval=TRUE}
+z <- lm(data=mydata, Growthrate.dd.1~(Species+Fe.level+Cu.level)^2-Species:Cu.level) #this will model the Growth rate dependend on
+#three main effects (Species, Fe.level, Cu.level) and will include 
+#possible interactions between Species:Fe.level, Fe.level:Cu.level 
+#but NOT Species:Cu.level as we took that one out!
+
+summary(z)
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+```
+
+<a id="anova_z"></a>
+
+[Back Up](#BackUP)
+
+Again, we need to look at the ANOVA table:
+```{r lm growthrate_allMain limited Interaction_ANOVA, eval=TRUE}
+anova(z) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Cu.level and Species, basically, we see the same significant factors and interactions as before, just with stronger significance (probably due to the higher degrees of freedom: 18 vs 16)
+
+
+
+* __Species__ does have a significant effect on growth rate
+* __Fe. level__ has an effect on growthrate
+* __Cu level__ has an effect on growthrate now: (F (1,18) = 155.27, p.val <0.00001),  [*before:(F (1,16) = 152.75, p.val <0.00001)*]
+* there is still an __interaction__ between __Species and Fe LEVEL__ now: (F(1,18) = 22.84, p.val = 0.000015), [*before: (F(1,16) = 22.47, p.val = 0.0002)*]
+    + i.e. depending on the Species the growthrate is different under similar Fe conditions
+* there is an __interaction__ between __Fe LEVEL and Cu LEVEL__ now: (F(1,18) = 8.43, p.val < 0.01), [*before: (F(1,16) = 8.29, p.val = 0.01)*] 
+
+### What if we use the `phia` package to look into interactions or main effects?
+
+<a id="phia_interaction"></a>
+
+[Back Up](#BackUP)
+
+This is basically from the tutorial / examples given in the `R` vignette by _Helios De Rosario Martinez_ ["Analysing interactions of fitted models"](https://cran.r-project.org/web/packages/phia/vignettes/phia.pdf)
+
+[...] In factorial experiments like this one, the dependency between factor levels and the response variable is usually represented in a contingency table, where the rows and columns are related to the different levels of both treatments, and __each cell contains the adjusted mean of the response for the corresponding interaction of factors__. When there is an interaction effect, the cell means are taken as the most straightforward way of representing this effect. 
+
+These values and their standard errors can be obtained from the model coeffients with the function `interactionMeans` in the package `phia`, using the fitted model as first (and in this case only) argument:
+
+```{r phia_interaction means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+This plot shows us main effects (such as Cu.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do not seem to have an interaction effect. They change in the same way (lines are parallel). However, when we look at upper middle and middle left cell, we see that growthrate changes in a different way depending on Species and Fe level. And to a much lesser extend for Fe.level and Cu.level as seen in middle right and lower middle cell.
+
+#### Pairwise Comparisons
+
+<a id="phia_pairwise"></a>
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+```{r phia_interaction_Contrasts_Species_Felevel, eval=TRUE}
+testInteractions(z, fixed="Species", across="Fe.level")
+```
+
+This means that the two different Fe.levels I used (high and low) does not significantly change the growth rate in TO 1003 (F(1,18) = 0.75, p.val = 0.397) but it does change the growthrate significantly in TO 1005 (F(1,18) = 58.14, p-val < 0.00001))
+
+```{r phia_interaction_Contrasts_Fe.level_Species, eval=TRUE}
+testInteractions(z, fixed="Fe.level", across="Species")
+```
+
+This means that the two Species have significantly different growthrates under high Fe conditions (F(1,18), p.val < 0.0001) but are not sig different under low Fe conditions
+
+```{r phia_interaction_Contrasts_Fe.level_Cu.level, eval=TRUE}
+testInteractions(z, fixed="Fe.level", across="Cu.level")
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,18) = 118.03, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth ratessignificantly (F(1,18) = 45.67, p.val < 0.00001)
+
+```{r phia_interaction_Contrasts_Cu.level_Fe.level, eval=TRUE}
+testInteractions(z, fixed="Cu.level", across="Fe.level")
+```
+
+### What if I look at Fe levels just for TO 1003 and then just with the data for TO 1005?
+
+<a id="lm_TO03"></a>
+
+[Back Up](#BackUP)
+
+For this, I will first subset my original data into TO 1003 and TO 1005, respectively. THen I will make and linear model using `lm()` followed by `anova()` on that lm object
+
+#### Let's start with TO 1003
+
+```{r TO03_lm_Anova, eval = TRUE}
+TO03_mydata <- mydata %>% 
+  filter(Species == "TO 1003")
+
+lm_TO03 <- lm(data=mydata, Growthrate.dd.1~(Fe.level*Cu.level))
+plot(lm_TO03) ##these plots are diagnostic and will give indications if the assumptions are met
+
+anova(lm_TO03)
+```
+
+The anova table suggests that for __TO 1003__ there is a significant effect is seen for:
+
+* Fe. level (F(1,20) = 13.68, p.val = 0.0014)
+* Cu. level (F(1,20) = 58.93, p.val < 0.00001)
+
+and that there is __NO__ interacting effect for Fe:Cu.level for TO 1003
+
+```{r TO03_phia_interactions, eval = TRUE}
+#Using `phia`
+(lm_TO03.means <- interactionMeans(lm_TO03))
+plot(lm_TO03.means)
+
+```
+
+Even though the `anova()` did not suggest an interaction... looking at the plots, it almost seems like there could be interactions
+
+```{r TO03_phia_interaction_Contrasts_Fe.level_Cu.level, eval=TRUE}
+#testInteractions(lm_TO03.means, fixed="Cu.level", across="Fe.level")
+```
+OK, I guess this doesn;t work. Maybe it checks if there is an interaction measured?!
+
+But twhat does the pairwise comparison say?
+
+
+
+~~~~~
+__AND NOW ...__ we need to use `lsmeans()` to do pairwise comparisons an pinpoint which exact comparisons are the significant ones....
+
+```{r lsmeans growthrate, eval=FALSE}
+lsmeans(z_all, pairwise, ~ Fe.level | Cu.level : Species)
+
+
+```
+
+
+Doesn;t work, I get an error message "The model is not linear mixed effects model
+
+```{r lm growthrate_allMain just known interaction02, eval=TRUE}
+z <- lm(data=mydata, Growthrate.dd.1~(Species+Fe.level+Cu.level)^2-Species:Cu.level) #this will model the Growth rate dependend on
+#three main effects (Species, Fe.level, Cu.level) and will include 
+#possible interactions between Species:Fe.level, Fe.level:Cu.level 
+#but NOT Species:Cu.level as we took that one out!
+
+summary(z)
+
+```
+
+
+
+
+
+
+
+
+
+The following is from [Dolph Schluter's help pages](https://www.zoology.ubc.ca/~schluter/R/fit-model/)
+
+###Fit multiple factors
+
+When two or more categorical factors are fitted, the possibility of an interaction might also be evaluated. Remember that the order in which you enter the variables in the formula affects the ANOVA results, if the design is unbalanced. By default, R fits the variables sequentially ("type I sum of squares"), while at the same time respecting hierarchy. Each variable or interaction is tested by adding it to a model that includes only previous terms in the sequence, but not variables entered later. Hierarchy means that the main effects are fitted before the interactions, which are fitted last. No interaction term is tested without its main effects included in the model.
+
+In the case of two factors, A and B, the linear model is as follows.
+```{r Dolph01, eval=FALSE}
+z <- lm(y ~ A + B, data = mydata) # no interaction term is present, or
+z <- lm(y ~ A * B, data = mydata) # interaction term is included
+summary(z)                        # coefficients table
+confint(z, level = 0.95)          # confidence intervals for parameters
+anova(z)                          # A is tested before B; interaction tested last
+```
+
+It is possible to carry out marginal fitting of terms instead ("type III sum of squares"). In this case, order of appearance of terms in the model doesn't matter, and neither does hierarchy. Each model term is tested as if it were entered last into the model. To accomplish this we need to refit the model and override R's default contrasts. Then we use the `drop1` command in place of `anova` to get the ANOVA table.
+
+```{r Dolph02, eval=FALSE}
+z <- lm(y ~ A * B, contrasts = c("contr.sum", "contr.poly"), 
+    data = mydata)
+drop1(z, .~., test = "F")
+```
+
+Or, we can use the `Anova` command (NOTE the capital "A" in beginning of `Anova()`) in the `car` package to give us the ANOVA table based on marginal fitting of terms ("type III sum of squares"). We again need to refit the model using different contrasts from R's default.
+
+```{r Dolph03, eval=FALSE}
+z <- lm(y ~ A * B, contrasts = c("contr.sum", "contr.poly"), 
+    data = mydata)
+library(car)
+Anova(z, type = 3)
+```
+
+Use the visreg package to visualize model fit. Try several options to see which method is most effective. If only one factor is plotted, R plots the fit to the data for each group or level, while conditioning on the value of the other variable (adjusted to the most common category for other factor). **This makes sense only when an interaction term is not fitted**. If both factors are plotted, the fit is shown for every combination of groups (levels). In the latter case, you can choose to overlay the fits or plot in separate panels.
+
+```{r Dolph04, eval=FALSE}
+library(visreg)
+visreg(z, xvar = "B", whitespace = 0.4, 
+    points.par = list(cex = 1.1, col = "red"))
+visreg(z, xvar = "A", by = "B", whitespace = 0.4, 
+    points.par = list(cex = 1.1, col = "red"))
+visreg(z, xvar = "A", by = "B", whitespace = 0.5, overlay = TRUE, 
+    band = FALSE, points.par = list(cex = 1.1))
+```
+```{r cars}
+summary(cars)
+```
+
+
+### Resources
+
+* [Tutorial on linear regression](http://rtutorialseries.blogspot.ca/2009/11/r-tutorial-series-simple-linear.html)
+* [Tutorial on multiple linear regression](http://rtutorialseries.blogspot.ca/2009/12/r-tutorial-series-multiple-linear.html)
+* [Tutorial on posthoc-tests](http://rtutorialseries.blogspot.ca/2011/03/r-tutorial-series-anova-pairwise.html)
+
