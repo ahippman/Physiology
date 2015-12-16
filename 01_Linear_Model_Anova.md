@@ -55,6 +55,7 @@ library(dplyr)
 
 ```r
 library(ggplot2)
+library(knitr)
 ```
 
 ### Overview
@@ -65,6 +66,15 @@ library(ggplot2)
   + `z_all <- lm()` with all main effects and interaction - [z_all](#z_all)
   + `z <- lm()` without Species:Cu.level interaction - [z](#z)
   + `anova(z)` anova indicating where to look for significant effects and interacitons - [`anova(z)`](#anova_z)
+  + `lsmeans()` to check for pairwise comparisons
+    +lsmeans has changed quite a bit in newer version -> I am thinking about different post-hoc test
+    
+* using `phia` ("post hoc interaction association") package to check for [interaction](#phia_interaction)
+* using `phia` to do [pairwise comparison](#phia_pariwise)
+
+* run `lm()` only on [TO 1003](#lm_TO03)
+
+* [Tukey HSD](#Tukey_01)
 
 ## Run Down of what we did in SCARL meeting in May 2015
 
@@ -142,7 +152,35 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 
 ![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate-1.png) 
 
-##### 1) Recreating what I did with Rick White
+To really understand what we are seeing, especially with the copper data, we need to remember the differnet metal concnetrations that are used for the different strains and treatents:
+
+
+```r
+kable((read.delim("MetalConcentrationsInMedia.txt")), format = "markdown")
+```
+
+
+
+|Treatment | both.Strains...total.Fe..nmol.| TO03...total.Cu| TO05.total.Cu|
+|:---------|------------------------------:|---------------:|-------------:|
+|control   |                         1370.0|           10.20|         14.32|
+|low Fe    |                           12.5|           10.20|         14.32|
+|lowCu     |                         1370.0|            0.20|          6.08|
+|low Fe Cu |                           12.5|            1.96|          6.08|
+
+__Fe concentrations__:
+If we look closely at the table above, we will see that for __both strains__, we subjected them to the __same high Fe__ concentration and the __same low Fe__ concentration in the media (1370 nmol for high Fe and 12.5 nmol for low Fe).
+
+__Cu concentrations - high__:
+However, as per preliminary tests (_data not shown_), these two strains have different Cu requirements to sustain their respective optimal growth rates and to limit their growth rates by Cu. 
+Hence, high Cu concentrations differ in the following way: __TO 1003__ requires 10.2 nmol total Cu in its growth medium under our chosen high Fe regime, whereas __TO1005__ requires more, namely __14.32 nmol total Cu__ in the control medium.
+
+__Cu concentrations - low__:
+looking at limiting Cu concentrations, a similar scenario is seen. Where __TO 1003__ is very hard to limit with Cu, when sufficient Fe is present in the media (only background Cu is present in our study ~ __0.2 nmol Cu__), __TO 1005__ shows significant limitation at Cu levels of __6.08 nmol__. When subjected to iron / copper co-limitation, __TO 1005__ growthrate is even more limited, hinting at an interactive effeect of iron and copper concentrations (which we will see further down statistically proven)
+__TO 1003__ can not survive under fe limitation with only backfround copper concentration. Hence, we added more Cu (__1.96 nmol Cu__) under Fe-limiting conditions compared to low Cu concentrations under Fe-replete conditions (0.2 nmol)
+
+
+### 1) Recreating what I did with Rick White
 
 <a id="RickWhite"></a>
 
@@ -157,6 +195,8 @@ __When testing for the different effects:__
 * "__\*__" means "_test for both main and interacting effects_"
 
 <a id="z_all"></a>
+
+#### z_all - linear model chacking for all interactions and main effects
 
 [Back Up](#BackUP)
 
@@ -243,12 +283,16 @@ Looking at the ANOVA table for the linear model that test for all main effects a
 
 __NOTE:__ the anova table only tells me that there are differences e.g. between the Species. IT DOES NOT TELL ME depending on what variables etc... for that we need to do pairwise comparisons.
 
-__FIRST THOUGH__: as we saw in the `anova` table that there is __no interaction between Cu.level and Species__, we can __take the interaction term OUT__ when we make the linear model. Let's see how this will change the model
 
 
 <a id="z"></a>
 
+z - linear model not checking for interaction between Cu and species 
+
 [Back Up](#BackUP)
+
+__FIRST THOUGH__: as we saw in the `anova` table that there is __no interaction between Cu.level and Species__, we can __take the interaction term OUT__ when we make the linear model. Let's see how this will change the model
+
 
 
 ```r
@@ -293,6 +337,8 @@ plot(z) ##these plots are diagnostic and will give indications if the assumption
 ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-4.png) 
 
 <a id="anova_z"></a>
+
+#### Anova table of z model
 
 [Back Up](#BackUP)
 
@@ -446,6 +492,62 @@ testInteractions(z, fixed="Cu.level", across="Fe.level")
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
+### Tukey - HSD Method (as per * [Tutorial on posthoc-tests](http://rtutorialseries.blogspot.ca/2011/03/r-tutorial-series-anova-pairwise.html))
+
+<a id="Tukey01"></a
+
+[Back Up](#BackUP)
+
+The Tukey Honest Significant Difference (HSD) method controls for the Type I error rate across multiple comparisons and is generally considered an acceptable technique. This method can be executed using the `TukeyHSD(x)` function, where `x` is a linear model object created using the `aov(formula, data)` function. Note that in this application, the aov(formula, data) function is identical to the lm(formula, data) that we are already familiar with from linear regression.
+
+
+```r
+TukeyHSD(aov(z)) #aov() has a different notation than anova() but gives same results as anova()
+```
+
+```
+##   Tukey multiple comparisons of means
+##     95% family-wise confidence level
+## 
+## Fit: aov(formula = z)
+## 
+## $Species
+##                      diff        lwr      upr     p adj
+## TO 1005-TO 1003 0.1591667 0.06207836 0.256255 0.0028934
+## 
+## $Fe.level
+##             diff        lwr        upr    p adj
+## low-high -0.2775 -0.3745883 -0.1804117 1.12e-05
+## 
+## $Cu.level
+##                diff        lwr       upr p adj
+## low-high -0.5758333 -0.6729216 -0.478745     0
+## 
+## $`Species:Fe.level`
+##                                  diff        lwr         upr     p adj
+## TO 1005:high-TO 1003:high  0.38000000  0.1952907  0.56470929 0.0000897
+## TO 1003:low-TO 1003:high  -0.05666667 -0.2413760  0.12804262 0.8215675
+## TO 1005:low-TO 1003:high  -0.11833333 -0.3030426  0.06637595 0.3006960
+## TO 1003:low-TO 1005:high  -0.43666667 -0.6213760 -0.25195738 0.0000159
+## TO 1005:low-TO 1005:high  -0.49833333 -0.6830426 -0.31362405 0.0000027
+## TO 1005:low-TO 1003:low   -0.06166667 -0.2463760  0.12304262 0.7821240
+## 
+## $`Fe.level:Cu.level`
+##                          diff        lwr         upr     p adj
+## low:high-high:high -0.4116667 -0.5963760 -0.22695738 0.0000337
+## high:low-high:high -0.7100000 -0.8947093 -0.52529071 0.0000000
+## low:low-high:high  -0.8533333 -1.0380426 -0.66862405 0.0000000
+## high:low-low:high  -0.2983333 -0.4830426 -0.11362405 0.0012533
+## low:low-low:high   -0.4416667 -0.6263760 -0.25695738 0.0000137
+## low:low-high:low   -0.1433333 -0.3280426  0.04137595 0.1628934
+```
+
+```r
+plot.new()
+plot(TukeyHSD(aov(z)))
+```
+
+![](01_Linear_Model_Anova_files/figure-html/tukey_z-1.png) ![](01_Linear_Model_Anova_files/figure-html/tukey_z-2.png) ![](01_Linear_Model_Anova_files/figure-html/tukey_z-3.png) ![](01_Linear_Model_Anova_files/figure-html/tukey_z-4.png) ![](01_Linear_Model_Anova_files/figure-html/tukey_z-5.png) 
 ### What if I look at Fe levels just for TO 1003 and then just with the data for TO 1005?
 
 <a id="lm_TO03"></a>
