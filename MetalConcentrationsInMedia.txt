@@ -1,0 +1,5 @@
+Treatment	both Strains - total Fe (nmol)	TO03 - total Cu	TO05-total Cu
+control	1370	10.2	14.32
+low Fe	12.5	10.2	14.32
+lowCu	1370	0.2	6.08
+low Fe Cu	12.5	1.96	6.08
