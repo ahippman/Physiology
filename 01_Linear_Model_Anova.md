@@ -515,7 +515,7 @@ OK, after this first inital approach (and some more down below under ["Not used"
   + dependig on seen or not seen interactions, modify the `lm()` accordingly
 3) then do pairwise comparisons using `phia` package to look into what is contributing how into the significant interactions seen in the `anova`
 
-,a id="Growthrate.percent"></a>
+<a id="Growthrate.percent"></a>
 
 #### Growthrate - percent of mu max
 
@@ -784,12 +784,577 @@ testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Fe.level")
 
 This means that there is significant growth reduction under high Cu when Fe is limiting (F(1,18) = 30.49, p.val < 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on growthrate. As discussed earlier, this makes sense when looking at the actual Cu concentrations used and is not in discrepancy to former studies that did find evidence of co limitation in both strains. 
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+<a id="FvFm"></a>
+
+#### Fv/Fm
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, FvFm.old))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="", x ="")+
+  geom_point(data=mean.df , aes(Treatment, FvFm.old, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+```
+
+```
+## Warning: Removed 1 rows containing missing values (geom_point).
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_FvFm-1.png) 
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_FvFm <- lm(data = mydata, FvFm.old ~ (Species * Fe.level * Cu.level))
+summary(lm_all_FvFm) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = FvFm.old ~ (Species * Fe.level * Cu.level), data = mydata)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.09333 -0.02167  0.00500  0.02500  0.05667 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             0.59500    0.03094  19.231
+## SpeciesTO 1005                          0.01833    0.03994   0.459
+## Fe.levellow                            -0.24167    0.03994  -6.050
+## Cu.levellow                            -0.30500    0.03994  -7.636
+## SpeciesTO 1005:Fe.levellow              0.13167    0.05359   2.457
+## SpeciesTO 1005:Cu.levellow              0.26833    0.05359   5.007
+## Fe.levellow:Cu.levellow                 0.23167    0.05359   4.323
+## SpeciesTO 1005:Fe.levellow:Cu.levellow -0.22833    0.07365  -3.100
+##                                        Pr(>|t|)    
+## (Intercept)                            5.56e-12 ***
+## SpeciesTO 1005                         0.652817    
+## Fe.levellow                            2.22e-05 ***
+## Cu.levellow                            1.52e-06 ***
+## SpeciesTO 1005:Fe.levellow             0.026671 *  
+## SpeciesTO 1005:Cu.levellow             0.000156 ***
+## Fe.levellow:Cu.levellow                0.000603 ***
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 0.007313 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.04375 on 15 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.9282,	Adjusted R-squared:  0.8946 
+## F-statistic: 27.69 on 7 and 15 DF,  p-value: 1.748e-07
+```
+
+```r
+anova(lm_all_FvFm) # this shows, we can take out the interaction between Species: Fe.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: FvFm.old
+##                           Df   Sum Sq  Mean Sq F value    Pr(>F)    
+## Species                    1 0.187674 0.187674 98.0303 5.695e-08 ***
+## Fe.level                   1 0.059754 0.059754 31.2120 5.192e-05 ***
+## Cu.level                   1 0.059451 0.059451 31.0541 5.330e-05 ***
+## Species:Fe.level           1 0.000011 0.000011  0.0059  0.939968    
+## Species:Cu.level           1 0.028371 0.028371 14.8193  0.001575 ** 
+## Fe.level:Cu.level          1 0.017387 0.017387  9.0820  0.008727 ** 
+## Species:Fe.level:Cu.level  1 0.018401 0.018401  9.6117  0.007313 ** 
+## Residuals                 15 0.028717 0.001914                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This one shows that there is no species:Fe.level interaction. So we will take it out in our modified `lm()`:
+
+
+```r
+lm_FvFm <- lm(data = mydata, FvFm.old ~ (Species + Fe.level + Cu.level)^2 - Species:Fe.level)
+summary(lm_FvFm) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = FvFm.old ~ (Species + Fe.level + Cu.level)^2 - Species:Fe.level, 
+##     data = mydata)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.072593 -0.033380 -0.005833  0.038194  0.075926 
+## 
+## Coefficients:
+##                            Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                 0.55111    0.03045  18.100 1.52e-12 ***
+## SpeciesTO 1005              0.09148    0.03210   2.850  0.01107 *  
+## Fe.levellow                -0.16852    0.03210  -5.251 6.51e-05 ***
+## Cu.levellow                -0.23694    0.04028  -5.883 1.81e-05 ***
+## SpeciesTO 1005:Cu.levellow  0.14685    0.04424   3.319  0.00406 ** 
+## Fe.levellow:Cu.levellow     0.11019    0.04424   2.491  0.02339 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.05274 on 17 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.8817,	Adjusted R-squared:  0.8469 
+## F-statistic: 25.35 on 5 and 17 DF,  p-value: 2.548e-07
+```
+
+```r
+plot.new()
+plot(lm_FvFm)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-4.png) 
+
+```r
+anova(lm_FvFm) #
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: FvFm.old
+##                   Df   Sum Sq  Mean Sq F value    Pr(>F)    
+## Species            1 0.187674 0.187674 67.4765 2.541e-07 ***
+## Fe.level           1 0.059754 0.059754 21.4839 0.0002367 ***
+## Cu.level           1 0.059451 0.059451 21.3753 0.0002427 ***
+## Species:Cu.level   1 0.028352 0.028352 10.1936 0.0053302 ** 
+## Fe.level:Cu.level  1 0.017253 0.017253  6.2031 0.0233936 *  
+## Residuals         17 0.047282 0.002781                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - FvFm
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Cu.level and Species, for the data __Growthrate Percent of umax__, we see the following significant factors:
+
+
+* __Species__ is  has an effect 
+* __Fe. level__ has an effect 
+* __Cu level__ has an effect  
+* there is an __interaction__ between __Species and Cu level now: (F(1,17) = 10.1936, p.val =  0.005)
+* there is an __interaction__ between __Fe level and Cu level: (F(1,18) = 6.20, p.val = 0.02)
+
+
+### Using the `phia` package to look into significant effects in Fv/Fm
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(FvFm.means <- interactionMeans(lm_FvFm))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high     0.5511111 0.03044842
+## 2 TO 1005     high     high     0.6425926 0.02685298
+## 3 TO 1003      low     high     0.3825926 0.02685298
+## 4 TO 1005      low     high     0.4740741 0.02685298
+## 5 TO 1003     high      low     0.3141667 0.02636910
+## 6 TO 1005     high      low     0.5525000 0.02636910
+## 7 TO 1003      low      low     0.2558333 0.02636910
+## 8 TO 1005      low      low     0.4941667 0.02636910
+```
+
+```r
+plot(FvFm.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FvFm-1.png) 
+
+This plot shows us main effects (such as species in respect to Fe.level) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu  seem to have an interaction effect. Fv/Fm changes differently from high Cu to low Cu in the two species. When we look at upper middle and middle left cell, we see that Fv/Fm changes in the same way for both species in response to the same high/low Fe concentrations. This is particularly interesting as we used different Cu concentrations. This would suggest that the two strains have both started their physiological response to low iron in a similar way even though the growthrate changes do not reflect this! The interplay between Fe.level and Cu.level is seen in the middle right and lower middle cell.
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+
+```r
+testInteractions(lm_FvFm, fixed="Species", across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F    Pr(>F)    
+## TO 1003   0.18185  1  0.089289 32.1032 5.579e-05 ***
+## TO 1005   0.03500  1  0.003675  1.3213    0.2663    
+## Residuals         17  0.047282                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two different Cu.levels I used (high and low) does significantly change Fv/Fm in TO 1003 (F(1,17) = 32.10, p.val < 0.0001) but it does not change Fv/Fm significantly in TO 1005 (F(1,17) = 1.32, p-val > 0.2))
+
+
+```r
+testInteractions(lm_FvFm, fixed="Cu.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##               Value Df Sum of Sq       F    Pr(>F)    
+## high      -0.091481  1  0.022596  8.1242   0.01107 *  
+##  low      -0.238333  1  0.170408 61.2689 9.811e-07 ***
+## Residuals           17  0.047282                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two Species have slightly significantly different Fv/Fm under high Cu conditions (F(1,17) = 8.12, p.val = 0.01). Looking at the graph, they have almost the same Fv/Fm under control condition. However, under lowFe (which is the other high Cu condition), their Fv/Fm is sufficiently different to generate the p.val = 0.01. This could mean that TO 1003 has a more pronounced low iron response (again, even though this is not reflected at all in its growthrate decrease).
+
+Under low Cu conditions, Fv/Fm is markedly different between the two strains (F = 61.27, p.val < 0.00001).
 
 
 
+```r
+testInteractions(lm_FvFm, fixed="Fe.level", across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F    Pr(>F)    
+## high      0.163519  1  0.072193 25.9566 0.0001798 ***
+##  low      0.053333  1  0.008533  3.0681 0.0978623 .  
+## Residuals          17  0.047282                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant changes in Fv/Fm from high Cu to low Cu when integrated over both strains (F(1,17) = 25.96, p.val = 0.0002). This is likely mainly influenced by the very strong difference in TO 1003. 
+WHen looking at low Fe and changing Cu from high to low, the difference in Fv/Fm is not significant anymore (F (1,17) = 3.07, pval = 0.1)
 
 
-,a id="NotUsed"></a>
+```r
+testInteractions(lm_FvFm, fixed="Cu.level", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F    Pr(>F)    
+## high      0.168519  1  0.076676 27.5682 0.0001302 ***
+##  low      0.058333  1  0.010208  3.6703 0.0723635 .  
+## Residuals          17  0.047282                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant reduction in Fv/Fm across both species under high Cu when Fe is limiting (F(1,17) = 27.57, p.val = 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on Fv/Fm.
+
+
+<a id="Sigma"
+
+#### Sigma
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, Sig.old))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="", x ="")+
+  geom_point(data=mean.df , aes(Treatment, Sig.old, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+```
+
+```
+## Warning: Removed 4 rows containing missing values (geom_point).
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_Sigma-1.png) 
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_Sigma <- lm(data = mydata, Sig.old ~ (Species * Fe.level * Cu.level))
+summary(lm_all_Sigma) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Sig.old ~ (Species * Fe.level * Cu.level), data = mydata)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -42.00 -12.00  -2.75  12.75  53.33 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             584.000     21.737  26.867
+## SpeciesTO 1005                           -4.500     30.740  -0.146
+## Fe.levellow                              22.000     28.062   0.784
+## Cu.levellow                             180.000     28.062   6.414
+## SpeciesTO 1005:Fe.levellow               93.500     41.623   2.246
+## SpeciesTO 1005:Cu.levellow             -187.000     41.623  -4.493
+## Fe.levellow:Cu.levellow                  10.667     37.649   0.283
+## SpeciesTO 1005:Fe.levellow:Cu.levellow    7.333     56.124   0.131
+##                                        Pr(>|t|)    
+## (Intercept)                            4.34e-12 ***
+## SpeciesTO 1005                         0.886046    
+## Fe.levellow                            0.448252    
+## Cu.levellow                            3.33e-05 ***
+## SpeciesTO 1005:Fe.levellow             0.044286 *  
+## SpeciesTO 1005:Cu.levellow             0.000736 ***
+## Fe.levellow:Cu.levellow                0.781762    
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 0.898207    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 30.74 on 12 degrees of freedom
+##   (4 observations deleted due to missingness)
+## Multiple R-squared:  0.926,	Adjusted R-squared:  0.8829 
+## F-statistic: 21.46 on 7 and 12 DF,  p-value: 6.942e-06
+```
+
+```r
+anova(lm_all_Sigma) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Sig.old
+##                           Df Sum Sq Mean Sq F value    Pr(>F)    
+## Species                    1  13034   13034 13.7925 0.0029601 ** 
+## Fe.level                   1  18741   18741 19.8327 0.0007882 ***
+## Cu.level                   1  58198   58198 61.5865 4.575e-06 ***
+## Species:Fe.level           1  11063   11063 11.7068 0.0050643 ** 
+## Species:Cu.level           1  40645   40645 43.0115 2.696e-05 ***
+## Fe.level:Cu.level          1    236     236  0.2502 0.6259709    
+## Species:Fe.level:Cu.level  1     16      16  0.0171 0.8982068    
+## Residuals                 12  11340     945                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+There seems to be no Fe.level : Cu.level interaction. So, let's take it out in this `lm()`:
+
+
+```r
+lm_Sigma <- lm(data = mydata, Sig.old ~ (Species + Fe.level + Cu.level)^2 - Fe.level:Cu.level)
+summary(lm_Sigma) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Sig.old ~ (Species + Fe.level + Cu.level)^2 - Fe.level:Cu.level, 
+##     data = mydata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -44.370 -10.773  -1.018  12.074  55.704 
+## 
+## Coefficients:
+##                            Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                 580.444     16.613  34.938 5.07e-15 ***
+## SpeciesTO 1005               -5.854     24.023  -0.244  0.81103    
+## Fe.levellow                  27.926     17.512   1.595  0.13311    
+## Cu.levellow                 185.926     17.512  10.617 4.43e-08 ***
+## SpeciesTO 1005:Fe.levellow   97.392     26.135   3.726  0.00226 ** 
+## SpeciesTO 1005:Cu.levellow -183.108     26.135  -7.006 6.19e-06 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 28.78 on 14 degrees of freedom
+##   (4 observations deleted due to missingness)
+## Multiple R-squared:  0.9244,	Adjusted R-squared:  0.8974 
+## F-statistic: 34.22 on 5 and 14 DF,  p-value: 2.275e-07
+```
+
+```r
+plot.new()
+plot(lm_Sigma)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-4.png) 
+
+```r
+anova(lm_Sigma) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Sig.old
+##                  Df Sum Sq Mean Sq F value    Pr(>F)    
+## Species           1  13034   13034  15.741 0.0014028 ** 
+## Fe.level          1  18741   18741  22.634 0.0003061 ***
+## Cu.level          1  58198   58198  70.285 7.906e-07 ***
+## Species:Fe.level  1  11063   11063  13.360 0.0025980 ** 
+## Species:Cu.level  1  40645   40645  49.087 6.187e-06 ***
+## Residuals        14  11592     828                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - Sigma
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Cu.level and Species, for the data __Growthrate Percent of umax__, we see the following significant factors:
+
+
+* __Species__ is __not__ has an effect
+* __Fe. level__ has an effect 
+* __Cu level__ has an effect 
+* there is  an __interaction__ between __Species and Fe level now: (F(1,14) = 13.36, p.val = 0.003)
+* there is a strong __interaction__ between __Species and Cu level: (F(1,14) = 49.09, p.val < 0.00001)
+
+
+### Using the `phia` package to look into significant effects regarding SIGMA
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(Sigma.means <- interactionMeans(lm_Sigma))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high      580.4444   16.61342
+## 2 TO 1005     high     high      574.5909   17.35216
+## 3 TO 1003      low     high      608.3704   14.65166
+## 4 TO 1005      low     high      699.9091   17.35216
+## 5 TO 1003     high      low      766.3704   14.65166
+## 6 TO 1005     high      low      577.4091   17.35216
+## 7 TO 1003      low      low      794.2963   14.65166
+## 8 TO 1005      low      low      702.7273   15.02741
+```
+
+```r
+plot(Sigma.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Sigma-1.png) 
+
+This plot shows us main effects (such as Cu.level in regards to Fe.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do seem to have very different results for Sigma.  Whenhen we look at upper middle and middle left cell, we see that Sigma also changes in a different way depending on Species and Fe level.  Differing Fe.level and Cu.level seem to change sigma in a comparable fashion.
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+
+```r
+testInteractions(lm_Sigma, fixed="Species", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq      F    Pr(>F)    
+## TO 1003    -27.926  1      2106  2.543    0.1331    
+## TO 1005   -125.318  1     34550 41.726 2.997e-05 ***
+## Residuals          14     11592                     
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two different Fe.levels I used (high and low) does not significantly change Sigma in TO 1003 (F(1,14) = 2.54, p.val = 0.13) but it does change Sigma significantly in TO 1005 (F(1,14) = 41.73, p-val < 0.0001)
+
+
+```r
+testInteractions(lm_Sigma, fixed="Fe.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##            Value Df Sum of Sq      F   Pr(>F)    
+## high      97.407  1     20913 25.256 0.000371 ***
+##  low       0.015  1         0  0.000 0.999323    
+## Residuals        14     11592                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two Species have significantly different Sigma when integrated over their respective high Fe conditions (F(1,14) = 25.26, p.val = 0.0004).
+Under low iron their respective Sigmas are statistically almost the same (F (1,14) =  0, p.val = .999). Which makes sense when you look at the graph. Even though the trends are the same (i.e. under low Fe and lowFeCu, TO 1005 stays the same, whereas TO 1003 increases its Sigma). But because the unchanged Sigma of TO 1005 sits right int he middle of the low and high Sigma values of TO 1003, their integrated fixed low Fe values are the same.
+
+
+
+```r
+testInteractions(lm_Sigma, fixed="Species", across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq        F    Pr(>F)    
+## TO 1003   -185.926  1     93335 112.7208 8.856e-08 ***
+## TO 1005     -2.818  1        17   0.0211    0.8866    
+## Residuals          14     11592                       
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Here, TO 1003 has a very strong Cu-effect (F(1,14) = 112.72, pval < 0.00001).
+WHereas, Cu doesn;t seem to have any effect on Sigma for TO 1005 (F(1,14) = 0.02, pval = 0.88).
+
+
+
+```r
+testInteractions(lm_Sigma, fixed="Cu.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F    Pr(>F)    
+## high      -42.843  1      4046  4.8858   0.04423 *  
+##  low      140.265  1     53000 64.0085 2.737e-06 ***
+## Residuals         14     11592                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Under high Cu treatments (i.e. as response to low Fe only), the two strains show somewhat significant differences (F(1,14) = 4.89, p.val = 0.04). This is due to starting witht he same Sigma in the control treatment. THen TO 1003 shows almost no response to low Fe but TO 1005 does show a significant response to Fe. Hence, the differnece between the two strains is significant. 
+
+This difference between the strains is even more pronounced when looking at the low Cu treatments (F (1,14) = 64.01, p.val = 0.00001). Here, TO 1003 shows almost no reponse to an added FeCu co- limitation, whereas Sigma in TO 1005 does increase significantly from low Cu to low CuFe co-limitation 
+
+
+###Summary SIGMA
+
+There are strong significant differences between TO 1003 and TO 1005 how their SIGMA changes in response to Fe, Cu, or Fe-Cu co-limitation:
+
+__Sigma__ in __TO 1003 does not respond to lowering Fe concentrations__ (neither low Fe alone compared to high Fe, nor low FeCu compared to low Cu)
+
+Completely diametrically different to its sister strain!!!!
+
+__Sigma__ in __TO 1005 does not respond to lowering Cu concentrations__ (neither low Cu alone compared to high Cu, nor low FeCu compared to low Fe)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+<a id="NotUsed"></a>
 
 # Not Used
 
