@@ -42,6 +42,7 @@ library(knitr)
   + [Fv/Fm](#FvFm)
   + [Sigma](#Sigma)
   + [PQ Size](#PQ)
+  + [Chl a](#Chla)
 
 * __NOT USED__
 * run `lm()` only on [TO 1003](#lm_TO03)
@@ -401,14 +402,14 @@ anova(lm_FvFm) #
 
 ### Anova Table - FvFm
 
-Looking at the ANOVA table for the linear model that _does not_ test for interaction between Cu.level and Species, for the data __Growthrate Percent of umax__, we see the following significant factors:
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Fe.level and Species, for the data __Fv/Fm__, we see the following significant factors:
 
 
 * __Species__ is  has an effect 
 * __Fe. level__ has an effect 
 * __Cu level__ has an effect  
-* there is an __interaction__ between __Species and Cu level now: (F(1,17) = 10.1936, p.val =  0.005)
-* there is an __interaction__ between __Fe level and Cu level: (F(1,18) = 6.20, p.val = 0.02)
+* there is an __interaction__ between __Species and Cu level now: (F(1,17) = 21.37, p.val =  0.005)
+* there is an __interaction__ between __Fe level and Cu level: (F(1,17) = 6.20, p.val = 0.02)
 
 
 ### Using the `phia` package to look into significant effects in Fv/Fm
@@ -460,7 +461,7 @@ testInteractions(lm_FvFm, fixed="Cu.level", across="Fe.level")
 This means that there is significant reduction in Fv/Fm across both species under high Cu when Fe is limiting (F(1,17) = 27.57, p.val = 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on Fv/Fm.
 
 
-<a id="Sigma"
+<a id="Sigma"></a>
 
 #### Sigma
 
@@ -569,7 +570,198 @@ __Sigma__ in __TO 1003 does not respond to lowering Fe concentrations__ (neither
 Completely diametrically different to its sister strain!!!!
 
 __Sigma__ in __TO 1005 does not respond to lowering Cu concentrations__ (neither low Cu alone compared to high Cu, nor low FeCu compared to low Fe)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+<a id="PQ"></a>
+
+#### PQ
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_PQ, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, PQ_Siz.old))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="PQ_Size", x ="")+
+  geom_point(data=mean.df , aes(Treatment, PQ_Siz.old, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+#I double checked the excel summary file I got from Nina for the "0" value in TO 1003 low Fe (B) treatment. All other values (Fv/Fm, Sigma, p, tau seem to be in the same league as the other two biological replicates... might have to double chekc with Nina, if she has some thoughts on what happened with PQ_size, here)
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_PQ, eval=TRUE}
+lm_all_PQ <- lm(data = mydata, PQ_Siz.old ~ (Species * Fe.level * Cu.level))
+summary(lm_all_PQ) # we need to look at the actual anova to knwo where we need to look further
+anova(lm_all_PQ) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+There seems to be no Fe.level : Cu.level interaction, and no Species:Cu.level interaction. So, first let's take  them out in this `lm()`:
+
+```{r lm_PQ, eval=TRUE}
+lm_PQ <- lm(data = mydata, PQ_Siz.old ~ (Species + Fe.level + Cu.level)^2 - Fe.level:Cu.level - Species:Fe.level)
+summary(lm_PQ) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_PQ)
+
+anova(lm_PQ) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+### Anova Table - PQ
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Fe.level : Cu.level interaction or Species : Fe.level, for the data __PQ_Size__, we see the following significant factors:
+
+
+* __Species__ alone has __not__ an effect
+* __Fe. level__ alone has a significant effect (F(1,15), p.val = 0.025) 
+* __Cu level__ alone has __not__ an effect
+* there is  an __interaction__ between __Species and Cu level now: (F(1,15) = 7.71, p.val = 0.01)
+
+
+
+### Using the `phia` package to look into significant effects regarding PQ
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_PQ, eval=TRUE}
+
+(PQ.means <- interactionMeans(lm_PQ))
+plot(PQ.means)
+```
+
+This plot shows us the main effect (i.e. Fe.level) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do seem to have very different results for PQ.  When we look at upper middle and middle left cell, we see that PQ  changes in a very similar way for both species in response to Fe.level adn that this response is to reduce the PQ.size. Differing Fe.level and Cu.level seem to change PQ in a comparable fashion (middle right and lower middle).
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+```{r phia_interaction_Contrasts_Species_Felevel_PQ, eval=TRUE}
+testInteractions(lm_PQ, fixed="Species", across="Cu.level")
+```
+
+This means that the two different Cu.levels I used (high and low) does significantly change PQ in TO 1003 (F(1,15) = 8.01, p.val = 0.025) but it does not change PQ significantly in TO 1005 (F(1,15) = 1.43, p-val = 0.25)
+
+```{r phia_interaction_Contrasts_Fe.level_Species_PQ, eval=TRUE}
+testInteractions(lm_PQ, fixed="Cu.level", across="Species")
+```
+
+This means that the two Species have not significantly different PQ when integrated over their respective high Cu conditions (F(1,15) = 2.38, p.val = 0.14).
+Under low copper their respective PQs are somewhat different (F(1, 15) = 5.99, p.val = 0.055)
+
+###Summary PQ
+
+There is a statistically significant __Fe effect__: lowering iron leads to lower PQ.size
+
+Then there is an interaction effect __Species : Cu.level__:
+
+__PQ__ in __TO 1003 statistically increases in response to lowering Cu concentrations__ (neither low Fe alone compared to high Fe, nor low FeCu compared to low Cu)
+
+Somewhat diametrically different to its sister strain:
+
+__PQ__ in __TO 1005 decreases (not stat.) in resonse to lowering Cu concentrations__ 
+
+
+
+<a id="Chla"></a>
+
+#### Chla
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_Chla, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, Chla.per.cell.vol.fg.fL))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Chl a / Cell vol [fg/fL]", x ="")+
+  geom_point(data=mean.df , aes(Treatment, Chla.per.cell.vol.fg.fL, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+#I double checked the excel summary file I got from Nina for the "0" value in TO 1003 low Fe (B) treatment. All other values (Fv/Fm, Sigma, p, tau seem to be in the same league as the other two biological replicates... might have to double chekc with Nina, if she has some thoughts on what happened with Chla_size, here)
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_Chla, eval=TRUE}
+lm_all_Chla <- lm(data = mydata, Chla.per.cell.vol.fg.fL ~ (Species * Fe.level * Cu.level))
+summary(lm_all_Chla) # we need to look at the actual anova to knwo where we need to look further
+anova(lm_all_Chla) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+There seems to be no Species: Fe.level and no Species: Cu.level interaction. However, there seems to be a three way species:Fe.level:Cu,level interaction.
+ So, first let's take  them out in this `lm()`:
+
+```{r lm_Chla, eval=TRUE}
+lm_Chla <- lm(data = mydata, Chla.per.cell.vol.fg.fL ~ (Species + Fe.level + Cu.level)^2 - Species:Cu.level - Species:Fe.level)
+summary(lm_Chla) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_Chla)
+
+anova(lm_Chla) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+### Anova Table - Chla
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Fe.level : Cu.level interaction or Species : Fe.level, for the data __Chla_Size__, we see the following significant factors:
+
+
+* __Species__ alone has __not__ an effect
+* __Fe. level__ alone has a significant effect (F(1,15), p.val = 0.025) 
+* __Cu level__ alone has __not__ an effect
+* there is  an __interaction__ between __Species and Cu level now: (F(1,15) = 7.71, p.val = 0.01)
+
+
+
+### Using the `phia` package to look into significant effects regarding Chla
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_Chla, eval=TRUE}
+
+(Chla.means <- interactionMeans(lm_Chla))
+plot(Chla.means)
+```
+
+This plot shows us the main effect (i.e. Fe.level) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do seem to have very different results for Chla.  When we look at upper middle and middle left cell, we see that Chla  changes in a very similar way for both species in response to Fe.level adn that this response is to reduce the Chla.size. Differing Fe.level and Cu.level seem to change Chla in a comparable fashion (middle right and lower middle).
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+```{r phia_interaction_Contrasts_Species_Felevel_Chla, eval=TRUE}
+testInteractions(lm_Chla, fixed="Species", across="Cu.level")
+```
+
+This means that the two different Cu.levels I used (high and low) does significantly change Chla in TO 1003 (F(1,15) = 8.01, p.val = 0.025) but it does not change Chla significantly in TO 1005 (F(1,15) = 1.43, p-val = 0.25)
+
+```{r phia_interaction_Contrasts_Fe.level_Species_Chla, eval=TRUE}
+testInteractions(lm_Chla, fixed="Cu.level", across="Species")
+```
+
+This means that the two Species have not significantly different Chla when integrated over their respective high Cu conditions (F(1,15) = 2.38, p.val = 0.14).
+Under low copper their respective Chlas are somewhat different (F(1, 15) = 5.99, p.val = 0.055)
+
+###Summary Chla
+
+There is a statistically significant __Fe effect__: lowering iron leads to lower Chla.size
+
+Then there is an interaction effect __Species : Cu.level__:
+
+__Chla__ in __TO 1003 statistically increases in response to lowering Cu concentrations__ (neither low Fe alone compared to high Fe, nor low FeCu compared to low Cu)
+
+Somewhat diametrically different to its sister strain:
+
+__Chla__ in __TO 1005 decreases (not stat.) in resonse to lowering Cu concentrations__ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 <a id="NotUsed"></a>
