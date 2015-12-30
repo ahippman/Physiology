@@ -1,4 +1,4 @@
-# Meeting with Rick White
+# Stats_Physiology
 Anna A. Hippmann  
 May 22nd, 2015  
 
@@ -7,29 +7,9 @@ May 22nd, 2015
 ##Libraries used
 
 ```r
-library(lsmeans)
-```
-
-```
-## Loading required package: estimability
-## 
-## Attaching package: 'lsmeans'
-## 
-## The following object is masked from 'package:base':
-## 
-##     rbind
-```
-
-```r
-library(phia)
-```
-
-```
-## Loading required package: car
-```
-
-```r
-library(visreg)
+suppressPackageStartupMessages(library(lsmeans))
+suppressPackageStartupMessages(library(phia))
+suppressPackageStartupMessages(library(visreg))
 ```
 
 ```
@@ -37,23 +17,7 @@ library(visreg)
 ```
 
 ```r
-library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
+suppressPackageStartupMessages(library(dplyr))
 library(ggplot2)
 library(knitr)
 ```
@@ -79,7 +43,9 @@ library(knitr)
   + [Fv/Fm](#FvFm)
   + [Sigma](#Sigma)
   + [PQ Size](#PQ)
-  + [Chl a](#Chla)
+  + [Chl a per Cell Vol \[fg/fL\]](#Chla)
+  + [Chl a per Cell \[pg/cell\]](#Chla.cell)
+  + [Cell Size \[um\]](#cellsize)
 
 * __NOT USED__
 * run `lm()` only on [TO 1003](#lm_TO03)
@@ -786,6 +752,7 @@ testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Fe.level")
 This means that there is significant growth reduction under high Cu when Fe is limiting (F(1,18) = 30.49, p.val < 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on growthrate. As discussed earlier, this makes sense when looking at the actual Cu concentrations used and is not in discrepancy to former studies that did find evidence of co limitation in both strains. 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 <a id="FvFm"></a>
 
@@ -1592,6 +1559,8 @@ testInteractions(lm_PQ, fixed="Cu.level", across="Species")
 This means that the two Species have not significantly different PQ when integrated over their respective high Cu conditions (F(1,15) = 2.38, p.val = 0.14).
 Under low copper their respective PQs are somewhat different (F(1, 15) = 5.99, p.val = 0.055)
 
+
+
 ###Summary PQ
 
 There is a statistically significant __Fe effect__: lowering iron leads to lower PQ.size
@@ -1602,13 +1571,13 @@ __PQ__ in __TO 1003 statistically increases in response to lowering Cu concentra
 
 Somewhat diametrically different to its sister strain:
 
-__PQ__ in __TO 1005 decreases (not stat.) in resonse to lowering Cu concentrations__ 
+__PQ__ in __TO 1005 tends to decrease (not stat.) in response to lowering Cu concentrations__ 
 
 
 
 <a id="Chla"></a>
 
-#### Chla
+#### Chla per cell volume __HAVE TO HAVE ANOTHER LOOK AT THREE WAY INTERACTION TESTING!!!__
 
 [Back Up](#BackUP)
 
@@ -1629,6 +1598,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ```r
 #I double checked the excel summary file I got from Nina for the "0" value in TO 1003 low Fe (B) treatment. All other values (Fv/Fm, Sigma, p, tau seem to be in the same league as the other two biological replicates... might have to double chekc with Nina, if she has some thoughts on what happened with Chla_size, here)
 ```
+
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -1696,38 +1666,50 @@ anova(lm_all_Chla) # this shows, we can take out the interaction between Species
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-There seems to be no Species: Fe.level and no Species: Cu.level interaction. However, there seems to be a three way species:Fe.level:Cu,level interaction.
- So, first let's take  them out in this `lm()`:
+There seems to be no Species: Fe.level and no Species: Cu.level interaction. However, there seems to be a three way species:Fe.level:Cu,level interaction. So I will not take out anything for the following analysis.
+
 
 
 ```r
-lm_Chla <- lm(data = mydata, Chla.per.cell.vol.fg.fL ~ (Species + Fe.level + Cu.level)^2 - Species:Cu.level - Species:Fe.level)
+lm_Chla <- lm (data = mydata, Chla.per.cell.vol.fg.fL ~ (Species * Fe.level * Cu.level)) # Yes, this is the same as before. I leave it as is
 summary(lm_Chla) # we need to look at the actual anova to knwo where we need to look further
 ```
 
 ```
 ## 
 ## Call:
-## lm(formula = Chla.per.cell.vol.fg.fL ~ (Species + Fe.level + 
-##     Cu.level)^2 - Species:Cu.level - Species:Fe.level, data = mydata)
+## lm(formula = Chla.per.cell.vol.fg.fL ~ (Species * Fe.level * 
+##     Cu.level), data = mydata)
 ## 
 ## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -1.8723 -0.5785 -0.3244  0.5133  2.2971 
+##      Min       1Q   Median       3Q      Max 
+## -1.00400 -0.09989  0.01767  0.19917  1.57300 
 ## 
 ## Coefficients:
-##                         Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)               5.0607     0.4702  10.763 1.59e-09 ***
-## SpeciesTO 1005           -1.5088     0.4206  -3.588  0.00196 ** 
-## Fe.levellow              -0.8412     0.5948  -1.414  0.17345    
-## Cu.levellow               1.2903     0.5948   2.170  0.04294 *  
-## Fe.levellow:Cu.levellow  -1.7689     0.8411  -2.103  0.04902 *  
+##                                        Estimate Std. Error t value
+## (Intercept)                             4.33667    0.36401  11.914
+## SpeciesTO 1005                         -0.06067    0.51479  -0.118
+## Fe.levellow                             0.27333    0.51479   0.531
+## Cu.levellow                             3.06667    0.51479   5.957
+## SpeciesTO 1005:Fe.levellow             -2.22900    0.72802  -3.062
+## SpeciesTO 1005:Cu.levellow             -3.55267    0.72802  -4.880
+## Fe.levellow:Cu.levellow                -4.65433    0.72802  -6.393
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  5.77092    1.02958   5.605
+##                                        Pr(>|t|)    
+## (Intercept)                            2.28e-09 ***
+## SpeciesTO 1005                         0.907655    
+## Fe.levellow                            0.602739    
+## Cu.levellow                            2.01e-05 ***
+## SpeciesTO 1005:Fe.levellow             0.007454 ** 
+## SpeciesTO 1005:Cu.levellow             0.000167 ***
+## Fe.levellow:Cu.levellow                8.90e-06 ***
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 3.95e-05 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 1.03 on 19 degrees of freedom
-## Multiple R-squared:  0.6485,	Adjusted R-squared:  0.5745 
-## F-statistic: 8.765 on 4 and 19 DF,  p-value: 0.0003474
+## Residual standard error: 0.6305 on 16 degrees of freedom
+## Multiple R-squared:  0.8891,	Adjusted R-squared:  0.8406 
+## F-statistic: 18.33 on 7 and 16 DF,  p-value: 1.564e-06
 ```
 
 ```r
@@ -1738,19 +1720,22 @@ plot(lm_Chla)
 ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-4.png) 
 
 ```r
-anova(lm_Chla) # this shows, we can take out the interaction between Species: Cu.level
+anova(lm_Chla)
 ```
 
 ```
 ## Analysis of Variance Table
 ## 
 ## Response: Chla.per.cell.vol.fg.fL
-##                   Df  Sum Sq Mean Sq F value    Pr(>F)    
-## Species            1 13.6583 13.6583 12.8704 0.0019633 ** 
-## Fe.level           1 17.8662 17.8662 16.8356 0.0006054 ***
-## Cu.level           1  0.9885  0.9885  0.9315 0.3466017    
-## Fe.level:Cu.level  1  4.6934  4.6934  4.4226 0.0490219 *  
-## Residuals         19 20.1632  1.0612                      
+##                           Df  Sum Sq Mean Sq F value    Pr(>F)    
+## Species                    1 13.6583 13.6583 34.3595 2.409e-05 ***
+## Fe.level                   1 17.8662 17.8662 44.9451 5.063e-06 ***
+## Cu.level                   1  0.9885  0.9885  2.4867  0.134373    
+## Species:Fe.level           1  0.6464  0.6464  1.6261  0.220445    
+## Species:Cu.level           1  0.6677  0.6677  1.6798  0.213334    
+## Fe.level:Cu.level          1  4.6934  4.6934 11.8068  0.003392 ** 
+## Species:Fe.level:Cu.level  1 12.4888 12.4888 31.4174 3.948e-05 ***
+## Residuals                 16  6.3602  0.3975                      
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -1760,10 +1745,11 @@ anova(lm_Chla) # this shows, we can take out the interaction between Species: Cu
 Looking at the ANOVA table for the linear model that _does not_ test for interaction between Fe.level : Cu.level interaction or Species : Fe.level, for the data __Chla_Size__, we see the following significant factors:
 
 
-* __Species__ alone has __not__ an effect
-* __Fe. level__ alone has a significant effect (F(1,15), p.val = 0.025) 
+* __Species__ alone has a significant effect
+* __Fe. level__ alone has a significant effect  
 * __Cu level__ alone has __not__ an effect
-* there is  an __interaction__ between __Species and Cu level now: (F(1,15) = 7.71, p.val = 0.01)
+* there is  an __interaction__ between __Cu level and Fe level__ 
+* there is a __3-way interaction__ between __Species, Cu level and Fe level__ (F(1, 16) = 31.42, p-val < 0.0001)
 
 
 
@@ -1778,14 +1764,14 @@ Again, any main effects that are included in interacting effects will be looked 
 
 ```
 ##   Species Fe.level Cu.level adjusted mean std. error
-## 1 TO 1003     high     high      5.060718  0.4701994
-## 2 TO 1005     high     high      3.551948  0.4701994
-## 3 TO 1003      low     high      4.219552  0.4701994
-## 4 TO 1005      low     high      2.710782  0.4701994
-## 5 TO 1003     high      low      6.351052  0.4701994
-## 6 TO 1005     high      low      4.842282  0.4701994
-## 7 TO 1003      low      low      3.741011  0.4701994
-## 8 TO 1005      low      low      2.232241  0.4701994
+## 1 TO 1003     high     high      4.336667  0.3640113
+## 2 TO 1005     high     high      4.276000  0.3640113
+## 3 TO 1003      low     high      4.610000  0.3640113
+## 4 TO 1005      low     high      2.320333  0.3640113
+## 5 TO 1003     high      low      7.403333  0.3640113
+## 6 TO 1005     high      low      3.790000  0.3640113
+## 7 TO 1003      low      low      3.022333  0.3640113
+## 8 TO 1005      low      low      2.950919  0.3640113
 ```
 
 ```r
@@ -1794,63 +1780,682 @@ plot(Chla.means)
 
 ![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Chla-1.png) 
 
-This plot shows us the main effect (i.e. Fe.level) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+This plot shows us the main effects (no single main effects here) and first order interactions (such as Species , Cu.level, Fe. level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
-As we see in the upper right and lower left corner, Species and Cu really do seem to have very different results for Chla.  When we look at upper middle and middle left cell, we see that Chla  changes in a very similar way for both species in response to Fe.level adn that this response is to reduce the Chla.size. Differing Fe.level and Cu.level seem to change Chla in a comparable fashion (middle right and lower middle).
+Not sure how to look at three-way interactions in this plot. But you do see the Fe:Cu level interaction when looking at middle right and lower middle. Chla concentration per cell volume changes differently depending on Fe and Cu levels. 
 
 #### Pairwise Comparisons
 
 [Back Up](#BackUP)
 
-In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+In order to put actual numbers for the significant differences in the 3-way interaction between __Species, Cu level and Fe level__, I will proceed with pairwise comparisons by having __two fixed factors__ and testing how Chl a changes dependend on the remaining factor
 
+
+
+First: Species against Fe + Cu level
 
 ```r
-testInteractions(lm_Chla, fixed="Species", across="Cu.level")
+testInteractions(lm_Chla, fixed="Species", across=c("Cu.level", "Fe.level"))
 ```
 
 ```
 ## F Test: 
 ## P-value adjustment method: holm
-##             Value Df Sum of Sq      F Pr(>F)
-## TO 1003   -0.4059  1    0.9885 0.9315 0.6932
-## TO 1005   -0.4059  1    0.9885 0.9315 0.6932
-## Residuals         19   20.1632
-```
-
-This means that the two different Cu.levels I used (high and low) does significantly change Chla in TO 1003 (F(1,15) = 8.01, p.val = 0.025) but it does not change Chla significantly in TO 1005 (F(1,15) = 1.43, p-val = 0.25)
-
-
-```r
-testInteractions(lm_Chla, fixed="Cu.level", across="Species")
-```
-
-```
-## F Test: 
-## P-value adjustment method: holm
-##            Value Df Sum of Sq     F   Pr(>F)   
-## high      1.5088  1    13.658 12.87 0.003927 **
-##  low      1.5088  1    13.658 12.87 0.003927 **
-## Residuals        19    20.163                  
+##             Value Df Sum of Sq       F    Pr(>F)    
+## TO 1003   -4.6543  1   16.2471 40.8719 1.781e-05 ***
+## TO 1005    1.1166  1    0.9351  2.3523    0.1446    
+## Residuals         16    6.3602                      
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-This means that the two Species have not significantly different Chla when integrated over their respective high Cu conditions (F(1,15) = 2.38, p.val = 0.14).
-Under low copper their respective Chlas are somewhat different (F(1, 15) = 5.99, p.val = 0.055)
+This means that there is an Fe:Cu interaction for TO 1003 but not for TO 1005 (F( 1, 16) = 40.87, p-val < 0.0001)
 
-###Summary Chla
+Now let's see how everything plays out in more detail by fixing SPecies and Cu level and change Fe. level:
 
-There is a statistically significant __Fe effect__: lowering iron leads to lower Chla.size
 
-Then there is an interaction effect __Species : Cu.level__:
+```r
+testInteractions(lm_Chla, fixed=c("Species", "Cu.level"), across="Fe.level")
+```
 
-__Chla__ in __TO 1003 statistically increases in response to lowering Cu concentrations__ (neither low Fe alone compared to high Fe, nor low FeCu compared to low Cu)
+```
+## F Test: 
+## P-value adjustment method: holm
+##                  Value Df Sum of Sq       F    Pr(>F)    
+## TO 1003 : high -0.2733  1    0.1121  0.2819  0.602739    
+## TO 1005 : high  1.9557  1    5.7369 14.4321  0.004729 ** 
+## TO 1003 :  low  4.3810  1   28.7897 72.4247 9.856e-07 ***
+## TO 1005 :  low  0.8391  1    1.0561  2.6567  0.245276    
+## Residuals              16    6.3602                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
 
-Somewhat diametrically different to its sister strain:
+Control to low Fe is only significant for TO 1005 (F(1, 16) = 14.43, p-val = 0.005) but not significant for TO 1003
 
-__Chla__ in __TO 1005 decreases (not stat.) in resonse to lowering Cu concentrations__ 
+However, when comparing low Cu to low FeCu treatment, Chl a is only significantly reduced in TO 1003 (F(1, 16) = 72.42, p-val < 0.00001) 
+
+
+```r
+testInteractions(lm_Chla, fixed=c("Species", "Fe.level"), across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                   Value Df Sum of Sq       F    Pr(>F)    
+## TO 1003 : high -3.06667  1   14.1067 35.4873 8.035e-05 ***
+## TO 1005 : high  0.48600  1    0.3543  0.8913   0.47665    
+## TO 1003 :  low  1.58767  1    3.7810  9.5117   0.02134 *  
+## TO 1005 :  low -0.63059  1    0.5965  1.5005   0.47665    
+## Residuals               16    6.3602                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Control to low Cu is only significant for TO 1003 (F(1, 16) = 35.49, p-val < 0.0001) but not significant for TO 1005
+
+When comparing low Fe to low FeCu treatment, again, Chl a is only significantly reduced in TO 1003 (F(1, 16) = 9.51, p-val = 0.02) 
+
+
+```r
+testInteractions(lm_Chla, fixed=c("Cu.level", "Fe.level"), across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F    Pr(>F)    
+## high : high 0.0607  1    0.0055  0.0139  1.000000    
+##  low : high 3.6133  1   19.5843 49.2670 1.159e-05 ***
+## high :  low 2.2897  1    7.8639 19.7827  0.001215 ** 
+##  low :  low 0.0714  1    0.0076  0.0192  1.000000    
+## Residuals          16    6.3602                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Under the control treatment, both strains have the same Chl a concentration. 
+
+Under low Cu, TO 1003 has significantly higher CHl a per Cell volume compared to TO 1005 (F(1, 16) = 49.27, p-val < 0.0001). In TO 1005 Chla stays the same compared to the control treatment.
+
+Under low Fe, TO 1005 has significantly lower CHl a per Cell volume compared to TO 1003 (F(1, 16) = 19.78, p-val = 0.001). In TO 1003 Chla stays the same compared to the control treatment.
+
+When co-limited (low FeCu), both strains have again the same Chl a concentration
+
+
+###Summary Chla per Cell vol
+
+Under the control treatment, both strains have the same Chl a concentration. 
+
+Under low Cu, TO 1003 has significantly higher Chl a (+ 3.07 fg/fL) compared to the control treatment (F(1, 16) = 35.49, p-val < 0.0001), whereas Chl a concentration stays the same for TO 1005. Consequently, TO 1003 and TO 1005 have significantly different Chl a concentrations under low Cu treatment (TO 1003 has ~  + 3.61 fg/fL more Chla per cell vol compared to TO 1005) (F(1, 16) = 49.27, p-val < 0.0001). 
+ 
+Under low Fe, the Chla per cell volume stays constant in TO 1003 compared to the control. Here, Chl a changes only in TO 1005. It decreases significantly (- 1.96 fg/fL)(F(1, 16) = 14.43, p-val = 0.005). Consequently, the difference between the two strains is also significant with F(1, 16) = 19.78 and p-val = 0.001.
+
+When co-limited (low FeCu), both strains have again the same Chl a concentration
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+<a id="Chla.cell"></a>
+
+#### Chla per cell
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, Chla.per.cell.pg.cell))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Chl a / Cell  [pg/cell]", x ="")+
+  geom_point(data=mean.df , aes(Treatment, Chla.per.cell.pg.cell, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_Chla.cell-1.png) 
+
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_Chla.cell <- lm(data = mydata, Chla.per.cell.pg.cell ~ (Species * Fe.level * Cu.level))
+summary(lm_all_Chla.cell) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Chla.per.cell.pg.cell ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.083333 -0.012333 -0.000872  0.009500  0.104333 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             0.30000    0.03226   9.300
+## SpeciesTO 1005                          0.05167    0.04562   1.133
+## Fe.levellow                             0.07100    0.04562   1.556
+## Cu.levellow                             0.04333    0.04562   0.950
+## SpeciesTO 1005:Fe.levellow             -0.27767    0.06452  -4.304
+## SpeciesTO 1005:Cu.levellow             -0.16500    0.06452  -2.557
+## Fe.levellow:Cu.levellow                -0.24967    0.06452  -3.870
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.37258    0.09124   4.083
+##                                        Pr(>|t|)    
+## (Intercept)                            7.47e-08 ***
+## SpeciesTO 1005                         0.274098    
+## Fe.levellow                            0.139189    
+## Cu.levellow                            0.356308    
+## SpeciesTO 1005:Fe.levellow             0.000546 ***
+## SpeciesTO 1005:Cu.levellow             0.021083 *  
+## Fe.levellow:Cu.levellow                0.001358 ** 
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 0.000866 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.05587 on 16 degrees of freedom
+## Multiple R-squared:  0.7969,	Adjusted R-squared:  0.708 
+## F-statistic: 8.968 on 7 and 16 DF,  p-value: 0.0001565
+```
+
+```r
+anova(lm_all_Chla.cell) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Chla.per.cell.pg.cell
+##                           Df   Sum Sq  Mean Sq F value    Pr(>F)    
+## Species                    1 0.035134 0.035134 11.2543 0.0040268 ** 
+## Fe.level                   1 0.059428 0.059428 19.0364 0.0004829 ***
+## Cu.level                   1 0.030123 0.030123  9.6492 0.0067894 ** 
+## Species:Fe.level           1 0.012525 0.012525  4.0121 0.0624176 .  
+## Species:Cu.level           1 0.000680 0.000680  0.2178 0.6470484    
+## Fe.level:Cu.level          1 0.006025 0.006025  1.9300 0.1837884    
+## Species:Fe.level:Cu.level  1 0.052055 0.052055 16.6745 0.0008661 ***
+## Residuals                 16 0.049949 0.003122                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+There seems to be no Species: Fe.level and no Species: Cu.level interaction. However, there seems to be a three way species:Fe.level:Cu,level interaction. So I will not take out anything for the following analysis.
+
+
+
+```r
+lm_Chla.cell <- lm (data = mydata, Chla.per.cell.pg.cell ~ (Species * Fe.level * Cu.level)) # Yes, this is the same as before. I leave it as is
+summary(lm_Chla.cell) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Chla.per.cell.pg.cell ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.083333 -0.012333 -0.000872  0.009500  0.104333 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             0.30000    0.03226   9.300
+## SpeciesTO 1005                          0.05167    0.04562   1.133
+## Fe.levellow                             0.07100    0.04562   1.556
+## Cu.levellow                             0.04333    0.04562   0.950
+## SpeciesTO 1005:Fe.levellow             -0.27767    0.06452  -4.304
+## SpeciesTO 1005:Cu.levellow             -0.16500    0.06452  -2.557
+## Fe.levellow:Cu.levellow                -0.24967    0.06452  -3.870
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.37258    0.09124   4.083
+##                                        Pr(>|t|)    
+## (Intercept)                            7.47e-08 ***
+## SpeciesTO 1005                         0.274098    
+## Fe.levellow                            0.139189    
+## Cu.levellow                            0.356308    
+## SpeciesTO 1005:Fe.levellow             0.000546 ***
+## SpeciesTO 1005:Cu.levellow             0.021083 *  
+## Fe.levellow:Cu.levellow                0.001358 ** 
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 0.000866 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.05587 on 16 degrees of freedom
+## Multiple R-squared:  0.7969,	Adjusted R-squared:  0.708 
+## F-statistic: 8.968 on 7 and 16 DF,  p-value: 0.0001565
+```
+
+```r
+plot.new()
+plot(lm_Chla.cell)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-4.png) 
+
+```r
+anova(lm_Chla.cell)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Chla.per.cell.pg.cell
+##                           Df   Sum Sq  Mean Sq F value    Pr(>F)    
+## Species                    1 0.035134 0.035134 11.2543 0.0040268 ** 
+## Fe.level                   1 0.059428 0.059428 19.0364 0.0004829 ***
+## Cu.level                   1 0.030123 0.030123  9.6492 0.0067894 ** 
+## Species:Fe.level           1 0.012525 0.012525  4.0121 0.0624176 .  
+## Species:Cu.level           1 0.000680 0.000680  0.2178 0.6470484    
+## Fe.level:Cu.level          1 0.006025 0.006025  1.9300 0.1837884    
+## Species:Fe.level:Cu.level  1 0.052055 0.052055 16.6745 0.0008661 ***
+## Residuals                 16 0.049949 0.003122                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - Chla.cell
+
+Looking at the ANOVA table for the linear model that _ we see the following significant factors:
+
+
+* __Species__ alone has a significant effect
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has an effect
+* there is  __almost__ an __interaction__ between __Species and Fe level__ 
+* there is a __3-way interaction__ between __Species, Cu level and Fe level__ (F(1, 16) = 31.42, p-val < 0.0001)
+
+
+
+### Using the `phia` package to look into significant effects regarding Chla.cell
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(Chla.cell.means <- interactionMeans(lm_Chla.cell))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high     0.3000000 0.03225851
+## 2 TO 1005     high     high     0.3516667 0.03225851
+## 3 TO 1003      low     high     0.3710000 0.03225851
+## 4 TO 1005      low     high     0.1450000 0.03225851
+## 5 TO 1003     high      low     0.3433333 0.03225851
+## 6 TO 1005     high      low     0.2300000 0.03225851
+## 7 TO 1003      low      low     0.1646667 0.03225851
+## 8 TO 1005      low      low     0.1462433 0.03225851
+```
+
+```r
+plot(Chla.cell.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Chla.cell-1.png) 
+
+This plot shows us the main effects (no single main effects here) and first order interactions (such as Species , Cu.level, Fe. level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+Not sure how to look at three-way interactions in this plot. But you do see the Fe:Cu level interaction when looking at middle right and lower middle. Chla concentration per cell  changes differently depending on Fe and Cu levels. 
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences in the 3-way interaction between __Species, Cu level and Fe level__, I will proceed with pairwise comparisons by having __two fixed factors__ and testing how Chl a changes dependend on the remaining factor
+
+
+
+First: Species against Fe + Cu level
+
+```r
+testInteractions(lm_Chla.cell, fixed="Species", across=c("Cu.level", "Fe.level"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003   -0.24967  1  0.046750 14.9752 0.002715 **
+## TO 1005    0.12291  1  0.011330  3.6293 0.074905 . 
+## Residuals          16  0.049949                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is an Fe:Cu interaction for TO 1003 but only a hint of interaction for TO 1005 (F( 1, 16) = 14.97, p-val < 0.003 for TO 1003)
+
+Now let's see how everything plays out in more detail by fixing Species and Cu level and change Fe. level:
+
+
+```r
+testInteractions(lm_Chla.cell, fixed=c("Species", "Cu.level"), across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                    Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003 : high -0.071000  1  0.007561  2.4221 0.170038   
+## TO 1005 : high  0.206667  1  0.064067 20.5221 0.001366 **
+## TO 1003 :  low  0.178667  1  0.047883 15.3380 0.003692 **
+## TO 1005 :  low  0.083757  1  0.010523  3.3707 0.170038   
+## Residuals                16  0.049949                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Control to low Fe is again (as in Chl a per cell vol) only significant for TO 1005 (F(1, 16) = 20.52, p-val = 0.001) but not significant for TO 1003
+
+However, when comparing low Cu to low FeCu treatment, Chl a (again) is only significantly reduced in TO 1003 (F(1, 16) = 15.34, p-val = 0.004) 
+
+
+```r
+testInteractions(lm_Chla.cell, fixed=c("Species", "Fe.level"), across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                    Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003 : high -0.043333  1  0.002817  0.9022 0.712616   
+## TO 1005 : high  0.121667  1  0.022204  7.1125 0.050627 . 
+## TO 1003 :  low  0.206333  1  0.063860 20.4560 0.001387 **
+## TO 1005 :  low -0.001243  1  0.000002  0.0007 0.978595   
+## Residuals                16  0.049949                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Control to low Cu looks different compared to Chl a per cell volume. This time, TO 1003 is NOT significantly sifferent. Additionally, this time, TO 1005 has almost sig decreased (F(1, 16) = 7.11, p-val = 0.05) 
+
+When comparing low Fe to low FeCu treatment, Chl a follows the trend set by Chl a per cell vol: it changes only significantly in TO 1003 (F(1, 16) = 20.45, p-val = 0.001) 
+
+
+```r
+testInteractions(lm_Chla.cell, fixed=c("Cu.level", "Fe.level"), across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                 Value Df Sum of Sq       F    Pr(>F)    
+## high : high -0.051667  1  0.004004  1.2826 0.5481951    
+##  low : high  0.113333  1  0.019267  6.1716 0.0733048 .  
+## high :  low  0.226000  1  0.076614 24.5413 0.0005745 ***
+##  low :  low  0.018423  1  0.000509  0.1631 0.6916759    
+## Residuals             16  0.049949                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Under the control treatment, both strains have comparable Chl a per cell concentrations. 
+
+Under low Cu, TO 1003 has slightly higher Chl a per Cell  compared to TO 1005 (F(1, 16) = 6.17, p-val = 0.07). 
+
+Compabarble to Chla per cell volumne, under low Fe, TO 1003 has significantly higher CHl a per Cell  compared to TO 1005 (F(1, 16) = 24.54, p-val < 0.001). In TO 1003 Chla per cell increases slightly compared to its control treatment, whereas TO 1005 decreases significantly compared to its control treatment.
+
+When co-limited (low FeCu), both strains have again comparable Chl a concentration per cell.
+
+
+###Summary Chla per Cell
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+<a id="cellsize"></a>
+
+#### Cell Size
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, cell.size..um))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Cell Size [um]", x ="")+
+  geom_point(data=mean.df , aes(Treatment, cell.size..um, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_cell.size-1.png) 
+
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_cell.size <- lm(data = mydata, cell.size..um ~ (Species * Fe.level * Cu.level))
+summary(lm_all_cell.size) # we need to look at the actual anova to know where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = cell.size..um ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.23000 -0.06083  0.01167  0.04167  0.46000 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             5.22333    0.10383  50.307
+## SpeciesTO 1005                          0.19333    0.14684   1.317
+## Fe.levellow                             0.13333    0.14684   0.908
+## Cu.levellow                            -0.50000    0.14684  -3.405
+## SpeciesTO 1005:Fe.levellow             -0.62667    0.20766  -3.018
+## SpeciesTO 1005:Cu.levellow             -0.09667    0.20766  -0.466
+## Fe.levellow:Cu.levellow                -0.15667    0.20766  -0.754
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.38667    0.29367   1.317
+##                                        Pr(>|t|)    
+## (Intercept)                             < 2e-16 ***
+## SpeciesTO 1005                          0.20650    
+## Fe.levellow                             0.37733    
+## Cu.levellow                             0.00362 ** 
+## SpeciesTO 1005:Fe.levellow              0.00817 ** 
+## SpeciesTO 1005:Cu.levellow              0.64784    
+## Fe.levellow:Cu.levellow                 0.46154    
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.20650    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.1798 on 16 degrees of freedom
+## Multiple R-squared:  0.8114,	Adjusted R-squared:  0.7289 
+## F-statistic: 9.836 on 7 and 16 DF,  p-value: 8.98e-05
+```
+
+```r
+anova(lm_all_cell.size) 
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: cell.size..um
+##                           Df  Sum Sq Mean Sq F value    Pr(>F)    
+## Species                    1 0.03082 0.03082  0.9529  0.343523    
+## Fe.level                   1 0.15682 0.15682  4.8488  0.042681 *  
+## Cu.level                   1 1.68540 1.68540 52.1126 2.048e-06 ***
+## Species:Fe.level           1 0.28167 0.28167  8.7091  0.009389 ** 
+## Species:Cu.level           1 0.01402 0.01402  0.4334  0.519689    
+## Fe.level:Cu.level          1 0.00202 0.00202  0.0624  0.805989    
+## Species:Fe.level:Cu.level  1 0.05607 0.05607  1.7336  0.206503    
+## Residuals                 16 0.51746 0.03234                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+There seems to be no *Species : Cu.level* and no *Fe.level : Cu.level* interaction. Hence, we will take these interaction out in the next linear model:
+
+
+```r
+lm_cell.size <- lm (data = mydata, cell.size..um ~ (Species + Fe.level + Cu.level)^2 - Species:Cu.level - Fe.level:Cu.level)
+
+summary(lm_cell.size) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = cell.size..um ~ (Species + Fe.level + Cu.level)^2 - 
+##     Species:Cu.level - Fe.level:Cu.level, data = mydata)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.26333 -0.08958  0.00167  0.05517  0.42667 
+## 
+## Coefficients:
+##                            Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                 5.23833    0.08040  65.152  < 2e-16 ***
+## SpeciesTO 1005              0.14500    0.10170   1.426  0.17017    
+## Fe.levellow                 0.05500    0.10170   0.541  0.59493    
+## Cu.levellow                -0.53000    0.07191  -7.370 5.54e-07 ***
+## SpeciesTO 1005:Fe.levellow -0.43333    0.14383  -3.013  0.00715 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.1762 on 19 degrees of freedom
+## Multiple R-squared:  0.7852,	Adjusted R-squared:  0.7399 
+## F-statistic: 17.36 on 4 and 19 DF,  p-value: 3.822e-06
+```
+
+```r
+plot.new()
+plot(lm_cell.size)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-4.png) 
+
+```r
+anova(lm_cell.size)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: cell.size..um
+##                  Df  Sum Sq Mean Sq F value    Pr(>F)    
+## Species           1 0.03082 0.03082  0.9931  0.331501    
+## Fe.level          1 0.15682 0.15682  5.0538  0.036638 *  
+## Cu.level          1 1.68540 1.68540 54.3157 5.544e-07 ***
+## Species:Fe.level  1 0.28167 0.28167  9.0773  0.007155 ** 
+## Residuals        19 0.58956 0.03103                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - cell.size
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Fe.level : Cu.level interaction or Species : Fe.level, for the data __cell.size_Size__, we see the following significant factors:
+
+
+* __Species__ alone has no significant effect
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect (F (1, 19) = 54.32, p-val < 0.00001)
+* there is  an __interaction__ between __Species and Fe level__ (F (1, 19) = 9.08, p-val = 0.007)
+
+
+
+### Using the `phia` package to look into significant effects regarding cell.size
+
+Again, any main effects ( here Cu. level) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(cell.size.means <- interactionMeans(lm_cell.size))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high      5.238333 0.08040222
+## 2 TO 1005     high     high      5.383333 0.08040222
+## 3 TO 1003      low     high      5.293333 0.08040222
+## 4 TO 1005      low     high      5.005000 0.08040222
+## 5 TO 1003     high      low      4.708333 0.08040222
+## 6 TO 1005     high      low      4.853333 0.08040222
+## 7 TO 1003      low      low      4.763333 0.08040222
+## 8 TO 1005      low      low      4.475000 0.08040222
+```
+
+```r
+plot(cell.size.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.size-1.png) 
+
+This plot shows us the main effects (here Cu level) and first order interactions (here Species : Fe level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons
+
+
+
+First: Species against Fe + Cu level
+
+```r
+testInteractions(lm_cell.size, fixed="Species", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003   -0.05500  1   0.00907  0.2925 0.594931   
+## TO 1005    0.37833  1   0.42941 13.8386 0.002904 **
+## Residuals          19   0.58956                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is no statistical difference in the cell size in TO 1003 when comparing the integrated high Fe vs low Fe results.
+Whereas, the cell size decreases in repsonse to low Fe in TO 1005 (F(1, 19) = 13.83, p-val = 0.003)
+
+
+```r
+testInteractions(lm_cell.size, fixed = "Fe.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq      F  Pr(>F)  
+## high      -0.14500  1   0.06307 2.0327 0.17017  
+##  low       0.28833  1   0.24941 8.0377 0.02116 *
+## Residuals          19   0.58956                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+This means that under high Fe conditions (control and low Cu), cell size stays the same in TO 1003 compared to TO 1005.
+
+Under low Fe conditions there is significant differences in size between the two strains (F(1, 19) = 8.04, p-val = 0.02)
+
+
+
+
+###Summary Cell Size
+
+Low Cu decreases cell size significantly across the dataset (F(1,19) = 54.31, p-val = < 0.00001)
+
+Under low Fe conditions, strains react differently. Cell size decreases significatnly in TO 1005 but not in TO 1003. Hnece cell size is different under low Fe for the two strains (i.e. TO 1005 is smaller compared to TO 1003).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 
 <a id="NotUsed"></a>
