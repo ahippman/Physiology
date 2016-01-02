@@ -1349,6 +1349,101 @@ Both under integrated high Cu and integrated low Cu treatments, __TO 1005__ tend
 
 #### FeDFB per Cell Volume
 
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_FeDFB.cellvol, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, FeDFB.zmol.um.2.h.))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Fe DFB uptake [zmol/um * h]", x ="")+
+  geom_point(data=mean.df , aes(Treatment, FeDFB.zmol.um.2.h., size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+OK, this looks really widely distributed!
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_FeDFB.cellvol, eval=TRUE}
+lm_all_FeDFB.cellvol <- lm(data = mydata, FeDFB.zmol.um.2.h. ~ (Species * Fe.level * Cu.level))
+summary(lm_all_FeDFB.cellvol) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_FeDFB.cellvol) 
+```
+
+There seems to be no *Species : Cu.level* interaction. Hence, we will take this interaction out in the next linear model:
+
+```{r lm_FeDFB.cellvol, eval=TRUE}
+lm_FeDFB.cellvol <- lm (data = mydata, FeDFB.zmol.um.2.h. ~ (Species + Fe.level + Cu.level)^2 - Species:Cu.level)
+
+summary(lm_FeDFB.cellvol) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_FeDFB.cellvol)
+
+anova(lm_FeDFB.cellvol)
+```
+
+### Anova Table - FeDFB.cellvol
+
+Looking at the ANOVA table for the linear model that _does not_ test for interactions between Fe.level : Cu.level or Species : Cu.level, for the data __FeDFB.cellvol__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has no significant effect 
+* there is  an __interaction__ between __Fe level and Cu level__ (F (1, 16) = 11.24, p-val = 0.004)
+* there is  an __interaction__ between __Species and Fe level__ (F (1, 16) = 7.50, p-val = 0.014)
+
+
+
+### Using the `phia` package to look into significant effects regarding FeDFB.cellvol
+
+Again, any main effects ( here Cu. level) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_FeDFB.cellvol, eval=TRUE}
+
+(FeDFB.cellvol.means <- interactionMeans(lm_FeDFB.cellvol))
+plot(FeDFB.cellvol.means)
+```
+
+This plot shows us the main effects (here Species in relation to Cu level) and first order interactions (here Fe level : Cu level, and species: Fe level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons
+
+
+```{r phia_interaction_Contrasts_Culevel_Felevel_FeDFB.cellvol, eval=TRUE}
+testInteractions(lm_FeDFB.cellvol, fixed="Cu.level", across="Fe.level")
+```
+
+### From here I need to proceed!!!!!
+This means that there is no statistical difference in the FeDFB uptake per cell vol when we compare the control vs low Fe treatment (integrating over both strains). 
+
+However,  there is significant higher FeDFB uptake per cell in lowFeCu treatment compared to low Cu. This is true in both strains. (F(1,19) = 22.92, p-val = 0.0003).
+
+
+```{r phia_interaction_Contrasts_Felevel_and_Cu.level_FeDFB.cellvol, eval=TRUE}
+testInteractions(lm_FeDFB.cellvol, fixed = "Fe.level", across="Cu.level")
+```
+
+This means that there is significant decrease in FeDFB uptake per cell from control to low Cu treatment in both strains (F(1,19) = 0.03). And the 
+
+When adding the Cu-co-limitation (i.e. comparing FeCu-limitation) to Fe limitation, Fe DFB uptake is significantly INCREASED in both strains (F(1,19) = 8.233, p-val = 0.02)
+
+###Summary Fe DFB uptake per Cell
+
+Low Cu compared to control __decreases__ FeDFB uptake per cell significantly compared to control in __both strains__ (F(1,19) = 0.03).
+
+Low FeCu compared to low Fe __increases__ FeDFB uptake per cell significantly in __both strains__ (F(1,19) = 8.233, p-val = 0.02)
+
+Both under integrated high Cu and integrated low Cu treatments, __TO 1005__ tends to have significantly __higher FeDFB uptake rates than TO 1003__
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <a id="14C.alpha.cell"></a>
 
 #### 14C Uptake per Cell - alpha
