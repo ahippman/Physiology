@@ -1615,18 +1615,236 @@ When we compare either the integrated high Fe or the integrated low Fe values of
 
 
 
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <a id="14C.alpha.chla"></a>
 
 #### 14C Uptake per Chl a - alpha
 
-<a id="14C.alpha.cell"></a>
 
-#### 14C Uptake per Chl a - alpha
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_14C.alpha.chla, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, X14C.per.Chla.alpha))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="14C uptake per Chla - alpha", x ="")+
+  geom_point(data=mean.df , aes(Treatment, X14C.per.Chla.alpha, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_14C.alpha.chla, eval=TRUE}
+lm_all_14C.alpha.chla <- lm(data = mydata, X14C.per.Chla.alpha ~ (Species * Fe.level * Cu.level))
+summary(lm_all_14C.alpha.chla) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_14C.alpha.chla) 
+```
+
+There seems to be no *SPecies: Fe.level* interaction and no *Fe.level : Cu.level* interaction. However, there might be a three way Species:Fe.level:Cu.level* interaction. Let's leave everything in, again:
+
+
+```{r lm_14C.alpha.chla, eval=TRUE}
+lm_14C.alpha.chla <- lm (data = mydata, X14C.per.Chla.alpha ~ (Species * Fe.level * Cu.level))
+summary(lm_14C.alpha.chla) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_14C.alpha.chla)
+
+anova(lm_14C.alpha.chla)
+```
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __14C.alpha.chla__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has no significant effect  
+* __Cu level__ alone has somewhat of an effect 
+* there is  an __interaction__ between __Species and Cu level__ (F (1, 16) = 9.01, p-val = 0.009)
+* there is  __somewhat of a three-way interaction__ between __Species, Fe level and Cu level__ (F (1, 16) = 3.15, p-val = 0.095)
+
+
+
+### Using the `phia` package to look into significant effects regarding 14C.alpha.chla
+
+Again, any main effects ( none here) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_14C.alpha.chla, eval=TRUE}
+
+(C14.alpha.cell.means <- interactionMeans(lm_14C.alpha.chla))
+plot(C14.alpha.cell.means)
+```
+
+This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*First: Testing the three differnet variables against each other:*
+```{r phia_interaction_Contrasts_Species_Culevel_and_Felevel_14C.alpha.chla, eval=TRUE}
+testInteractions(lm_14C.alpha.chla, fixed="Species", across=c("Fe.level", "Cu.level")) # no significance
+testInteractions(lm_14C.alpha.chla, fixed="Cu.level", across=c("Species", "Fe.level")) # no significance
+testInteractions(lm_14C.alpha.chla, fixed="Fe.level", across=c("Species", "Cu.level"))
+```
+
+This last one suggests that only under high iron, we will find a difference between strains in response to Cu concentrations. Lets look at it:
+
+*Second: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_14C.alpha.chla, eval=TRUE}
+testInteractions(lm_14C.alpha.chla, fixed="Species", across="Cu.level") # no significance
+```
+
+When looking at the _alpha_ values in the PE curve of 14C uptake normalized to Chla, __only TO 1003 _decreases_ its alpha__ in response to __low Cu__ significantly (F(1,16) = 11.98, p-val = 0.006). The same can not be said for TO 1005.
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_14C.alpha.chla, eval=TRUE}
+testInteractions(lm_14C.alpha.chla, fixed = "Cu.level", across="Species")
+```
+
+Integrated over the high Cu treatment, the two species have extreley similar alpha values (F(1,16) = 0.012, p-val = 0.91). 
+
+However, integrating over the low Cu treatments, the two species do have significantly different responses in their alpha value (F(1,16) = 18.96, p-val < 0.001). 
+
+
+
+###Summary 14C per cell vol - alpha
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 <a id="14C.ek.chla"></a>
 
 #### 14C Uptake per Chl a - ek
+
+
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_14C.ek.chla, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, X14C.per.Chla.ek))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="14C uptake per Chla - ek", x ="")+
+  geom_point(data=mean.df , aes(Treatment, X14C.per.Chla.ek, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_14C.ek.chla, eval=TRUE}
+lm_all_14C.ek.chla <- lm(data = mydata, X14C.per.Chla.ek ~ (Species * Fe.level * Cu.level))
+summary(lm_all_14C.ek.chla) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_14C.ek.chla) 
+```
+
+There seems to be a strong three way *Species:Fe.level:Cu.level* interaction. Let's leave everything in, again:
+
+
+```{r lm_14C.ek.chla, eval=TRUE}
+lm_14C.ek.chla <- lm (data = mydata, X14C.per.Chla.ek ~ (Species * Fe.level * Cu.level))
+summary(lm_14C.ek.chla) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_14C.ek.chla)
+
+anova(lm_14C.ek.chla)
+```
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __14C.ek.chla__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Fe level and Cu level__ 
+* there is  __a strong three-way interaction__ between __Species, Fe level and Cu level__ (F (1, 16) = 20.67, p-val = 0.0003)
+
+
+
+### Using the `phia` package to look into significant effects regarding 14C.ek.chla
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_14C.ek.chla, eval=TRUE}
+
+(C14.alpha.cell.means <- interactionMeans(lm_14C.ek.chla))
+plot(C14.alpha.cell.means)
+```
+
+This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*First: Testing the three differnet variables against each other:*
+```{r phia_interaction_Contrasts_Species_Culevel_and_Felevel_14C.ek.chla, eval=TRUE}
+testInteractions(lm_14C.ek.chla, fixed="Species", across=c("Fe.level", "Cu.level")) 
+```
+
+TO 1003 has an interaction effect between Fe.level and Cu.level (F(1,16) = 23.06, p-val = 0.0004), whereas TO 1005 does NOT have such an interaction effect.
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_Felevel_14C.ek.chla, eval=TRUE}
+testInteractions(lm_14C.ek.chla, fixed="Cu.level", across=c("Species", "Fe.level")) # both significance
+testInteractions(lm_14C.ek.chla, fixed="Fe.level", across=c("Species", "Cu.level")) # both significance
+```
+
+
+
+*Second: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_14C.ek.chla, eval=TRUE}
+testInteractions(lm_14C.ek.chla, fixed="Species", across="Cu.level") # no significance
+```
+
+When looking at the _ek_ values in the PE curve of 14C uptake normalized to Chla, __only TO 1005 _decreases_ its ek__ in response to __low Cu__ significantly (F(1,16) = 13.96, p-val = 0.004). The same can not be said for TO 1005.
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_14C.ek.chla, eval=TRUE}
+testInteractions(lm_14C.ek.chla, fixed = "Cu.level", across="Species")
+```
+
+Integrated over the high Cu treatment, the two species do have somewhat significantly different responses in their ek value (F(1,16) = 6.64, p-val = 0.04).  
+
+However, integrating over the low Cu treatments, the two species have fairly similar ek values (F(1,16) = 0.27, p-val = 0.61).
+
+*Third: Species : Fe level*
+```{r phia_interaction_Contrasts_Species_Felevel_14C.ek.chla, eval=TRUE}
+testInteractions(lm_14C.ek.chla, fixed="Species", across="Fe.level") # no significance
+```
+
+When looking at the _ek_ values in the PE curve of 14C uptake normalized to Chla, __both strains _decrease_ their ek__ in response to __low Fe__ significantly (TO 1003: F(1,16) = 6.00, p-val = 0.03; TO 1005:F(1,16) = 10.58, p-val = 0.01 ). 
+
+
+```{r phia_interaction_Contrasts_Felevel_and_Species_14C.ek.chla, eval=TRUE}
+testInteractions(lm_14C.ek.chla, fixed = "Fe.level", across="Species")
+```
+
+Integrated over the high Fe treatment or over the low Fe treatment, the two species do have somewhat similar responses in their ek value.  
+
+###Summary 14C per cell vol - alpha
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 <a id="AOX"></a>
 
