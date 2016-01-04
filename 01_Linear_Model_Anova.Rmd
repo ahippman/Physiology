@@ -1850,9 +1850,238 @@ Integrated over the high Fe treatment or over the low Fe treatment, the two spec
 
 #### AOX - Alternative Oxidase
 
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_AOX, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, AOXactivity))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="AOX activity (%)", x ="")+
+  geom_point(data=mean.df , aes(Treatment, AOXactivity, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_AOX, eval=TRUE}
+lm_all_AOX <- lm(data = mydata, AOXactivity ~ (Species * Fe.level * Cu.level))
+summary(lm_all_AOX) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_AOX) 
+```
+
+Having both species combined, there doesn't seem to be a relationship between Fe/Cu level and the precentage of the involvement of Alternative Oxidase in TO 1003 and TO 1005 combined.
+
+Just by looking at the graph however, it looks as if there might be relationship when we look at control vs the low Fe treatment at least in TO 1003. To look into this, I would like to look at the respective strain data only:
+
+*First TO 1003:*
+```{r TO1003lm_AOX, eval=TRUE}
+TO1003 <-  mydata %>% filter (Species == "TO 1003") #subsetting data into TO 1003 only
+
+lm_TO03_AOX <- lm (data = TO1003, AOXactivity ~ (Fe.level * Cu.level))
+summary(lm_TO03_AOX) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_TO03_AOX)
+
+anova(lm_TO03_AOX)
+```
+
+Indeed, for TO 1003, there seems to be an Fe effect (F (1,7) = 7.45), p=-val = 0.03)
+
+*First TO 1005:*
+```{r TO1005lm_AOX, eval=TRUE}
+TO1005 <-  mydata %>% filter (Species == "TO 1005") #subsetting data into TO 1005 only
+
+lm_TO05_AOX <- lm (data = TO1005, AOXactivity ~ (Fe.level * Cu.level))
+summary(lm_TO05_AOX) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_TO05_AOX)
+
+anova(lm_TO05_AOX)
+```
+
+Whereas, for TO 1005, there seems to be no Fe or Cu effect at all.
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __AOX__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Fe level and Cu level__ 
+* there is  __a strong three-way interaction__ between __Species, Fe level and Cu level__ (F (1, 16) = 20.67, p-val = 0.0003)
+
+
+
+### Using the `phia` package to look into significant effects regarding AOX
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_TO03_AOX, eval=TRUE}
+
+(TO03_AOX.means <- interactionMeans(lm_TO03_AOX))
+plot(TO03_AOX.means)
+```
+
+This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*TO 1003 Fe vs Cu level:*
+```{r phia_interaction_Contrasts_TO03_Felevel_and_Culevel_AOX, eval=TRUE}
+testInteractions(lm_TO03_AOX, fixed="Fe.level", across="Cu.level") 
+```
+
+Changing the Cu level does not have an effect on AOX activity in TO 1003
+
+```{r phia_interaction_Contrasts_TO03_Culevel_and_Felevel_AOX, eval=TRUE}
+testInteractions(lm_TO03_AOX, fixed="Cu.level", across="Fe.level") 
+```
+
+Lowering the Fe level under high Cu conditions has the tendency to increase AOX activity (F(1,7) = 6.25, p-val = 0.08).
+There is no such tendency under low Cu conditions. 
+
+
+###Summary 14C per cell vol - alpha
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <a id="O2.Chla"></a>
 
 #### Gross Productivity per Chla (mol O2 * mol Chl a^-1 * h^-1)
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_O2.Chla, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, GrossPchla.mol.O2.mol.Chla..h.))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="Gross Production O2 per Chl a", x ="")+
+  geom_point(data=mean.df , aes(Treatment, GrossPchla.mol.O2.mol.Chla..h., size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_O2.Chla, eval=TRUE}
+lm_all_O2.Chla <- lm(data = mydata, GrossPchla.mol.O2.mol.Chla..h. ~ (Species * Fe.level * Cu.level))
+summary(lm_all_O2.Chla) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_O2.Chla) 
+```
+
+As there seems to be a hint of three way *Species:Fe.level:Cu.level* interaction. Let's leave everything in:
+
+
+```{r plot lm_all_O2.Chla, eval=TRUE}
+plot.new()
+plot(lm_all_O2.Chla)
+
+anova(lm_all_O2.Chla)
+```
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __O2.Chla__, we see the following significant factors:
+
+
+* __Species__ alone has no significant effect 
+* __Fe. level__ alone has no significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Cu level__ (F(1,14) = 14.96, p-val = 0.002)
+* there is  an __interaction__ between __Fe level and Cu level__ (F(1,14) = 6.42, p-val = 0.02)
+* there is  __a tendency for a three-way interaction__ between __Species, Fe level and Cu level__ (F (1, 14) = 4.08, p-val = 0.06)
+
+
+
+### Using the `phia` package to look into significant effects regarding O2.Chla
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_O2.Chla, eval=TRUE}
+
+(O2.Chla.means <- interactionMeans(lm_all_O2.Chla))
+plot(O2.Chla.means)
+```
+
+This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*First: Testing the three differnet variables against each other:*
+```{r phia_interaction_Contrasts_Species_Culevel_and_Felevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed="Species", across=c("Fe.level", "Cu.level")) 
+```
+
+TO 1003 has an interaction effect between Fe.level and Cu.level (F(1,14) = 17.34, p-val = 0.002), whereas TO 1005 does NOT have such an interaction effect.
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_Felevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed="Cu.level", across=c("Species", "Fe.level")) # no significance
+testInteractions(lm_all_O2.Chla, fixed="Fe.level", across=c("Species", "Cu.level")) # 
+```
+
+Under high Fe. species and Cu level do have an interaction effect (F(1,14) = 10.47, p-val = 0.01)
+
+*Second: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed="Species", across="Cu.level") # no significance
+```
+
+__Low Cu decreases Gross P__ (O2 per Chl a) significantly in __TO 1003__ (F(1,14) = 10.48, p-val = 0.01) but __not in TO 1005__
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed = "Cu.level", across="Species")
+```
+
+Under the integrated low Cu treatments, TO 1003 has significantly lower Gross P rates (O2 per Chl a) thatn To 1005 (F(1,14) = 8.82, p-val = 0.02)
+
+Under the integrated high Cu treatments, the rates of the two strains is not significantly different.
+
+*Third: Fe and Cu level*
+```{r phia_interaction_Contrasts__Felevel_Culevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed="Fe.level", across="Cu.level") # no significance
+```
+
+Low Cu compared to control decreases Gross P (O2 per Chla) significantly in the integrates strain data. Looking at the data this is probably mainly due to the decrease in TO 1003 (F(1,14) = 21.3, p-val = 0.0008).
+
+This effect can not be seen in low FeCu compared to low Fe.
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Felevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed = "Cu.level", across="Fe.level")
+```
+
+Additionally, low Fe compared to control decreases Gross P (O2 per Chla) also significantly in the integrated strain data (F(1,14) = 10.33, p-val = 0.01). When comparing low Fecu to lowFe treatments, Gross P slightly increases (F(1,14) = 4.88, p-val = 0.04)
+
+
+###Summary 14C per cell vol - alpha
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 <a id="O2.Cell"></a>
 
