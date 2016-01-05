@@ -71,7 +71,9 @@ I met with Rick White from the "Statistical Consulting and Research Laboratory" 
 As per my experimental set up, I have **3 fixed effects**:
 
 1) Species _(as I choose these 2 strains on purpose to test for differences between them)_
+
 2) Fe-level
+
 3) Cu-level
 
 For this I will need to use 
@@ -412,7 +414,7 @@ testInteractions(z, fixed="Species", across="Fe.level")
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-This means that the two different Fe.levels I used (high and low) does not significantly change the growth rate in TO 1003 (F(1,18) = 0.75, p.val = 0.397) but it does change the growthrate significantly in TO 1005 (F(1,18) = 58.14, p-val < 0.00001))
+This means that the two different Fe.levels I used (high and low) do not significantly change the growth rate in TO 1003 (F(1,18) = 0.75, p.val = 0.397) but they do change the growthrate significantly in TO 1005 (F(1,18) = 58.14, p-val < 0.00001))
 
 
 ```r
@@ -430,7 +432,7 @@ testInteractions(z, fixed="Fe.level", across="Species")
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-This means that the two Species have significantly different growthrates under high Fe conditions (F(1,18), p.val < 0.0001) but are not sig different under low Fe conditions
+This means that the two species have significantly different growthrates under high Fe conditions (F(1,18), p.val < 0.0001) but are not sig different under low Fe conditions.
 
 
 ```r
@@ -448,7 +450,7 @@ testInteractions(z, fixed="Fe.level", across="Cu.level")
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,18) = 118.03, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth ratessignificantly (F(1,18) = 45.67, p.val < 0.00001)
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,18) = 118.03, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,18) = 45.67, p.val < 0.00001)
 
 
 ```r
@@ -474,13 +476,18 @@ testInteractions(z, fixed="Cu.level", across="Fe.level")
 OK, after this first inital approach, I will settle for the following:
 
 0) have a look at the graph of the actual data! :)
-1) do a `linear model`, checking for all main and interacting effects
+
+1) do a `linear model`, checking for all main and interacting effects:
+
   + `lm(response ~ Species * Fe.level * Cu.level)`
-2) do an `anova` on this `lm` object to see the F statistics and p-values
+  
+2) do an `anova` on this `lm` object to see the F statistics and p-values:
+
   + dependig on seen or not seen interactions, modify the `lm()` accordingly
+  
 3) then do pairwise comparisons using `phia` package to look into what is contributing how into the significant interactions seen in the `anova`
 
-Note, that I am using "Strain" and "Species" interchangeably, even though the correct term is "Strain" in the current context
+__Note__: I am using "strain" and "species" interchangeably, even though the correct term would be "strain" in the current context
 
 <a id="Growthrate.dd"><a>
 
@@ -544,6 +551,11 @@ summary(lm_all_Growthrate.dd) # we need to look at the actual anova to knwo wher
 ## F-statistic: 33.19 on 7 and 16 DF,  p-value: 2.274e-08
 ```
 
+The lower three lines in this summary tell us how well the model fits to our actual data that we based the model on. 
+Multiple R-squared: 0.9356 means that 93.56% of the data can be explained by/ fall within the range of  this model.
+The statistical significance of this model is given as F(7,16) = 33.19, p-val = 2.274e-08.
+
+
 ```r
 anova(lm_all_Growthrate.dd) # #this will use the linear model and give us a table of the analysis of the variance in our dataset
 ```
@@ -575,11 +587,11 @@ Looking at the ANOVA table for the linear model that test for all main effects a
 * __Species__ does have a significant effect on growth rate (F (1,16) = 11.67, p.val < 0.01)
 * __Fe. level__ has an effect on growthrate (F (1,16) = 35.47, p.val < 0.0001)
 * __Cu level__ has an effect on growthrate (F (1,16) = 152.75, p.val < 0.00001)
-* there is an __interaction__ between __Species and Fe LEVEL__ (F(1,16) = 22.47, p.val = 0.0002)
+* there is an __interaction__ between __Species and Fe level__ (F(1,16) = 22.47, p.val = 0.0002)
     + i.e. depending on the Species the growthrate is different under similar Fe conditions
-* there is NOT INTERACTION between Species and CU LEVEL
+* there is NO INTERACTION between Species and Cu level
     + i.e. this is somewhat what I had aimed for as this means that both Species have a similar growthrate reduction under the same Cu.level -> this way I can see how their proteomic and physiological response is similar or different!
-* there is an __interaction__ between __Fe LEVEL and Cu LEVEL__ (F(1,16) = 8.29, p.val = 0.01) 
+* there is an __interaction__ between __Fe level and Cu level__ (F(1,16) = 8.29, p.val = 0.01) 
 
 __NOTE:__ the anova table only tells me that there are differences e.g. between the Species. IT DOES NOT TELL ME depending on what variables etc... for that we need to do pairwise comparisons.
 
