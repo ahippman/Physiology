@@ -2034,6 +2034,25 @@ testInteractions(lm_all_O2.Chla, fixed="Species", across=c("Fe.level", "Cu.level
 
 TO 1003 has an interaction effect between Fe.level and Cu.level (F(1,14) = 17.34, p-val = 0.002), whereas TO 1005 does NOT have such an interaction effect.
 
+```{r phia_interaction_Contrasts_Species_and_Culevel_against_Felevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed=c("Species","Cu.level"), across="Fe.level") 
+```
+This shows that the interaction effect is due to the fact that lowering Fe levels is only significant under high Cu conditions but not under low Cu conditions. And this is only true for TO 1003 and not To 1005.
+
+Low Fe compared to control lowers Gross P (O2 per Chla) in TO 1003 (F(1,14) = 12.51, p-val = 0.01)
+
+```{r phia_interaction_Contrasts_Species_and_Felevel_against_Culevel_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed=c("Species","Fe.level"), across="Cu.level") 
+```
+The same is true for Cu: lowering Cu levels is only significant under high Fe conditions and only for TO 1003 and not for TO 1005 or under low Fe conditions.
+
+Low Cu compared to control lowers Gross P (O2 per Chla) in TO 1003 (F(1,14) = 30.81, p-val = 0.0003)
+
+```{r phia_interaction_Contrasts_Felevel_and_Culevel_against_Species_O2.Chla, eval=TRUE}
+testInteractions(lm_all_O2.Chla, fixed=c("Cu.level","Fe.level"), across="Species") 
+```
+The Gross productivity (O2 per Chla) only seems to be somewhat significantly different in the low Cu treatment (F(1,14) = 8.01, p-val = 0.05)
+
 ```{r phia_interaction_Contrasts_Culevel_and_Species_Felevel_O2.Chla, eval=TRUE}
 testInteractions(lm_all_O2.Chla, fixed="Cu.level", across=c("Species", "Fe.level")) # no significance
 testInteractions(lm_all_O2.Chla, fixed="Fe.level", across=c("Species", "Cu.level")) # 
@@ -2087,154 +2106,216 @@ Additionally, low Fe compared to control decreases Gross P (O2 per Chla) also si
 
 #### Gross Productivity per Cell (mol O2 * cell ^-1 * h^-1)
 
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_O2.Cell, eval=TRUE}
+mydata <- mydata %>% mutate(nmol_O2_per_cell = GrossPcell..mol.O2.cell..h. * 10^9)
+mean.df <- mean.df %>% mutate(nmol_O2_per_cell = GrossPcell.mol.O2.cell..h. * 10^9)
+
+p <- ggplot (mydata , aes(Treatment, nmol_O2_per_cell))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Gross Productivity (nmol O2 per cell * h)", x ="")+
+  geom_point(data=mean.df , aes(Treatment, nmol_O2_per_cell, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_O2.Cell, eval=TRUE}
+lm_all_O2.Cell <- lm(data = mydata, nmol_O2_per_cell ~ (Species * Fe.level * Cu.level))
+summary(lm_all_O2.Cell) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_O2.Cell) 
+```
+
+There seems to be no *Species: Fe.level* interaction so let's take this interaction out
+
+
+```{r lm_O2.Cell, eval=TRUE}
+lm_O2.Cell <- lm (data = mydata, nmol_O2_per_cell ~ (Species +  Fe.level + Cu.level)^2 - Species : Fe.level)
+summary(lm_O2.Cell) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_O2.Cell)
+
+anova(lm_O2.Cell)
+```
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __O2.Cell__, we see the following significant factors:
+
+
+* __Species__ alone has no significant effect 
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Cu level__ (F (1, 16) = 6.49, p-val = 0.02)
+* there is  an __interaction__ between __Fe level and Cu level__ (F (1, 16) = 15.99, p-val = 0.001)
+
+
+
+### Using the `phia` package to look into significant effects regarding O2.Cell
+
+Again, any main effects ( none here) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_O2.Cell, eval=TRUE}
+
+(O2.Cell.means <- interactionMeans(lm_O2.Cell))
+plot(O2.Cell.means)
+```
+
+This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+*First: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_O2.Cell, eval=TRUE}
+testInteractions(lm_O2.Cell, fixed="Species", across="Cu.level") 
+
+```
+
+In TO 1003, integrated low Cu treatments result in a significant decrease in O2 per cell production (F(1, 16) = 29.77, p-val = 0.0001). In TO 1005 there seems to be a similar trend (not statsistically significant, though) (F(1, 16) = 3.51, p-val = 0.079).
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_O2.Cell, eval=TRUE}
+testInteractions(lm_O2.Cell, fixed = "Cu.level", across="Species")
+```
+
+If high Cu treatments are integrated and compared between strains, they show similar oxygen per cell production rates. The same can be said for integrated low Cu treatments.
+
+*Second: Fe level : Cu level*
+```{r phia_interaction_Contrasts_Felevel_Culevel_O2.Cell, eval=TRUE}
+testInteractions(lm_O2.Cell, fixed="Fe.level", across="Cu.level") # no significance
+
+```
+
+Low Cu compared to control results in a significant reduction in O2 production per cell across both strains (F(1, 16) = 47.13, p-val < 0.00001).  
+
+Comparing lowFeCu to low Fe does not reduce the rate across strains.
+
+```{r phia_interaction_Contrasts_Culevel_and_Felevel_O2.Cell, eval=TRUE}
+testInteractions(lm_O2.Cell, fixed = "Cu.level", across="Fe.level")
+```
+However, low Fe compared to control results also in a significant reduction in O2 production per cell across both strains (F(1, 16) = 28.73, p-val = 0.0001).
+
+
+###Summary 14C per cell vol - alpha
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 <a id="O2.Cell.vol"></a>
 
 #### Gross Productivity per Cell Volume (mol O2 * cell vol ^-1 * h^-1)
 
-
-
-
-<a id="NotUsed"></a>
-
-# Not Used
-
 [Back Up](#BackUP)
 
-### Tukey - HSD Method (as per * [Tutorial on posthoc-tests](http://rtutorialseries.blogspot.ca/2011/03/r-tutorial-series-anova-pairwise.html))
+First a look at the graph: 
 
-<a id="Tukey01"></a
+```{r graph_O2.Cell.vol, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, Gross.P.CellVol..mol.O2.L.))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Gross Productivity (mol O2 per cell vol (L) * h)", x ="")+
+  geom_point(data=mean.df , aes(Treatment, Gross.P.CellVol..mol.O2.L., size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
 
-[Back Up](#BackUP)
+```
 
-The Tukey Honest Significant Difference (HSD) method controls for the Type I error rate across multiple comparisons and is generally considered an acceptable technique. This method can be executed using the `TukeyHSD(x)` function, where `x` is a linear model object created using the `aov(formula, data)` function. Note that in this application, the aov(formula, data) function is identical to the lm(formula, data) that we are already familiar with from linear regression.
+Now we start with a linear model testing for all main effects and interactions possible:
 
-``` {r tukey_z, eval=TRUE}
-TukeyHSD(aov(z)) #aov() has a different notation than anova() but gives same results as anova()
+```{r lm_all_O2.Cell.vol, eval=TRUE}
+lm_all_O2.Cell.vol <- lm(data = mydata, Gross.P.CellVol..mol.O2.L. ~ (Species * Fe.level * Cu.level))
+summary(lm_all_O2.Cell.vol) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_O2.Cell.vol) 
+```
+
+There seems to be no *Species: Fe.level* interaction so let's take this interaction out
+
+
+```{r lm_O2.Cell.vol, eval=TRUE}
+lm_O2.Cell.vol <- lm (data = mydata, Gross.P.CellVol..mol.O2.L. ~ (Species +  Fe.level + Cu.level)^2 - Species : Fe.level)
+summary(lm_O2.Cell.vol) # we need to look at the actual anova to knwo where we need to look further
 plot.new()
-plot(TukeyHSD(aov(z)))
+plot(lm_O2.Cell.vol)
 
+anova(lm_O2.Cell.vol)
 ```
-### What if I look at Fe levels just for TO 1003 and then just with the data for TO 1005?
 
-<a id="lm_TO03"></a>
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __O2.Cell.vol__, we see the following significant factors:
+
+
+* __Species__ alone has no significant effect 
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Cu level__ (F (1, 16) = 7.08, p-val = 0.017)
+* there is  an __interaction__ between __Fe level and Cu level__ (F (1, 16) = 5.61, p-val = 0.03)
+
+
+
+### Using the `phia` package to look into significant effects regarding O2.Cell.vol
+
+Again, any main effects ( none here) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_O2.Cell.vol, eval=TRUE}
+
+(O2.Cell.vol.means <- interactionMeans(lm_O2.Cell.vol))
+plot(O2.Cell.vol.means)
+```
+
+This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
 
 [Back Up](#BackUP)
 
-For this, I will first subset my original data into TO 1003 and TO 1005, respectively. THen I will make and linear model using `lm()` followed by `anova()` on that lm object
-
-#### Let's start with TO 1003
-
-```{r TO03_lm_Anova, eval = TRUE}
-TO03_mydata <- mydata %>% 
-  filter(Species == "TO 1003")
-
-lm_TO03 <- lm(data=mydata, Growthrate.dd.1~(Fe.level*Cu.level))
-plot(lm_TO03) ##these plots are diagnostic and will give indications if the assumptions are met
-
-anova(lm_TO03)
-```
-
-The anova table suggests that for __TO 1003__ there is a significant effect is seen for:
-
-* Fe. level (F(1,20) = 13.68, p.val = 0.0014)
-* Cu. level (F(1,20) = 58.93, p.val < 0.00001)
-
-and that there is __NO__ interacting effect for Fe:Cu.level for TO 1003
-
-```{r TO03_phia_interactions, eval = TRUE}
-#Using `phia`
-(lm_TO03.means <- interactionMeans(lm_TO03))
-plot(lm_TO03.means)
+*First: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_O2.Cell.vol, eval=TRUE}
+testInteractions(lm_O2.Cell.vol, fixed="Species", across="Cu.level") 
 
 ```
 
-Even though the `anova()` did not suggest an interaction... looking at the plots, it almost seems like there could be interactions
+In TO 1003, integrated low Cu treatments result in a significant decrease in O2 per cell vol production (F(1, 16) = 14.06, p-val = 0.004). In TO 1005 this seems to be absolutely not the case (F(1, 16) = 0, p-val = 0.995). WHen looking at the graph this makes sense as O2 production per cell vol is highest in the control (as expected) and it decrease in response to low Cu, it decreases even more in response to low Fe but then increases again in low FeCu (when compared to low Fe). This means, when we integrate the high Cu data (control and lowFe) and compare that to the integrated low Cu data (lowCu and low FeCu), there is practically no difference.
 
-```{r TO03_phia_interaction_Contrasts_Fe.level_Cu.level, eval=TRUE}
-#testInteractions(lm_TO03.means, fixed="Cu.level", across="Fe.level")
+```{r phia_interaction_Contrasts_Culevel_and_Species_O2.Cell.vol, eval=TRUE}
+testInteractions(lm_O2.Cell.vol, fixed = "Cu.level", across="Species")
 ```
-OK, I guess this doesn;t work. Maybe it checks if there is an interaction measured?!
 
-But twhat does the pairwise comparison say?
+If high Cu treatments are integrated and compared between strains, they show similar oxygen per cell vol production rates. The same can be said for integrated low Cu treatments.
 
-
-
-~~~~~
-__AND NOW ...__ we need to use `lsmeans()` to do pairwise comparisons an pinpoint which exact comparisons are the significant ones....
-
-```{r lsmeans growthrate, eval=FALSE}
-lsmeans(z_all, pairwise, ~ Fe.level | Cu.level : Species)
-
+*Second: Fe level : Cu level*
+```{r phia_interaction_Contrasts_Felevel_Culevel_O2.Cell.vol, eval=TRUE}
+testInteractions(lm_O2.Cell.vol, fixed="Fe.level", across="Cu.level") # no significance
 
 ```
 
+Low Cu compared to control results in a significant reduction in O2 production per cell vol across both strains (F(1, 16) = 14.12, p-val < 0.003).  
 
-Doesn;t work, I get an error message "The model is not linear mixed effects model
+Comparing lowFeCu to low Fe does not reduce the rate across strains.
 
-```{r lm growthrate_allMain just known interaction02, eval=TRUE}
-z <- lm(data=mydata, Growthrate.dd.1~(Species+Fe.level+Cu.level)^2-Species:Cu.level) #this will model the Growth rate dependend on
-#three main effects (Species, Fe.level, Cu.level) and will include 
-#possible interactions between Species:Fe.level, Fe.level:Cu.level 
-#but NOT Species:Cu.level as we took that one out!
-
-summary(z)
-
+```{r phia_interaction_Contrasts_Culevel_and_Felevel_O2.Cell.vol, eval=TRUE}
+testInteractions(lm_O2.Cell.vol, fixed = "Cu.level", across="Fe.level")
 ```
+However, low Fe compared to control results also in a significant reduction in O2 production per cell vol across both strains (F(1, 16) = 9.25, p-val = 0.016).
+
+
+###Summary 14C per cell vol - alpha
 
 
 
 
 
-
-
-
-
-The following is from [Dolph Schluter's help pages](https://www.zoology.ubc.ca/~schluter/R/fit-model/)
-
-###Fit multiple factors
-
-When two or more categorical factors are fitted, the possibility of an interaction might also be evaluated. Remember that the order in which you enter the variables in the formula affects the ANOVA results, if the design is unbalanced. By default, R fits the variables sequentially ("type I sum of squares"), while at the same time respecting hierarchy. Each variable or interaction is tested by adding it to a model that includes only previous terms in the sequence, but not variables entered later. Hierarchy means that the main effects are fitted before the interactions, which are fitted last. No interaction term is tested without its main effects included in the model.
-
-In the case of two factors, A and B, the linear model is as follows.
-```{r Dolph01, eval=FALSE}
-z <- lm(y ~ A + B, data = mydata) # no interaction term is present, or
-z <- lm(y ~ A * B, data = mydata) # interaction term is included
-summary(z)                        # coefficients table
-confint(z, level = 0.95)          # confidence intervals for parameters
-anova(z)                          # A is tested before B; interaction tested last
-```
-
-It is possible to carry out marginal fitting of terms instead ("type III sum of squares"). In this case, order of appearance of terms in the model doesn't matter, and neither does hierarchy. Each model term is tested as if it were entered last into the model. To accomplish this we need to refit the model and override R's default contrasts. Then we use the `drop1` command in place of `anova` to get the ANOVA table.
-
-```{r Dolph02, eval=FALSE}
-z <- lm(y ~ A * B, contrasts = c("contr.sum", "contr.poly"), 
-    data = mydata)
-drop1(z, .~., test = "F")
-```
-
-Or, we can use the `Anova` command (NOTE the capital "A" in beginning of `Anova()`) in the `car` package to give us the ANOVA table based on marginal fitting of terms ("type III sum of squares"). We again need to refit the model using different contrasts from R's default.
-
-```{r Dolph03, eval=FALSE}
-z <- lm(y ~ A * B, contrasts = c("contr.sum", "contr.poly"), 
-    data = mydata)
-library(car)
-Anova(z, type = 3)
-```
-
-Use the visreg package to visualize model fit. Try several options to see which method is most effective. If only one factor is plotted, R plots the fit to the data for each group or level, while conditioning on the value of the other variable (adjusted to the most common category for other factor). **This makes sense only when an interaction term is not fitted**. If both factors are plotted, the fit is shown for every combination of groups (levels). In the latter case, you can choose to overlay the fits or plot in separate panels.
-
-```{r Dolph04, eval=FALSE}
-library(visreg)
-visreg(z, xvar = "B", whitespace = 0.4, 
-    points.par = list(cex = 1.1, col = "red"))
-visreg(z, xvar = "A", by = "B", whitespace = 0.4, 
-    points.par = list(cex = 1.1, col = "red"))
-visreg(z, xvar = "A", by = "B", whitespace = 0.5, overlay = TRUE, 
-    band = FALSE, points.par = list(cex = 1.1))
-```
-```{r cars}
-summary(cars)
-```
 
 
 ### Resources
