@@ -2328,9 +2328,181 @@ However, low Fe compared to control results also in a significant reduction in O
 
 
 
+### Making the big Statistical Summary Tables
+First for Growthrate.percent
+
+```{r stat_SummaryTable_Growthrate.percent, eval = FALSE}
+
+#~~~~~~~~~~~~~~
+anova_growthrate.percent <- anova(lm_Growthrate.percent)
+anova_growthrate.percent <- anova_growthrate.percent %>% 
+  mutate(Analysis = "anova", Data = "Growthrate.percent", Effects_Tested = rownames(anova_growthrate.percent))
+
+anova_growthrate.percent <- data.frame(anova_growthrate.percent[, 6:8], anova_growthrate.percent[,1:5])
+#~~~~~~~~~~~~~~
+phia_Growthrate.percent_Species_Cu_vs_Fe <- testInteractions(lm_Growthrate.percent, fixed=c("Species", "Cu.level"), across="Fe.level")
+phia_Growthrate.percent_Species_Cu_vs_Fe <- phia_Growthrate.percent_Species_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_Cu_vs_Fe", tested = rownames(phia_Growthrate.percent_Species_Cu_vs_Fe))
+
+phia_Growthrate.percent_Species_Cu_vs_Fe <- data.frame(phia_Growthrate.percent_Species_Cu_vs_Fe[,6:9], phia_Growthrate.percent_Species_Cu_vs_Fe[, 1:5])
+#~~~~~~~~~~~~~~
+
+phia_Growthrate.percent_Species_Fe_vs_Cu <- testInteractions(lm_Growthrate.percent, fixed=c("Species", "Fe.level"), across="Cu.level")
+phia_Growthrate.percent_Species_Fe_vs_Cu <- phia_Growthrate.percent_Species_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_Fe_vs_Cu", tested = rownames(phia_Growthrate.percent_Species_Fe_vs_Cu))
+
+phia_Growthrate.percent_Species_Fe_vs_Cu <- data.frame(phia_Growthrate.percent_Species_Fe_vs_Cu[,6:9], phia_Growthrate.percent_Species_Fe_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+
+phia_Growthrate.percent_Fe_Cu_vs_Species <- testInteractions(lm_Growthrate.percent, fixed=c("Fe.level", "Cu.level"), across="Species")
+phia_Growthrate.percent_Fe_Cu_vs_Species <- phia_Growthrate.percent_Fe_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Fe_Cu_vs_Species", tested = rownames(phia_Growthrate.percent_Fe_Cu_vs_Species))
+
+phia_Growthrate.percent_Fe_Cu_vs_Species <- data.frame(phia_Growthrate.percent_Fe_Cu_vs_Species[,6:9], phia_Growthrate.percent_Fe_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Cu
+phia_Growthrate.percent_Fe_vs_Cu <- testInteractions(lm_Growthrate.percent, fixed="Fe.level", across="Cu.level")
+phia_Growthrate.percent_Fe_vs_Cu <- phia_Growthrate.percent_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Fe_vs_Cu", tested = rownames(phia_Growthrate.percent_Fe_vs_Cu))
+
+phia_Growthrate.percent_Fe_vs_Cu <- data.frame(phia_Growthrate.percent_Fe_vs_Cu[,6:9], phia_Growthrate.percent_Fe_vs_Cu[, 1:5])
+#~~~~~~~~~~~~~~
+#Cu vs Fe
+phia_Growthrate.percent_Cu_vs_Fe <- testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Fe.level")
+phia_Growthrate.percent_Cu_vs_Fe <- phia_Growthrate.percent_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Cu_vs_Fe", tested = rownames(phia_Growthrate.percent_Cu_vs_Fe))
+
+phia_Growthrate.percent_Cu_vs_Fe <- data.frame(phia_Growthrate.percent_Cu_vs_Fe[,6:9], phia_Growthrate.percent_Cu_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Fe
+phia_Growthrate.percent_Species_vs_Fe <- testInteractions(lm_Growthrate.percent, fixed="Species", across="Fe.level")
+phia_Growthrate.percent_Species_vs_Fe <- phia_Growthrate.percent_Species_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_vs_Fe", tested = rownames(phia_Growthrate.percent_Species_vs_Fe))
+
+phia_Growthrate.percent_Species_vs_Fe <- data.frame(phia_Growthrate.percent_Species_vs_Fe[,6:9], phia_Growthrate.percent_Species_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Species
+phia_Growthrate.percent_Fe_vs_Species <- testInteractions(lm_Growthrate.percent, fixed="Fe.level", across="Species")
+phia_Growthrate.percent_Fe_vs_Species <- phia_Growthrate.percent_Fe_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Fe_vs_Species", tested = rownames(phia_Growthrate.percent_Fe_vs_Species))
+
+phia_Growthrate.percent_Fe_vs_Species <- data.frame(phia_Growthrate.percent_Fe_vs_Species[,6:9], phia_Growthrate.percent_Fe_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Cu
+phia_Growthrate.percent_Species_vs_Cu <- testInteractions(lm_Growthrate.percent, fixed="Species", across="Cu.level")
+phia_Growthrate.percent_Species_vs_Cu <- phia_Growthrate.percent_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_vs_Cu", tested = rownames(phia_Growthrate.percent_Species_vs_Cu))
+
+phia_Growthrate.percent_Species_vs_Cu <- data.frame(phia_Growthrate.percent_Species_vs_Cu[,6:9], phia_Growthrate.percent_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Cu vs Species
+phia_Growthrate.percent_Cu_vs_Species <- testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Species")
+phia_Growthrate.percent_Cu_vs_Species <- phia_Growthrate.percent_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Cu_vs_Species", tested = rownames(phia_Growthrate.percent_Cu_vs_Species))
+
+phia_Growthrate.percent_Cu_vs_Species <- data.frame(phia_Growthrate.percent_Cu_vs_Species[,6:9], phia_Growthrate.percent_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~~~~~~
+
+#making the big Phia_Growthrate.percent table
+
+phia_Growthrate.percent.all <- bind_rows(phia_Growthrate.percent_Cu_vs_Species, phia_Growthrate.percent_Species_vs_Cu, phia_Growthrate.percent_Fe_vs_Species, phia_Growthrate.percent_Species_vs_Fe, phia_Growthrate.percent_Cu_vs_Fe, phia_Growthrate.percent_Fe_vs_Cu, phia_Growthrate.percent_Fe_Cu_vs_Species, phia_Growthrate.percent_Species_Fe_vs_Cu, phia_Growthrate.percent_Species_Cu_vs_Fe)
+
+```
 
 
+First for Growthrate.percent
 
+```{r stat_SummaryTable_Growthrate.percent, eval = FALSE}
+
+#~~~~~~~~~~~~~~
+anova_growthrate.percent <- anova(lm_Growthrate.percent)
+anova_growthrate.percent <- anova_growthrate.percent %>% 
+  mutate(Analysis = "anova", Data = "Growthrate.percent", Effects_Tested = rownames(anova_growthrate.percent))
+
+anova_growthrate.percent <- data.frame(anova_growthrate.percent[, 6:8], anova_growthrate.percent[,1:5])
+#~~~~~~~~~~~~~~
+phia_Growthrate.percent_Species_Cu_vs_Fe <- testInteractions(lm_Growthrate.percent, fixed=c("Species", "Cu.level"), across="Fe.level")
+phia_Growthrate.percent_Species_Cu_vs_Fe <- phia_Growthrate.percent_Species_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_Cu_vs_Fe", tested = rownames(phia_Growthrate.percent_Species_Cu_vs_Fe))
+
+phia_Growthrate.percent_Species_Cu_vs_Fe <- data.frame(phia_Growthrate.percent_Species_Cu_vs_Fe[,6:9], phia_Growthrate.percent_Species_Cu_vs_Fe[, 1:5])
+#~~~~~~~~~~~~~~
+
+phia_Growthrate.percent_Species_Fe_vs_Cu <- testInteractions(lm_Growthrate.percent, fixed=c("Species", "Fe.level"), across="Cu.level")
+phia_Growthrate.percent_Species_Fe_vs_Cu <- phia_Growthrate.percent_Species_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_Fe_vs_Cu", tested = rownames(phia_Growthrate.percent_Species_Fe_vs_Cu))
+
+phia_Growthrate.percent_Species_Fe_vs_Cu <- data.frame(phia_Growthrate.percent_Species_Fe_vs_Cu[,6:9], phia_Growthrate.percent_Species_Fe_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+
+phia_Growthrate.percent_Fe_Cu_vs_Species <- testInteractions(lm_Growthrate.percent, fixed=c("Fe.level", "Cu.level"), across="Species")
+phia_Growthrate.percent_Fe_Cu_vs_Species <- phia_Growthrate.percent_Fe_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Fe_Cu_vs_Species", tested = rownames(phia_Growthrate.percent_Fe_Cu_vs_Species))
+
+phia_Growthrate.percent_Fe_Cu_vs_Species <- data.frame(phia_Growthrate.percent_Fe_Cu_vs_Species[,6:9], phia_Growthrate.percent_Fe_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Cu
+phia_Growthrate.percent_Fe_vs_Cu <- testInteractions(lm_Growthrate.percent, fixed="Fe.level", across="Cu.level")
+phia_Growthrate.percent_Fe_vs_Cu <- phia_Growthrate.percent_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Fe_vs_Cu", tested = rownames(phia_Growthrate.percent_Fe_vs_Cu))
+
+phia_Growthrate.percent_Fe_vs_Cu <- data.frame(phia_Growthrate.percent_Fe_vs_Cu[,6:9], phia_Growthrate.percent_Fe_vs_Cu[, 1:5])
+#~~~~~~~~~~~~~~
+#Cu vs Fe
+phia_Growthrate.percent_Cu_vs_Fe <- testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Fe.level")
+phia_Growthrate.percent_Cu_vs_Fe <- phia_Growthrate.percent_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Cu_vs_Fe", tested = rownames(phia_Growthrate.percent_Cu_vs_Fe))
+
+phia_Growthrate.percent_Cu_vs_Fe <- data.frame(phia_Growthrate.percent_Cu_vs_Fe[,6:9], phia_Growthrate.percent_Cu_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Fe
+phia_Growthrate.percent_Species_vs_Fe <- testInteractions(lm_Growthrate.percent, fixed="Species", across="Fe.level")
+phia_Growthrate.percent_Species_vs_Fe <- phia_Growthrate.percent_Species_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_vs_Fe", tested = rownames(phia_Growthrate.percent_Species_vs_Fe))
+
+phia_Growthrate.percent_Species_vs_Fe <- data.frame(phia_Growthrate.percent_Species_vs_Fe[,6:9], phia_Growthrate.percent_Species_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Species
+phia_Growthrate.percent_Fe_vs_Species <- testInteractions(lm_Growthrate.percent, fixed="Fe.level", across="Species")
+phia_Growthrate.percent_Fe_vs_Species <- phia_Growthrate.percent_Fe_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Fe_vs_Species", tested = rownames(phia_Growthrate.percent_Fe_vs_Species))
+
+phia_Growthrate.percent_Fe_vs_Species <- data.frame(phia_Growthrate.percent_Fe_vs_Species[,6:9], phia_Growthrate.percent_Fe_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Cu
+phia_Growthrate.percent_Species_vs_Cu <- testInteractions(lm_Growthrate.percent, fixed="Species", across="Cu.level")
+phia_Growthrate.percent_Species_vs_Cu <- phia_Growthrate.percent_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Species_vs_Cu", tested = rownames(phia_Growthrate.percent_Species_vs_Cu))
+
+phia_Growthrate.percent_Species_vs_Cu <- data.frame(phia_Growthrate.percent_Species_vs_Cu[,6:9], phia_Growthrate.percent_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Cu vs Species
+phia_Growthrate.percent_Cu_vs_Species <- testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Species")
+phia_Growthrate.percent_Cu_vs_Species <- phia_Growthrate.percent_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Growthrate.percent",test_intrctn = "Cu_vs_Species", tested = rownames(phia_Growthrate.percent_Cu_vs_Species))
+
+phia_Growthrate.percent_Cu_vs_Species <- data.frame(phia_Growthrate.percent_Cu_vs_Species[,6:9], phia_Growthrate.percent_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~~~~~~
+
+#making the big Phia_Growthrate.percent table
+
+phia_Growthrate.percent.all <- bind_rows(phia_Growthrate.percent_Cu_vs_Species, phia_Growthrate.percent_Species_vs_Cu, phia_Growthrate.percent_Fe_vs_Species, phia_Growthrate.percent_Species_vs_Fe, phia_Growthrate.percent_Cu_vs_Fe, phia_Growthrate.percent_Fe_vs_Cu, phia_Growthrate.percent_Fe_Cu_vs_Species, phia_Growthrate.percent_Species_Fe_vs_Cu, phia_Growthrate.percent_Species_Cu_vs_Fe)
+
+```
 
 ### Resources
 
