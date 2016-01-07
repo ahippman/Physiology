@@ -942,7 +942,7 @@ Under low Fe, the Chla per cell volume stays constant in TO 1003 compared to the
 
 When co-limited (low FeCu), both strains have again the same Chl a concentration
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 <a id="Chla.cell"></a>
@@ -1061,7 +1061,7 @@ When co-limited (low FeCu), both strains have again comparable Chl a concentrati
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 <a id="cellsize"></a>
@@ -1158,7 +1158,7 @@ Low Cu decreases cell size significantly across the dataset (F(1,19) = 54.31, p-
 
 Under low Fe conditions, strains react differently. Cell size decreases significatnly in TO 1005 but not in TO 1003. Hence cell size is different under low Fe for the two strains (i.e. TO 1005 is smaller compared to TO 1003).
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 <a id="cellvol"></a>
 
@@ -1255,7 +1255,7 @@ Low Cu decreases cell size significantly across the dataset (F(1,19) = 47.17, p-
 
 Under low Fe conditions, strains react differently. Cell size decreases significatnly in TO 1005 but not in TO 1003. Hence cell size is different under low Fe for the two strains (i.e. TO 1005 is smaller compared to TO 1003).
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 <a id="FeDFB.cell"></a>
@@ -1395,7 +1395,7 @@ Comparing the combined high Cu (control and low Fe) to the combined low Cu treat
 
 Under high Cu conditions, the two strains have statistically very different FeDFB uptake rates (F(1,14) = 28.14, p-val = 0.0002).They are just somewhat differnet under low Cu treatments (F(1,14) = 3.18, p-val = 0.096)
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 <a id="FeDFB.cellvol"></a>
 
 #### FeDFB per Cell Surface Area
@@ -1516,7 +1516,7 @@ Under low Fe conditions there is a striking difference between TO 1005 and To 10
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 <a id="14C.alpha.cell"></a>
 
 #### 14C Uptake per Cell - alpha
@@ -1628,7 +1628,7 @@ When we compare either the integrated high Fe or the integrated low Fe values of
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 <a id="14C.alpha.chla"></a>
 
 #### 14C Uptake per Chl a - alpha
@@ -1733,7 +1733,7 @@ However, integrating over the low Cu treatments, the two species do have signifi
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 <a id="14C.ek.chla"></a>
 
@@ -1857,7 +1857,7 @@ Integrated over the high Fe treatment or over the low Fe treatment, the two spec
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 <a id="AOX"></a>
 
@@ -1970,7 +1970,7 @@ There is no such tendency under low Cu conditions.
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 <a id="O2.Chla"></a>
 
 #### Gross Productivity per Chla (mol O2 * mol Chl a^-1 * h^-1)
@@ -2112,7 +2112,7 @@ Additionally, low Fe compared to control decreases Gross P (O2 per Chla) also si
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 <a id="O2.Cell"></a>
@@ -2223,7 +2223,7 @@ However, low Fe compared to control results also in a significant reduction in O
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 <a id="O2.Cell.vol"></a>
 
@@ -2594,7 +2594,360 @@ all_phia_FvFm <- bind_rows(phia_FvFm_Cu_vs_Species, phia_FvFm_Species_vs_Cu, phi
 
 ```
 
-###
+####Now for Sigma
+
+```{r stat_SummaryTable_Sigma, eval = FALSE}
+lm_Sigma <- lm(data = mydata, Sig.old ~ (Species + Fe.level + Cu.level)^2 - Fe.level:Cu.level)
+
+#~~~~~~~~~~~~~~
+anova_Sigma <- anova(lm_Sigma)
+anova_Sigma <- anova_Sigma %>% 
+  mutate(Analysis = "anova", Data = "Sigma", Effects_Tested = rownames(anova_Sigma))
+
+anova_Sigma <- data.frame(anova_Sigma[, 6:8], anova_Sigma[,1:5])
+#~~~~~~~~~~~~~~
+phia_Sigma_Species_Cu_vs_Fe <- testInteractions(lm_Sigma, fixed=c("Species", "Cu.level"), across="Fe.level")
+phia_Sigma_Species_Cu_vs_Fe <- phia_Sigma_Species_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Species_Cu_vs_Fe", tested = rownames(phia_Sigma_Species_Cu_vs_Fe))
+
+phia_Sigma_Species_Cu_vs_Fe <- data.frame(phia_Sigma_Species_Cu_vs_Fe[,6:9], phia_Sigma_Species_Cu_vs_Fe[, 1:5])
+#~~~~~~~~~~~~~~
+
+phia_Sigma_Species_Fe_vs_Cu <- testInteractions(lm_Sigma, fixed=c("Species", "Fe.level"), across="Cu.level")
+phia_Sigma_Species_Fe_vs_Cu <- phia_Sigma_Species_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Species_Fe_vs_Cu", tested = rownames(phia_Sigma_Species_Fe_vs_Cu))
+
+phia_Sigma_Species_Fe_vs_Cu <- data.frame(phia_Sigma_Species_Fe_vs_Cu[,6:9], phia_Sigma_Species_Fe_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+
+phia_Sigma_Fe_Cu_vs_Species <- testInteractions(lm_Sigma, fixed=c("Fe.level", "Cu.level"), across="Species")
+phia_Sigma_Fe_Cu_vs_Species <- phia_Sigma_Fe_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Fe_Cu_vs_Species", tested = rownames(phia_Sigma_Fe_Cu_vs_Species))
+
+phia_Sigma_Fe_Cu_vs_Species <- data.frame(phia_Sigma_Fe_Cu_vs_Species[,6:9], phia_Sigma_Fe_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Cu
+phia_Sigma_Fe_vs_Cu <- testInteractions(lm_Sigma, fixed="Fe.level", across="Cu.level")
+phia_Sigma_Fe_vs_Cu <- phia_Sigma_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Fe_vs_Cu", tested = rownames(phia_Sigma_Fe_vs_Cu))
+
+phia_Sigma_Fe_vs_Cu <- data.frame(phia_Sigma_Fe_vs_Cu[,6:9], phia_Sigma_Fe_vs_Cu[, 1:5])
+#~~~~~~~~~~~~~~
+#Cu vs Fe
+phia_Sigma_Cu_vs_Fe <- testInteractions(lm_Sigma, fixed="Cu.level", across="Fe.level")
+phia_Sigma_Cu_vs_Fe <- phia_Sigma_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Cu_vs_Fe", tested = rownames(phia_Sigma_Cu_vs_Fe))
+
+phia_Sigma_Cu_vs_Fe <- data.frame(phia_Sigma_Cu_vs_Fe[,6:9], phia_Sigma_Cu_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Fe
+phia_Sigma_Species_vs_Fe <- testInteractions(lm_Sigma, fixed="Species", across="Fe.level")
+phia_Sigma_Species_vs_Fe <- phia_Sigma_Species_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Species_vs_Fe", tested = rownames(phia_Sigma_Species_vs_Fe))
+
+phia_Sigma_Species_vs_Fe <- data.frame(phia_Sigma_Species_vs_Fe[,6:9], phia_Sigma_Species_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Species
+phia_Sigma_Fe_vs_Species <- testInteractions(lm_Sigma, fixed="Fe.level", across="Species")
+phia_Sigma_Fe_vs_Species <- phia_Sigma_Fe_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Fe_vs_Species", tested = rownames(phia_Sigma_Fe_vs_Species))
+
+phia_Sigma_Fe_vs_Species <- data.frame(phia_Sigma_Fe_vs_Species[,6:9], phia_Sigma_Fe_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Cu
+phia_Sigma_Species_vs_Cu <- testInteractions(lm_Sigma, fixed="Species", across="Cu.level")
+phia_Sigma_Species_vs_Cu <- phia_Sigma_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Species_vs_Cu", tested = rownames(phia_Sigma_Species_vs_Cu))
+
+phia_Sigma_Species_vs_Cu <- data.frame(phia_Sigma_Species_vs_Cu[,6:9], phia_Sigma_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Cu vs Species
+phia_Sigma_Cu_vs_Species <- testInteractions(lm_Sigma, fixed="Cu.level", across="Species")
+phia_Sigma_Cu_vs_Species <- phia_Sigma_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Sigma",test_intrctn = "Cu_vs_Species", tested = rownames(phia_Sigma_Cu_vs_Species))
+
+phia_Sigma_Cu_vs_Species <- data.frame(phia_Sigma_Cu_vs_Species[,6:9], phia_Sigma_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~~~~~~
+
+#making the big Phia_Sigma table
+
+all_phia_Sigma <- bind_rows(phia_Sigma_Cu_vs_Species, phia_Sigma_Species_vs_Cu, phia_Sigma_Fe_vs_Species, phia_Sigma_Species_vs_Fe, phia_Sigma_Cu_vs_Fe, phia_Sigma_Fe_vs_Cu, phia_Sigma_Fe_Cu_vs_Species, phia_Sigma_Species_Fe_vs_Cu, phia_Sigma_Species_Cu_vs_Fe)
+
+```
+
+
+####Now for PQ
+
+```{r stat_SummaryTable_PQ, eval = FALSE}
+
+lm_PQ <- lm(data = mydata, PQ_Siz.old ~ (Species + Fe.level + Cu.level)^2 - Fe.level:Cu.level - Species:Fe.level)
+
+#~~~~~~~~~~~~~~
+anova_PQ <- anova(lm_PQ)
+anova_PQ <- anova_PQ %>% 
+  mutate(Analysis = "anova", Data = "PQ", Effects_Tested = rownames(anova_PQ))
+
+anova_PQ <- data.frame(anova_PQ[, 6:8], anova_PQ[,1:5])
+#~~~~~~~~~~~~~~
+phia_PQ_Species_Cu_vs_Fe <- testInteractions(lm_PQ, fixed=c("Species", "Cu.level"), across="Fe.level")
+phia_PQ_Species_Cu_vs_Fe <- phia_PQ_Species_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Species_Cu_vs_Fe", tested = rownames(phia_PQ_Species_Cu_vs_Fe))
+
+phia_PQ_Species_Cu_vs_Fe <- data.frame(phia_PQ_Species_Cu_vs_Fe[,6:9], phia_PQ_Species_Cu_vs_Fe[, 1:5])
+#~~~~~~~~~~~~~~
+
+phia_PQ_Species_Fe_vs_Cu <- testInteractions(lm_PQ, fixed=c("Species", "Fe.level"), across="Cu.level")
+phia_PQ_Species_Fe_vs_Cu <- phia_PQ_Species_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Species_Fe_vs_Cu", tested = rownames(phia_PQ_Species_Fe_vs_Cu))
+
+phia_PQ_Species_Fe_vs_Cu <- data.frame(phia_PQ_Species_Fe_vs_Cu[,6:9], phia_PQ_Species_Fe_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+
+phia_PQ_Fe_Cu_vs_Species <- testInteractions(lm_PQ, fixed=c("Fe.level", "Cu.level"), across="Species")
+phia_PQ_Fe_Cu_vs_Species <- phia_PQ_Fe_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Fe_Cu_vs_Species", tested = rownames(phia_PQ_Fe_Cu_vs_Species))
+
+phia_PQ_Fe_Cu_vs_Species <- data.frame(phia_PQ_Fe_Cu_vs_Species[,6:9], phia_PQ_Fe_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Cu
+phia_PQ_Fe_vs_Cu <- testInteractions(lm_PQ, fixed="Fe.level", across="Cu.level")
+phia_PQ_Fe_vs_Cu <- phia_PQ_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Fe_vs_Cu", tested = rownames(phia_PQ_Fe_vs_Cu))
+
+phia_PQ_Fe_vs_Cu <- data.frame(phia_PQ_Fe_vs_Cu[,6:9], phia_PQ_Fe_vs_Cu[, 1:5])
+#~~~~~~~~~~~~~~
+#Cu vs Fe
+phia_PQ_Cu_vs_Fe <- testInteractions(lm_PQ, fixed="Cu.level", across="Fe.level")
+phia_PQ_Cu_vs_Fe <- phia_PQ_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Cu_vs_Fe", tested = rownames(phia_PQ_Cu_vs_Fe))
+
+phia_PQ_Cu_vs_Fe <- data.frame(phia_PQ_Cu_vs_Fe[,6:9], phia_PQ_Cu_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Fe
+phia_PQ_Species_vs_Fe <- testInteractions(lm_PQ, fixed="Species", across="Fe.level")
+phia_PQ_Species_vs_Fe <- phia_PQ_Species_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Species_vs_Fe", tested = rownames(phia_PQ_Species_vs_Fe))
+
+phia_PQ_Species_vs_Fe <- data.frame(phia_PQ_Species_vs_Fe[,6:9], phia_PQ_Species_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Species
+phia_PQ_Fe_vs_Species <- testInteractions(lm_PQ, fixed="Fe.level", across="Species")
+phia_PQ_Fe_vs_Species <- phia_PQ_Fe_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Fe_vs_Species", tested = rownames(phia_PQ_Fe_vs_Species))
+
+phia_PQ_Fe_vs_Species <- data.frame(phia_PQ_Fe_vs_Species[,6:9], phia_PQ_Fe_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Cu
+phia_PQ_Species_vs_Cu <- testInteractions(lm_PQ, fixed="Species", across="Cu.level")
+phia_PQ_Species_vs_Cu <- phia_PQ_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Species_vs_Cu", tested = rownames(phia_PQ_Species_vs_Cu))
+
+phia_PQ_Species_vs_Cu <- data.frame(phia_PQ_Species_vs_Cu[,6:9], phia_PQ_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Cu vs Species
+phia_PQ_Cu_vs_Species <- testInteractions(lm_PQ, fixed="Cu.level", across="Species")
+phia_PQ_Cu_vs_Species <- phia_PQ_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "PQ",test_intrctn = "Cu_vs_Species", tested = rownames(phia_PQ_Cu_vs_Species))
+
+phia_PQ_Cu_vs_Species <- data.frame(phia_PQ_Cu_vs_Species[,6:9], phia_PQ_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~~~~~~
+
+#making the big Phia_PQ table
+
+all_phia_PQ <- bind_rows(phia_PQ_Cu_vs_Species, phia_PQ_Species_vs_Cu, phia_PQ_Fe_vs_Species, phia_PQ_Species_vs_Fe, phia_PQ_Cu_vs_Fe, phia_PQ_Fe_vs_Cu, phia_PQ_Fe_Cu_vs_Species, phia_PQ_Species_Fe_vs_Cu, phia_PQ_Species_Cu_vs_Fe)
+
+```
+
+####Now for Chla
+
+```{r stat_SummaryTable_Chla, eval = FALSE}
+lm_Chla <- lm (data = mydata, Chla.per.cell.vol.fg.fL ~ (Species * Fe.level * Cu.level)) # Yes, this is the same as before. I leave it as is
+
+#~~~~~~~~~~~~~~
+anova_Chla <- anova(lm_Chla)
+anova_Chla <- anova_Chla %>% 
+  mutate(Analysis = "anova", Data = "Chla", Effects_Tested = rownames(anova_Chla))
+
+anova_Chla <- data.frame(anova_Chla[, 6:8], anova_Chla[,1:5])
+#~~~~~~~~~~~~~~
+phia_Chla_Species_Cu_vs_Fe <- testInteractions(lm_Chla, fixed=c("Species", "Cu.level"), across="Fe.level")
+phia_Chla_Species_Cu_vs_Fe <- phia_Chla_Species_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_Cu_vs_Fe", tested = rownames(phia_Chla_Species_Cu_vs_Fe))
+
+phia_Chla_Species_Cu_vs_Fe <- data.frame(phia_Chla_Species_Cu_vs_Fe[,6:9], phia_Chla_Species_Cu_vs_Fe[, 1:5])
+#~~~~~~~~~~~~~~
+
+phia_Chla_Species_Fe_vs_Cu <- testInteractions(lm_Chla, fixed=c("Species", "Fe.level"), across="Cu.level")
+phia_Chla_Species_Fe_vs_Cu <- phia_Chla_Species_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_Fe_vs_Cu", tested = rownames(phia_Chla_Species_Fe_vs_Cu))
+
+phia_Chla_Species_Fe_vs_Cu <- data.frame(phia_Chla_Species_Fe_vs_Cu[,6:9], phia_Chla_Species_Fe_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+
+phia_Chla_Fe_Cu_vs_Species <- testInteractions(lm_Chla, fixed=c("Fe.level", "Cu.level"), across="Species")
+phia_Chla_Fe_Cu_vs_Species <- phia_Chla_Fe_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Fe_Cu_vs_Species", tested = rownames(phia_Chla_Fe_Cu_vs_Species))
+
+phia_Chla_Fe_Cu_vs_Species <- data.frame(phia_Chla_Fe_Cu_vs_Species[,6:9], phia_Chla_Fe_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Cu
+phia_Chla_Fe_vs_Cu <- testInteractions(lm_Chla, fixed="Fe.level", across="Cu.level")
+phia_Chla_Fe_vs_Cu <- phia_Chla_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Fe_vs_Cu", tested = rownames(phia_Chla_Fe_vs_Cu))
+
+phia_Chla_Fe_vs_Cu <- data.frame(phia_Chla_Fe_vs_Cu[,6:9], phia_Chla_Fe_vs_Cu[, 1:5])
+#~~~~~~~~~~~~~~
+#Cu vs Fe
+phia_Chla_Cu_vs_Fe <- testInteractions(lm_Chla, fixed="Cu.level", across="Fe.level")
+phia_Chla_Cu_vs_Fe <- phia_Chla_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Cu_vs_Fe", tested = rownames(phia_Chla_Cu_vs_Fe))
+
+phia_Chla_Cu_vs_Fe <- data.frame(phia_Chla_Cu_vs_Fe[,6:9], phia_Chla_Cu_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Fe
+phia_Chla_Species_vs_Fe <- testInteractions(lm_Chla, fixed="Species", across="Fe.level")
+phia_Chla_Species_vs_Fe <- phia_Chla_Species_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_vs_Fe", tested = rownames(phia_Chla_Species_vs_Fe))
+
+phia_Chla_Species_vs_Fe <- data.frame(phia_Chla_Species_vs_Fe[,6:9], phia_Chla_Species_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Species
+phia_Chla_Fe_vs_Species <- testInteractions(lm_Chla, fixed="Fe.level", across="Species")
+phia_Chla_Fe_vs_Species <- phia_Chla_Fe_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Fe_vs_Species", tested = rownames(phia_Chla_Fe_vs_Species))
+
+phia_Chla_Fe_vs_Species <- data.frame(phia_Chla_Fe_vs_Species[,6:9], phia_Chla_Fe_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Cu
+phia_Chla_Species_vs_Cu <- testInteractions(lm_Chla, fixed="Species", across="Cu.level")
+phia_Chla_Species_vs_Cu <- phia_Chla_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_vs_Cu", tested = rownames(phia_Chla_Species_vs_Cu))
+
+phia_Chla_Species_vs_Cu <- data.frame(phia_Chla_Species_vs_Cu[,6:9], phia_Chla_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Cu vs Species
+phia_Chla_Cu_vs_Species <- testInteractions(lm_Chla, fixed="Cu.level", across="Species")
+phia_Chla_Cu_vs_Species <- phia_Chla_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Cu_vs_Species", tested = rownames(phia_Chla_Cu_vs_Species))
+
+phia_Chla_Cu_vs_Species <- data.frame(phia_Chla_Cu_vs_Species[,6:9], phia_Chla_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~~~~~~
+
+#making the big Phia_Chla table
+
+all_phia_Chla <- bind_rows(phia_Chla_Cu_vs_Species, phia_Chla_Species_vs_Cu, phia_Chla_Fe_vs_Species, phia_Chla_Species_vs_Fe, phia_Chla_Cu_vs_Fe, phia_Chla_Fe_vs_Cu, phia_Chla_Fe_Cu_vs_Species, phia_Chla_Species_Fe_vs_Cu, phia_Chla_Species_Cu_vs_Fe)
+
+```
+
+####Now for Chla.cell
+
+```{r stat_SummaryTable_Chla.cell, eval = FALSE}
+lm_Chla.cell <- lm (data = mydata, Chla.per.cell.pg.cell ~ (Species * Fe.level * Cu.level)) # Yes, this is the same as before. I leave it as is
+
+#~~~~~~~~~~~~~~
+anova_Chla <- anova(lm_Chla)
+anova_Chla <- anova_Chla %>% 
+  mutate(Analysis = "anova", Data = "Chla", Effects_Tested = rownames(anova_Chla))
+
+anova_Chla <- data.frame(anova_Chla[, 6:8], anova_Chla[,1:5])
+#~~~~~~~~~~~~~~
+phia_Chla_Species_Cu_vs_Fe <- testInteractions(lm_Chla, fixed=c("Species", "Cu.level"), across="Fe.level")
+phia_Chla_Species_Cu_vs_Fe <- phia_Chla_Species_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_Cu_vs_Fe", tested = rownames(phia_Chla_Species_Cu_vs_Fe))
+
+phia_Chla_Species_Cu_vs_Fe <- data.frame(phia_Chla_Species_Cu_vs_Fe[,6:9], phia_Chla_Species_Cu_vs_Fe[, 1:5])
+#~~~~~~~~~~~~~~
+
+phia_Chla_Species_Fe_vs_Cu <- testInteractions(lm_Chla, fixed=c("Species", "Fe.level"), across="Cu.level")
+phia_Chla_Species_Fe_vs_Cu <- phia_Chla_Species_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_Fe_vs_Cu", tested = rownames(phia_Chla_Species_Fe_vs_Cu))
+
+phia_Chla_Species_Fe_vs_Cu <- data.frame(phia_Chla_Species_Fe_vs_Cu[,6:9], phia_Chla_Species_Fe_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+
+phia_Chla_Fe_Cu_vs_Species <- testInteractions(lm_Chla, fixed=c("Fe.level", "Cu.level"), across="Species")
+phia_Chla_Fe_Cu_vs_Species <- phia_Chla_Fe_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Fe_Cu_vs_Species", tested = rownames(phia_Chla_Fe_Cu_vs_Species))
+
+phia_Chla_Fe_Cu_vs_Species <- data.frame(phia_Chla_Fe_Cu_vs_Species[,6:9], phia_Chla_Fe_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Cu
+phia_Chla_Fe_vs_Cu <- testInteractions(lm_Chla, fixed="Fe.level", across="Cu.level")
+phia_Chla_Fe_vs_Cu <- phia_Chla_Fe_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Fe_vs_Cu", tested = rownames(phia_Chla_Fe_vs_Cu))
+
+phia_Chla_Fe_vs_Cu <- data.frame(phia_Chla_Fe_vs_Cu[,6:9], phia_Chla_Fe_vs_Cu[, 1:5])
+#~~~~~~~~~~~~~~
+#Cu vs Fe
+phia_Chla_Cu_vs_Fe <- testInteractions(lm_Chla, fixed="Cu.level", across="Fe.level")
+phia_Chla_Cu_vs_Fe <- phia_Chla_Cu_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Cu_vs_Fe", tested = rownames(phia_Chla_Cu_vs_Fe))
+
+phia_Chla_Cu_vs_Fe <- data.frame(phia_Chla_Cu_vs_Fe[,6:9], phia_Chla_Cu_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Fe
+phia_Chla_Species_vs_Fe <- testInteractions(lm_Chla, fixed="Species", across="Fe.level")
+phia_Chla_Species_vs_Fe <- phia_Chla_Species_vs_Fe %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_vs_Fe", tested = rownames(phia_Chla_Species_vs_Fe))
+
+phia_Chla_Species_vs_Fe <- data.frame(phia_Chla_Species_vs_Fe[,6:9], phia_Chla_Species_vs_Fe[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Fe vs Species
+phia_Chla_Fe_vs_Species <- testInteractions(lm_Chla, fixed="Fe.level", across="Species")
+phia_Chla_Fe_vs_Species <- phia_Chla_Fe_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Fe_vs_Species", tested = rownames(phia_Chla_Fe_vs_Species))
+
+phia_Chla_Fe_vs_Species <- data.frame(phia_Chla_Fe_vs_Species[,6:9], phia_Chla_Fe_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Species vs Cu
+phia_Chla_Species_vs_Cu <- testInteractions(lm_Chla, fixed="Species", across="Cu.level")
+phia_Chla_Species_vs_Cu <- phia_Chla_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Species_vs_Cu", tested = rownames(phia_Chla_Species_vs_Cu))
+
+phia_Chla_Species_vs_Cu <- data.frame(phia_Chla_Species_vs_Cu[,6:9], phia_Chla_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#Cu vs Species
+phia_Chla_Cu_vs_Species <- testInteractions(lm_Chla, fixed="Cu.level", across="Species")
+phia_Chla_Cu_vs_Species <- phia_Chla_Cu_vs_Species %>% 
+  mutate(Analysis = "phia_interaction", Data = "Chla",test_intrctn = "Cu_vs_Species", tested = rownames(phia_Chla_Cu_vs_Species))
+
+phia_Chla_Cu_vs_Species <- data.frame(phia_Chla_Cu_vs_Species[,6:9], phia_Chla_Cu_vs_Species[, 1:5])
+
+#~~~~~~~~~~~~~~~~~~~
+
+#making the big Phia_Chla table
+
+all_phia_Chla <- bind_rows(phia_Chla_Cu_vs_Species, phia_Chla_Species_vs_Cu, phia_Chla_Fe_vs_Species, phia_Chla_Species_vs_Fe, phia_Chla_Cu_vs_Fe, phia_Chla_Fe_vs_Cu, phia_Chla_Fe_Cu_vs_Species, phia_Chla_Species_Fe_vs_Cu, phia_Chla_Species_Cu_vs_Fe)
+
+```
+
 ### Resources
 
 * [Tutorial on linear regression](http://rtutorialseries.blogspot.ca/2009/11/r-tutorial-series-simple-linear.html)
