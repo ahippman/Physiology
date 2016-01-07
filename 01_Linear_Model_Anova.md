@@ -7280,6 +7280,9 @@ all_phia_O2.Chla <- bind_rows(phia_O2.Chla_Cu_vs_Species, phia_O2.Chla_Species_v
 
 
 ```r
+mydata <- mydata %>% mutate(nmol_O2_per_cell = GrossPcell..mol.O2.cell..h. * 10^9)
+mean.df <- mean.df %>% mutate(nmol_O2_per_cell = GrossPcell.mol.O2.cell..h. * 10^9)
+
 lm_O2.Cell <- lm (data = mydata, nmol_O2_per_cell ~ (Species +  Fe.level + Cu.level)^2 - Species : Fe.level)
 
 
@@ -7456,7 +7459,18 @@ phia_O2.Cell.vol_Cu_vs_Species <- data.frame(phia_O2.Cell.vol_Cu_vs_Species[,6:9
 all_phia_O2.Cell.vol <- bind_rows(phia_O2.Cell.vol_Cu_vs_Species, phia_O2.Cell.vol_Species_vs_Cu, phia_O2.Cell.vol_Fe_vs_Species, phia_O2.Cell.vol_Species_vs_Fe, phia_O2.Cell.vol_Cu_vs_Fe, phia_O2.Cell.vol_Fe_vs_Cu, phia_O2.Cell.vol_Fe_Cu_vs_Species, phia_O2.Cell.vol_Species_Fe_vs_Cu, phia_O2.Cell.vol_Species_Cu_vs_Fe)
 ```
 
+### Making hte bg files
 
+
+```r
+all_phia <- bind_rows(all_phia_O2.Cell.vol,all_phia_O2.Cell, all_phia_O2.Chla, all_phia_AOX, all_phia_14C.ek.chla, all_phia_14C.alpha.chla, all_phia_14C.alpha.cell, all_phia_FeDFB.cellvol, all_phia_FeDFB.cell, all_phia_cell.vol, all_phia_cell.size, all_phia_Chla.cell, all_phia_Chla, all_phia_PQ, all_phia_Sigma, all_phia_FvFm, all_phia_Growthrate.percent, all_phia_Growthrate.dd)
+
+write.table(all_phia, "All_Phia_Stats_Physiology.txt", row.names = FALSE, col.names = TRUE, sep="\t")
+
+all_anova <- bind_rows(anova_O2.Cell.vol, anova_O2.Cell, anova_O2.Chla, anova_AOX, anova_14C.ek.chla, anova_14C.alpha.chla, anova_14C.alpha.cell, anova_FeDFB.cellvol, anova_FeDFB.cell, anova_cell.vol, anova_cell.size, anova_Chla.cell, anova_Chla, anova_PQ, anova_Sigma, anova_FvFm, anova_growthrate.percent, anova_Growthrate.dd)
+
+write.table(all_anova, "All_ANOVA_Stats_Physiology.txt", row.names = FALSE, col.names = TRUE, sep="\t")
+```
 ### Resources
 
 * [Tutorial on linear regression](http://rtutorialseries.blogspot.ca/2009/11/r-tutorial-series-simple-linear.html)
