@@ -1,0 +1,20 @@
+3-way ANOVA	Species	Fe.level	Cu.level	Species: Fe.level	Species: Cu.level	Fe.level: Cu.level	Species: Fe.level: Cu.level	Phia	Cu vs Species	Cu vs Species	Species vs Cu	Species vs Cu	Fe vs Species	Fe vs Species	Species vs Fe	Species vs Fe	Cu vs Fe	Cu vs Fe	Fe vs Cu	Fe vs Cu	Fe Cu vs Species	Fe Cu vs Species	Fe Cu vs Species	Fe Cu vs Species	Species Fe vs Cu	Species Fe vs Cu	Species Fe vs Cu	Species Fe vs Cu	Species Cu vs Fe	Species Cu vs Fe	Species Cu vs Fe	Species Cu vs Fe	3-way ANOVA
+extra	extra	extra	extra	extra	extra	extra	extra	extra	high	 low	TO 1003	TO 1005	high	 low	TO 1003	TO 1005	high	 low	high	 low	high : high	 low : high	high :  low	 low :  low	TO 1003 : high	TO 1005 : high	TO 1003 :  low	TO 1005 :  low	TO 1003 : high	TO 1005 : high	TO 1003 :  low	TO 1005 :  low	extra
+O2.Cell.vol		<0.05	<0.01		<0.05	<0.05					<0.01				<0.1	<0.1	<0.05		<0.01						<0.01				<0.05	<0.05			O2.Cell.vol
+O2.Cell		<0.001	<0.0001		<0.05	<0.01					<0.001	<0.1			<0.01	<0.01	<0.001		<0.0001						<0.0001	<0.01			<0.001	<0.001			O2.Cell
+O2.Chla			<0.05		<0.05	<0.01	<0.1			<0.05	<0.05						<0.05	<0.05	<0.001				<0.1		<0.001				<0.05				O2.Chla
+AOX			<0.01																														AOX
+14C.ek.chla	<0.05	<0.001	<0.1			<0.05	<0.001		<0.05			<0.01			<0.05	<0.01	<0.001		<0.01			<0.01	<0.05	<0.1	<0.01		<0.1	<0.01	<0.001			<0.01	14C.ek.chla
+14C.alpha.chla	<0.01				<0.01		<0.1			<0.001	<0.01		<0.05										<0.01		<0.05								14C.alpha.chla
+14C.alpha.cell		<0.05		<0.1	<0.01				<0.1	<0.05	<0.05					<0.05		<0.1					<0.01			<0.1						<0.05	14C.alpha.cell
+FeDFB.cellvol (surface)	<0.01	<0.001		<0.05		<0.01			<0.01	<0.01				<0.001	<0.1	<0.001		<0.0001		<0.05		<0.01		<0.01			<0.05	<0.05		<0.05	<0.01	<0.0001	FeDFB.cellvol (surface)
+FeDFB.cell	<0.001	<0.001		<0.05	<0.05	<0.001			<0.001	<0.1				<0.001	<0.1	<0.001		<0.0001	<0.05	<0.05		<0.001				<0.1	<0.01			<0.05	<0.01	<0.001	FeDFB.cell
+cell.vol		<0.05	<0.0001	<0.01							<0.0001	<0.0001		<0.05		<0.01	<0.1	<0.1	<0.0001	<0.0001		<0.1		<0.1	<0.0001	<0.0001	<0.0001	<0.0001		<0.01		<0.01	cell.vol
+cell.size		<0.05	<0.0001	<0.01							<0.0001	<0.0001		<0.05		<0.01	<0.1	<0.1	<0.0001	<0.0001		<0.05		<0.05	<0.0001	<0.0001	<0.0001	<0.0001		<0.01		<0.01	cell.size
+Chla.cell	<0.01	<0.001	<0.01	<0.1			<0.001		<0.05	<0.1	<0.05	<0.1		<0.01		<0.001	<0.1	<0.01		<0.05		<0.001	<0.1			<0.1	<0.01			<0.01	<0.01		Chla.cell
+Chla (cell vol)	<0.0001	<0.0001				<0.01	<0.0001		<0.01	<0.001			<0.001	<0.01	<0.0001	<0.01	<0.05	<0.0001	<0.01			<0.01	<0.0001		<0.0001		<0.05			<0.01	<0.0001		Chla (cell vol)
+PQ		<0.05			<0.05					<0.1	<0.05				<0.1	<0.1	<0.1	<0.1							<0.1		<0.1						PQ
+Sigma	<0.01	<0.001	<0.0001	<0.01	<0.0001				<0.05	<0.0001	<0.0001		<0.001			<0.0001	<0.0001	<0.0001	<0.0001	<0.0001		<0.01	<0.0001	<0.01	<0.0001		<0.0001			<0.0001		<0.0001	Sigma
+FvFm	<0.0001	<0.001	<0.001		<0.01	<0.05			<0.05	<0.0001	<0.0001		<0.0001	<0.0001	<0.001	<0.001	<0.001	<0.1	<0.001	<0.1	<0.05	<0.05	<0.0001	<0.0001	<0.0001	<0.1	<0.05		<0.001	<0.001			FvFm
+Growthrate.percent		<0.0001	<0.0001	<0.01		<0.05					<0.0001	<0.0001	<0.1	<0.01		<0.0001	<0.0001		<0.0001	<0.0001		<0.05		<0.05	<0.0001	<0.0001	<0.0001	<0.0001	<0.1	<0.0001		<0.01	Growthrate.percent
+Growthrate.dd	<0.01	<0.0001	<0.0001	<0.001		<0.01			<0.01	<0.01	<0.0001	<0.0001	<0.0001			<0.0001	<0.0001	<0.05	<0.0001	<0.0001	<0.0001		<0.0001		<0.0001	<0.0001	<0.0001	<0.0001	<0.1	<0.0001		<0.001	Growthrate.dd
