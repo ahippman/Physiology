@@ -51,6 +51,7 @@ library(knitr)
   + [14C uptake - alpha (per cell)](#14C.alpha.cell)
   + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
   + [14C uptake - ek (per Chl a)](#14C.ek.chla)
+  + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
   + [AOX - Alternative Oxidase (percent)](#AOX)
   + [Gross Production per Chl a (mol O2 / mol Chla * h)](#O2.Chla)
   + [Gross Production per cell (mol O2 / cell * h)](#O2.Cell)
@@ -512,6 +513,38 @@ testInteractions(lm_Growthrate.percent, fixed="Cu.level", across="Fe.level")
 
 This means that there is significant growth reduction under high Cu when Fe is limiting (F(1,18) = 30.49, p.val < 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on growthrate. As discussed earlier, this makes sense when looking at the actual Cu concentrations used and is not in discrepancy to former studies that did find evidence of co limitation in both strains. 
 
+
+As it states just a tendnecy to lower growth rate under low Fe for TO 1003, I would like to look into what would happen if we just looked at the TO1003 data on itself (as this would not take into account the variances and data points):
+
+### Growthrate percent only for TO 1003
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_Growthrate.percent_TO1003, eval=TRUE}
+TO1003 <- mydata %>% filter(Species =="TO 1003")
+
+lm_TO03_Growthrate.percent <- lm(data = TO1003, Growthrate.Percent..u.umax. ~ ( Fe.level * Cu.level))
+summary(lm_TO03_Growthrate.percent) # we need to look at the actual anova to knwo where we need to look further
+anova(lm_TO03_Growthrate.percent) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+
+```{r phia_interaction means_Growthrate.percent_TO1003, eval=TRUE}
+
+(Growthrate.percent.means <- interactionMeans(lm_TO03_Growthrate.percent))
+plot(Growthrate.percent.means)
+```
+
+
+```{r phia_interaction_Contrasts_Fe.level_Cu.level_Growthrate.percent_TO1003, eval=TRUE}
+testInteractions(lm_TO03_Growthrate.percent, fixed="Fe.level", across="Cu.level")
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,18) = 99.67, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,18) = 37.90, p.val < 0.00001)
+
+```{r phia_interaction_Contrasts_Cu.level_Fe.level_Growthrate.percent_TO1003, eval=TRUE}
+testInteractions(lm_TO03_Growthrate.percent, fixed="Cu.level", across="Fe.level")
+```
 
 
 <a id="FvFm"></a>
@@ -1376,6 +1409,12 @@ testInteractions(lm_FeDFB.cell, fixed = "Cu.level", across="Species")
 
 Under high Cu conditions, the two strains have statistically very different FeDFB uptake rates (F(1,14) = 28.14, p-val = 0.0002).They are just somewhat differnet under low Cu treatments (F(1,14) = 3.18, p-val = 0.096)
 
+I also would like to ttry three way interaction testing:
+```{r phia_interaction_Contrasts_FeAndCulevel_vs_Species_FeDFB.cell, eval=TRUE}
+testInteractions(lm_FeDFB.cell, fixed = c("Fe.level", "Cu.level"), across="Species")
+```
+
+
 ###Summary Fe DFB uptake per Cell
 
 __low Cu__ decreases FeDFB uptake per cell in both strains compared to the control treatment (F(1,14) = 9.45, p-val = 0.02.
@@ -1526,10 +1565,10 @@ Under low Fe conditions there is a striking difference between TO 1005 and To 10
 First a look at the graph: 
 
 ```{r graph_14C.alpha.cell, eval=TRUE}
-p <- ggplot (mydata , aes(Treatment, X14C.per.Cell.Vol.alpha))
+p <- ggplot (mydata , aes(Treatment, X14C.per.Chla.at.155uE))
 p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
   labs(title="14C uptake per cell vol - alpha", x ="")+
-  geom_point(data=mean.df , aes(Treatment, X14C.per.Cell.Vol.alpha, size=2, colour=Species), shape = 45, size = 9)+
+  geom_point(data=mean.df , aes(Treatment, X14C.per.Chla.at.155uE, size=2, colour=Species), shape = 45, size = 9)+
   guides(alpha = "none", size = "none", shape = "none")+
   expand_limits(y=0)
 
@@ -1852,6 +1891,112 @@ testInteractions(lm_14C.ek.chla, fixed = "Fe.level", across="Species")
 Integrated over the high Fe treatment or over the low Fe treatment, the two species do have somewhat similar responses in their ek value.  
 
 ###Summary 14C per cell vol - alpha
+
+
+<a id="14C.@155.chla"></a>
+
+#### 14C Uptake per Chl a - at 155 uEinstein
+
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_14C.155uEinstein.chla, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, X14C.per.Chla.at.155uE))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="14C uptake per Chla - at 155 uEinstein", x ="")+
+  geom_point(data=mean.df , aes(Treatment, X14C.per.Chla.at.155uE, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_14C.155uEinstein.chla, eval=TRUE}
+lm_all_14C.155uEinstein.chla <- lm(data = mydata, X14C.per.Chla.at.155uE ~ (Species * Fe.level * Cu.level))
+summary(lm_all_14C.155uEinstein.chla) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_14C.155uEinstein.chla) 
+```
+
+There seems to be no *SPecies: Fe.level* interaction but a slight *Fe.level : Cu.level* interaction. However, there might be a three way Species:Fe.level:Cu.level* interaction. Let's leave everything in, again:
+
+
+```{r lm_14C.155uEinstein.chla, eval=TRUE}
+lm_14C.155uEinstein.chla <- lm (data = mydata, X14C.per.Chla.at.155uE ~ (Species * Fe.level * Cu.level))
+summary(lm_14C.155uEinstein.chla) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_14C.155uEinstein.chla)
+
+
+anova(lm_14C.155uEinstein.chla)
+```
+
+### Anova Table - 14C Uptake per Chl a - at 155 uEinstein
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __14C.155uEinstein.chla__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has no significant effect  
+* __Cu level__ alone has somewhat of an effect 
+* there is  an __interaction__ between __Species and Cu level__ (F (1, 16) = 7.66, p-val = 0.014)
+* there is  __somewhat of a three-way interaction__ between __Species, Fe level and Cu level__ (F (1, 16) = 5.81, p-val = 0.028)
+
+
+
+### Using the `phia` package to look into significant effects regarding 14C.155uEinstein.chla
+
+Again, any main effects ( none here) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_14C.155uEinstein.chla, eval=TRUE}
+
+(C14.155uEinstein.chla.means <- interactionMeans(lm_14C.155uEinstein.chla))
+plot(C14.155uEinstein.chla.means)
+```
+
+This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*First: Testing the three differnet variables against each other:*
+```{r phia_interaction_Contrasts_Species_Culevel_and_Felevel_14C.155uEinstein.chla, eval=TRUE}
+testInteractions(lm_14C.155uEinstein.chla, fixed="Species", across=c("Fe.level", "Cu.level")) # no significance
+testInteractions(lm_14C.155uEinstein.chla, fixed="Cu.level", across=c("Species", "Fe.level")) # no significance
+testInteractions(lm_14C.155uEinstein.chla, fixed="Fe.level", across=c("Species", "Cu.level"))
+```
+
+This last one suggests that only under high iron, we will find a difference between strains in response to Cu concentrations. Lets look at it:
+
+*Second: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_14C.155uEinstein.chla, eval=TRUE}
+testInteractions(lm_14C.155uEinstein.chla, fixed="Species", across="Cu.level") # no significance
+```
+
+When looking at the _14C uptake at 155uEinstein_ values in the PE curve of 14C uptake normalized to Chla, __only TO 1003 _decreases_ its 14C uptake__ in response to __low Cu__ significantly (F(1,16) = 12.96, p-val = 0.0048). The same can not be said for TO 1005.
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_14C.155uEinstein.chla, eval=TRUE}
+testInteractions(lm_14C.155uEinstein.chla, fixed = "Cu.level", across="Species")
+```
+
+Integrated over the high Cu treatment (ctrl and lowFe), the two species have similar 14C uptake per Chla at 155uEisntein (F(1,16) = 0.224, p-val = 0.64). 
+
+However, integrating over the low Cu treatments (lowCu and lowFeCu), the two species do have significantly different responses (F(1,16) = 19.26, p-val < 0.001). 
+
+
+
+###Summary 14C per Chla at 155 uEinstein - alpha
+
+
+TO 1003 decreases 14C uptake per Chla at 155 uEinstein significantly in response to low Cu. low Fe alone does not have an effect on 14C uptake when normalized to Chla. lowFeCu has only on effect on TO1003. To 1005 is not affected
+
 
 
 
@@ -3957,6 +4102,18 @@ all_anova <- bind_rows(anova_O2.Cell.vol, anova_O2.Cell, anova_O2.Chla, anova_AO
 write.table(all_anova, "All_ANOVA_Stats_Physiology.txt", row.names = FALSE, col.names = TRUE, sep="\t")
 
 ```
+
+Now I can reload the tables and modify / subset depending on my needs
+
+First I will add a column, indicating the level of significance
+
+```{r adding significanca conlumn, eval=FALSE}
+phia_results <- read.delim("All_Phia_Stats_Physiology.txt")
+anova_results <- read.delim("All_ANOVA_Stats_Physiology.txt")
+
+phia_results_sig <- phia_results %>% mutate(significance = )
+```
+
 ### Resources
 
 * [Tutorial on linear regression](http://rtutorialseries.blogspot.ca/2009/11/r-tutorial-series-simple-linear.html)
