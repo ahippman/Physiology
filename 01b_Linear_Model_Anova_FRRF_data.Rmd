@@ -90,12 +90,11 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   + [NPQ (nsv)](#NPQ.nsv)
   + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla](#Conversion)
   + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out](#Conversion_corr)
-  + [](#)
-  + [](#)
-  + [14C uptake - alpha (per cell)](#14C.alpha.cell)
-  + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
-  + [14C uptake - ek (per Chl a)](#14C.ek.chla)
-  + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
+
+  + [ETR PE curve - alpha (per cell)](#ETR.alpha)
+  + [ETR PE curve - ek (per Chl a)](#ETR.ek)
+  + [ETR PE curve - pmax (per Chl a)](#ETR.pmax)
+
 
 
 
@@ -1359,3 +1358,337 @@ This means that the two different strains have statistically the same corrected 
 
 
 END: __ETR_div_14C.per.Chla_at155__
+
+
+  
+<a id="ETR.alpha"><a>
+
+## ETR PE curve - alpha (per cell)
+
+[Back Up](#BackUP)
+
+This is the alpha value (linear slope of curve) of the PE curve derived from FRRF ETR vs E. It is the linear rate
+change of ETR per increase of light (light utilisation efficiency)
+
+```{r ETR.alpha.JP, echo=FALSE}
+
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR.alpha.JP, fill = Species)) + 
+  labs(title =  bquote("ETR PE curve - "~ alpha), y= bquote(atop( "ETR "[RCII],  " (mol "~ e^{"-"}~ " mol "~ RCII^{-1}~ " "~ s^{-1}~")/"~ "("~ mu~ "mol quanta  "~ " "~ m^{-2}~ " "~ s^{-1}~")")), x = "")
+  #theme(axis.text.x = element_text(angle=0))+
+  #theme(axis.title.y = element_text(angle=0))
+
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR.alpha.JP - sd.err.ETR.alpha.JP, ymax = mean.ETR.alpha.JP + sd.err.ETR.alpha.JP),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR.alpha.JP_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR.alpha.JP.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR.alpha.JP - sd.err.ETR.alpha.JP, ymax = mean.ETR.alpha.JP + sd.err.ETR.alpha.JP),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm ETR.alpha.JP_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR.alpha.JP~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR.alpha.JP_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ alone does have a significant effect on ETR PE curve - alpha (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does have a significant effect on ETR PE curve - alpha  (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm ETR.alpha.JP, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR.alpha.JP means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR.alpha.JP_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change ETR PE curve - alpha in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change NPQ (nsv) @ 160 uEinstein significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_ETR.alpha.JP_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same ETR PE curve - __alpha__  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically very different ETR PE curve - __alpha__ under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __ETR.alpha.JP__
+
+
+  
+<a id="ETR.ek"><a>
+
+## ETR PE curve - ek - light saturation point
+
+[Back Up](#BackUP)
+
+This is the ek value of the PE curve derived from FRRF ETR vs E. This is the point at which light saturation starts to affect the photosynthetic apparatus. 
+
+```{r ETR.ek.JP, echo=FALSE}
+
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR.ek.JP, fill = Species)) + 
+  labs (title =  bquote("ETR PE curve -" ~ E[k]), y= bquote(atop( E[k], "("~ mu~ "mol quanta  "~  m^{-2}~ " "~ s^{-1}~")/ (mol "~ e^{"-"}~ " mol "~ RCII^{-1}~ " "~ s^{-1}~")" )) , x = "")
+  #theme(axis.text.x = element_text(angle=0))+
+  #theme(axis.title.y = element_text(angle=0))
+
+
+p + geom_bar(color = "black", position = position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR.ek.JP - sd.err.ETR.ek.JP, ymax = mean.ETR.ek.JP + sd.err.ETR.ek.JP),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR.ek.JP_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR.ek.JP.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR.ek.JP - sd.err.ETR.ek.JP, ymax = mean.ETR.ek.JP + sd.err.ETR.ek.JP),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm ETR.ek.JP_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR.ek.JP~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR.ek.JP_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ alone does have a significant effect on ETR PE curve - ek (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does have a significant effect on ETR PE curve - ek  (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm ETR.ek.JP, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR.ek.JP means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR.ek.JP_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change ETR PE curve - ek in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change ETR PE curve - ek significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_ETR.ek.JP_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same ETR PE curve - __ek__  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically very different ETR PE curve - __ek__ under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __ETR.ek.JP__
+
+  + [ETR PE curve - pmax (per Chl a)](#ETR.pmax)
+  
+  
+<a id="ETR.pmax"><a>
+
+## ETR PE curve - pmax - light saturated maximum rate of ETR
+
+[Back Up](#BackUP)
+
+This is the pmax value of the PE curve derived from FRRF ETR vs E. This is the light saturated maximum rate of ETR.
+
+```{r ETR.pmax.JP, echo=FALSE}
+
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR.pmax.JP, fill = Species)) + 
+  labs (title =  bquote("ETR PE curve -" ~ P["max"]), y= bquote(atop( P[max], "(mol "~ e^{"-"}~ " mol "~ RCII^{-1}~ " "~ s^{-1}~")" )), x = "")
+  #theme(axis.text.x = element_text(angle=0))+
+  #theme(axis.title.y = element_text(angle=0))
+
+
+p + geom_bar(color = "black", position = position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR.pmax.JP - sd.err.ETR.pmax.JP, ymax = mean.ETR.pmax.JP + sd.err.ETR.pmax.JP),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR.pmax.JP_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR.pmax.JP.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR.pmax.JP - sd.err.ETR.pmax.JP, ymax = mean.ETR.pmax.JP + sd.err.ETR.pmax.JP),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm ETR.pmax.JP_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR.pmax.JP~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR.pmax.JP_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does not have a significant effect on ETR PE curve - Pmax (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does not have a significant effect on ETR PE curve - Pmax  (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm ETR.pmax.JP, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR.pmax.JP means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Yes, absolutely parralel! NO Effect
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR.pmax.JP_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do not significantly change ETR PE curve - pmax in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change ETR PE curve - pmax significantly in TO 1005 either (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_ETR.pmax.JP_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+Same here, this means that the two different strains have statistically the same ETR PE curve - __Pmax__  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically very different ETR PE curve - __Pmax__ under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+

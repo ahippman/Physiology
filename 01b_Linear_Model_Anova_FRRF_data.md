@@ -90,12 +90,11 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   + [NPQ (nsv)](#NPQ.nsv)
   + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla](#Conversion)
   + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out](#Conversion_corr)
-  + [](#)
-  + [](#)
-  + [14C uptake - alpha (per cell)](#14C.alpha.cell)
-  + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
-  + [14C uptake - ek (per Chl a)](#14C.ek.chla)
-  + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
+
+  + [ETR PE curve - alpha (per cell)](#ETR.alpha)
+  + [ETR PE curve - ek (per Chl a)](#ETR.ek)
+  + [ETR PE curve - pmax (per Chl a)](#ETR.pmax)
+
 
 
 
@@ -1849,3 +1848,437 @@ This means that the two different strains have statistically the same corrected 
 
 
 END: __ETR_div_14C.per.Chla_at155__
+
+
+  
+<a id="ETR.alpha"><a>
+
+## ETR PE curve - alpha (per cell)
+
+[Back Up](#BackUP)
+
+This is the alpha value (linear slope of curve) of the PE curve derived from FRRF ETR vs E. It is the linear rate
+change of ETR per increase of light (light utilisation efficiency)
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/ETR.alpha.JP-1.png) 
+
+
+
+
+
+```
+## 
+## Call:
+## lm(formula = ETR.alpha.JP ~ (Species * Cu.level), data = mydata_stat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.18429 -0.07384 -0.01805  0.03726  0.21225 
+## 
+## Coefficients:
+##                           Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                3.49212    0.09132  38.242 2.13e-08 ***
+## SpeciesTO1005             -0.19982    0.14438  -1.384  0.21566    
+## Cu.levellow                0.54801    0.12914   4.244  0.00542 ** 
+## SpeciesTO1005:Cu.levellow -0.37994    0.20419  -1.861  0.11211    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.1582 on 6 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.8489,	Adjusted R-squared:  0.7734 
+## F-statistic: 11.24 on 3 and 6 DF,  p-value: 0.007103
+```
+
+
+
+```r
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: ETR.alpha.JP
+##                  Df  Sum Sq Mean Sq F value   Pr(>F)   
+## Species           1 0.36465 0.36465 14.5765 0.008782 **
+## Cu.level          1 0.39211 0.39211 15.6745 0.007459 **
+## Species:Cu.level  1 0.08661 0.08661  3.4623 0.112111   
+## Residuals         6 0.15010 0.02502                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ alone does have a significant effect on ETR PE curve - alpha (F (1,6) = 14.576531, p.val = 0.008782)
+* __Cu. level__ does have a significant effect on ETR PE curve - alpha  (F (1,6) = 15.6745449, p.val = 0.0074594)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,6) = 3.4622998, p.val = 0.1121109) 
+
+
+
+```r
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+```
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.alpha.JP-1.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.alpha.JP-2.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.alpha.JP-3.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.alpha.JP-4.png) 
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+
+```r
+(mydata.means <- interactionMeans(z))
+```
+
+```
+##   Species Cu.level adjusted mean std. error
+## 1  TO1003     high      3.492122 0.09131616
+## 2  TO1005     high      3.292303 0.11183900
+## 3  TO1003      low      4.040135 0.09131616
+## 4  TO1005      low      3.460376 0.11183900
+```
+
+```r
+plot(mydata.means)
+```
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/phia_interaction ETR.alpha.JP means-1.png) 
+
+
+
+#### Pairwise Comparisons
+
+
+```r
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F  Pr(>F)  
+## TO1003    -0.54801  1   0.45048 18.0076 0.01084 *
+## TO1005    -0.16807  1   0.02825  1.1292 0.32883  
+## Residuals           6   0.15010                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change ETR PE curve - alpha in TO 1003 (F(1,6) = 18.0076227, p.val = 0.0108372) but they do not change NPQ (nsv) @ 160 uEinstein significantly in TO 1005  (F(1,6) = 1.129222, p.val = 0.3288286)) 
+
+
+
+
+
+```r
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F  Pr(>F)  
+## high      0.19982  1   0.04791  1.9153 0.21566  
+##  low      0.57976  1   0.40334 16.1235 0.01399 *
+## Residuals          6   0.15010                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+This means that the two different strains have statistically the same ETR PE curve - __alpha__  (F(1,6) = 1.9153095, p.val = 0.2156557) but they do have statistically very different ETR PE curve - __alpha__ under low Cu  (F(1,6) = 16.1235213, p.val = 0.0139905)).
+
+
+END: __ETR.alpha.JP__
+
+
+  
+<a id="ETR.ek"><a>
+
+## ETR PE curve - ek - light saturation point
+
+[Back Up](#BackUP)
+
+This is the ek value of the PE curve derived from FRRF ETR vs E. This is the point at which light saturation starts to affect the photosynthetic apparatus. 
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/ETR.ek.JP-1.png) 
+
+
+
+
+
+```
+## 
+## Call:
+## lm(formula = ETR.ek.JP ~ (Species * Cu.level), data = mydata_stat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -24.7033  -7.0402   0.9807   8.8900  15.4052 
+## 
+## Coefficients:
+##                           Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                140.798      8.380  16.801 2.84e-06 ***
+## SpeciesTO1005               11.753     13.251   0.887   0.4092    
+## Cu.levellow                -35.454     11.852  -2.991   0.0243 *  
+## SpeciesTO1005:Cu.levellow    7.507     18.739   0.401   0.7026    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 14.52 on 6 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.7196,	Adjusted R-squared:  0.5793 
+## F-statistic: 5.132 on 3 and 6 DF,  p-value: 0.04285
+```
+
+
+
+```r
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: ETR.ek.JP
+##                  Df  Sum Sq Mean Sq F value  Pr(>F)  
+## Species           1  577.08  577.08  2.7389 0.14901  
+## Cu.level          1 2632.75 2632.75 12.4954 0.01229 *
+## Species:Cu.level  1   33.82   33.82  0.1605 0.70258  
+## Residuals         6 1264.18  210.70                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ alone does have a significant effect on ETR PE curve - ek (F (1,6) = 2.7389103, p.val = 0.1490131)
+* __Cu. level__ does have a significant effect on ETR PE curve - ek  (F (1,6) = 12.4954464, p.val = 0.0122947)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,6) = 0.1604933, p.val = 0.7025781) 
+
+
+
+```r
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+```
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.ek.JP-1.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.ek.JP-2.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.ek.JP-3.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.ek.JP-4.png) 
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+
+```r
+(mydata.means <- interactionMeans(z))
+```
+
+```
+##   Species Cu.level adjusted mean std. error
+## 1  TO1003     high      140.7984   8.380466
+## 2  TO1005     high      152.5513  10.263932
+## 3  TO1003      low      105.3440   8.380466
+## 4  TO1005      low      124.6041  10.263932
+```
+
+```r
+plot(mydata.means)
+```
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/phia_interaction ETR.ek.JP means-1.png) 
+
+
+
+#### Pairwise Comparisons
+
+
+```r
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##            Value Df Sum of Sq     F  Pr(>F)  
+## TO1003    35.454  1   1885.52 8.949 0.04855 *
+## TO1005    27.947  1    781.04 3.707 0.10250  
+## Residuals         6   1264.18                
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change ETR PE curve - ek in TO 1003 (F(1,6) = 8.9489875, p.val = 0.0485472) but they do not change ETR PE curve - ek significantly in TO 1005  (F(1,6) = 3.7069523, p.val = 0.1025037)) 
+
+
+
+
+
+```r
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F Pr(>F)
+## high      -11.753  1    165.75 0.7867 0.4092
+##  low      -19.260  1    445.14 2.1127 0.3926
+## Residuals          6   1264.18
+```
+
+
+This means that the two different strains have statistically the same ETR PE curve - __ek__  (F(1,6) = 0.7866959, p.val = 0.4092424) but they do have statistically very different ETR PE curve - __ek__ under low Cu  (F(1,6) = 2.1127077, p.val = 0.3926079)).
+
+
+END: __ETR.ek.JP__
+
+  + [ETR PE curve - pmax (per Chl a)](#ETR.pmax)
+  
+  
+<a id="ETR.pmax"><a>
+
+## ETR PE curve - pmax - light saturated maximum rate of ETR
+
+[Back Up](#BackUP)
+
+This is the pmax value of the PE curve derived from FRRF ETR vs E. This is the light saturated maximum rate of ETR.
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/ETR.pmax.JP-1.png) 
+
+
+
+
+
+```
+## 
+## Call:
+## lm(formula = ETR.pmax.JP ~ (Species * Cu.level), data = mydata_stat)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -109.71  -22.98   11.04   30.03   61.41 
+## 
+## Coefficients:
+##                           Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                493.729     35.933  13.740 9.24e-06 ***
+## SpeciesTO1005                8.385     56.815   0.148    0.888    
+## Cu.levellow                -68.051     50.817  -1.339    0.229    
+## SpeciesTO1005:Cu.levellow   -2.884     80.348  -0.036    0.973    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 62.24 on 6 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.3423,	Adjusted R-squared:  0.0134 
+## F-statistic: 1.041 on 3 and 6 DF,  p-value: 0.4398
+```
+
+
+
+```r
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: ETR.pmax.JP
+##                  Df  Sum Sq Mean Sq F value Pr(>F)
+## Species           1   115.7   115.7  0.0299 0.8685
+## Cu.level          1 11973.2 11973.2  3.0911 0.1292
+## Species:Cu.level  1     5.0     5.0  0.0013 0.9725
+## Residuals         6 23240.9  3873.5
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does not have a significant effect on ETR PE curve - Pmax (F (1,6) = 0.0298668, p.val = 0.8684753)
+* __Cu. level__ does not have a significant effect on ETR PE curve - Pmax  (F (1,6) = 3.0910809, p.val = 0.1292261)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,6) = 0.0012881, p.val = 0.9725342) 
+
+
+
+```r
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+```
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.pmax.JP-1.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.pmax.JP-2.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.pmax.JP-3.png) ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/lm ETR.pmax.JP-4.png) 
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+
+```r
+(mydata.means <- interactionMeans(z))
+```
+
+```
+##   Species Cu.level adjusted mean std. error
+## 1  TO1003     high      493.7290   35.93271
+## 2  TO1005     high      502.1137   44.00840
+## 3  TO1003      low      425.6778   35.93271
+## 4  TO1005      low      431.1788   44.00840
+```
+
+```r
+plot(mydata.means)
+```
+
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/phia_interaction ETR.pmax.JP means-1.png) 
+
+Yes, absolutely parralel! NO Effect
+
+#### Pairwise Comparisons
+
+
+```r
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##            Value Df Sum of Sq      F Pr(>F)
+## TO1003    68.051  1    6946.5 1.7933  0.458
+## TO1005    70.935  1    5031.8 1.2990  0.458
+## Residuals         6   23240.9
+```
+
+
+This means that the two different Cu.levels I used (high and low) do not significantly change ETR PE curve - pmax in TO 1003 (F(1,6) = 1.7933386, p.val = 0.4580371) but they do not change ETR PE curve - pmax significantly in TO 1005 either (F(1,6) = 1.2990304, p.val = 0.4580371)) 
+
+
+
+
+
+```r
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F Pr(>F)
+## high      -8.3847  1      84.4 0.0218      1
+##  low      -5.5010  1      36.3 0.0094      1
+## Residuals          6   23240.9
+```
+
+
+Same here, this means that the two different strains have statistically the same ETR PE curve - __Pmax__  (F(1,6) = 0.02178, p.val = 1) but they do have statistically very different ETR PE curve - __Pmax__ under low Cu  (F(1,6) = 0.0093749, p.val = 1)).
+
+
