@@ -88,19 +88,15 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   + [Fv' / Fm' - Maximum quantum yield at certain light level](#F.v.F.m)
   + [Fq' / Fm' - φPSII'  => overall quantum efficiency at certain light level](#F.q.F.m)
   + [NPQ (nsv)](#NPQ.nsv)
-  + [\φe:C / \ηPSII - Conversion factor ETR / 14C uptake per Chla](#Conversion)
-  + [\φe:C / \ηPSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out](#Conversion_corr)
+  + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla](#Conversion)
+  + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out](#Conversion_corr)
   + [](#)
   + [](#)
   + [14C uptake - alpha (per cell)](#14C.alpha.cell)
   + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
   + [14C uptake - ek (per Chl a)](#14C.ek.chla)
   + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
-  + [AOX - Alternative Oxidase (percent)](#AOX)
-  + [Gross Production per Chl a (mol O2 / mol Chla * h)](#O2.Chla)
-  + [Gross Production per cell (mol O2 / cell * h)](#O2.Cell)
-  + [Gross Production per cell vol (mol O2 / cell vol * h)](#O2.Cell.vol)
-  
+
 
 
 
@@ -254,18 +250,7 @@ p + geom_bar(color = "black", position=position_dodge(), stat="identity", width 
 
 ```
 
-``` {r possible plot modifications, eval=F, echo=T}
-#possible modifications for future references...
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_line(colour = "grey50"),
-        plot.title = element_text(size = rel(1.5), face = "bold", vjust = 1.5),
-        axis.title = element_text(face = "bold"),
-        legend.position = "top",
-        legend.title = element_blank(),
-        legend.key.size = unit(0.4, "cm"),
-        legend.key = element_rect(fill = "black"))
-  
-```
+
 
 
 
@@ -1161,7 +1146,7 @@ END: __NPQ.nsv.__
 
 <a id="Conversion"><a>
 
-## \φe:C / \ηPSII - Conversion factor ETR / 14C uptake per Chla
+## e:C / PSII - Conversion factor ETR / 14C uptake per Chla
 
 [Back Up](#BackUP)
 
@@ -1277,7 +1262,7 @@ END: __ETR_div_14C.per.Chla_at155__
 e:C / PSII is the conversion factor when the rate of charge separation ETR at a given light level is divided by the 14C uptake normalized to Chla at a given light intensity (here 155 uEinstein:  the same uEinstein as the growth irradiance). I have taken out hte extreme outlier (TO03 lowCu A) I will run the analysis here without the outlier
 
 ```{r Converse_corr , echo=FALSE}
-p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.Converse_corr , fill = Species)) + 
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.Converse_corr, fill = Species)) + 
   labs(title="Comparison of corrected Conversion factor @ 155 E", y="e:C / PSII", x="")+
     theme(axis.text.x = element_text(angle=0))+
   theme(axis.title.y = element_text(angle=0))
@@ -1293,8 +1278,8 @@ p + geom_bar(color = "black", position=position_dodge(), stat="identity", width 
 
 ```
 
-```{r Converse_corr _plot, eval=FALSE, echo=FALSE}
-png('Plots/FRRF/lowCu_Converse_corr .png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+```{r Converse_corr_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_Converse_corr.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
 
 p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -1310,7 +1295,7 @@ dev.off()
 ```
 
 
-```{r lm Converse_corr _allMain and Interaction, eval=TRUE, echo=FALSE}
+```{r lm Converse_corr_allMain and Interaction, eval=TRUE, echo=FALSE}
 z <- lm(data=mydata_stat, Converse_corr ~(Species*Cu.level)) #this will model the parameter dependend on the 
 #two main effects (Species,  Cu.level) and will include  possible interactions
 summary(z)
@@ -1334,7 +1319,7 @@ Looking at the ANOVA table for the linear model that test for both main effects 
 
 ```{r lm Converse_corr , eval=TRUE}
 
-plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+#plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
 
 ```
 
@@ -1346,14 +1331,14 @@ plot(z) ##these plots are diagnostic and will give indications if the assumption
 ```{r phia_interaction Converse_corr  means, eval=TRUE}
 
 (mydata.means <- interactionMeans(z))
-plot(mydata.means)
+#plot(mydata.means)
 ```
 
 Pretty much parrallel and error bars overlap almost completely! 
 
 #### Pairwise Comparisons
 
-```{r phia_interaction_Converse_corr _Species_Cu.level, eval=TRUE}
+```{r phia_interaction_Converse_corr_Species_Cu.level, eval=TRUE}
 (testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
 
 ```
