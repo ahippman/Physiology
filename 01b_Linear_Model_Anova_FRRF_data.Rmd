@@ -1,0 +1,1376 @@
+---
+title: "Stats_Physiology_FRRF"
+author: "Anna A. Hippmann"
+date: "July, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Libraries used
+``` {r libraries, eval=TRUE}
+suppressPackageStartupMessages(library(lsmeans))
+suppressPackageStartupMessages(library(phia))
+suppressPackageStartupMessages(library(visreg))
+suppressPackageStartupMessages(library(dplyr))
+library(tidyr)
+library(ggplot2)
+library(knitr)
+```
+
+## Functions used
+```{r functions, echo=TRUE}
+  
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+  
+```
+
+
+### Overview
+
+
+
+
+* Overview of [My Method](#MyMethod) to Analyze my Physiological Data
+  + [Sigma'](#Sigma')
+  + [ETR @ 155 calculated](#ETR_155)
+  + [ETR @ 160 measured](#ETR_160_measure)
+  + [ETR @ 160 calculated](#ETR_160_calc)
+  + [Fq' / Fv' - Fraction of functional RC II open](#F.q.F.v)
+  + [Fv' / Fm' - Maximum quantum yield at certain light level](#F.v.F.m)
+  + [Fq' / Fm' - φPSII'  => overall quantum efficiency at certain light level](#F.q.F.m)
+  + [NPQ (nsv)](#NPQ.nsv)
+  + [\φe:C / \ηPSII - Conversion factor ETR / 14C uptake per Chla](#Conversion)
+  + [\φe:C / \ηPSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out](#Conversion_corr)
+  + [](#)
+  + [](#)
+  + [14C uptake - alpha (per cell)](#14C.alpha.cell)
+  + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
+  + [14C uptake - ek (per Chl a)](#14C.ek.chla)
+  + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
+  + [AOX - Alternative Oxidase (percent)](#AOX)
+  + [Gross Production per Chl a (mol O2 / mol Chla * h)](#O2.Chla)
+  + [Gross Production per cell (mol O2 / cell * h)](#O2.Cell)
+  + [Gross Production per cell vol (mol O2 / cell vol * h)](#O2.Cell.vol)
+  
+
+
+
+As per my experimental set up, I should have **3 fixed effects**:
+
+1) Species _(as I choose these 2 strains on purpose to test for differences between them)_
+
+2) Fe-level
+
+3) Cu-level
+
+Nina did all the long curves for all my cultures BUT not for any of my TO 1003 low Fe cultures! on the one hand side: FOrtunatley I have data for my control and lowCu for both species. Ont he other hand unfortunately, I cannot (statistically) test for all three fixed effects, as Fe.level is not complete for both species high and low Fe
+
+Hence, for the statistical analysis, I have to use only my control and lowCu treatemtns for both my cultures.
+
+For this I will need to use 
+
+1) the **function `lm()` = linear model**. 
+2) then use `anova()` on the `lm object`
+3) then use `lsmeans()` on the `lm object` _(to do all the different pairwise comparisons to my heart's desire)_
+
+Let's start by loading in my data and having a look at it:
+
+```{r data input, eval=TRUE}
+#I used the original "ALL_PhysiologicalData_2015_04.txt" and added columns "Treatment" and "Merged" to it, then saved the ensuing file under "ALL_PhysiologicalData_2015_04_withMerged_Variable.txt", so I can use it for all my plots
+
+mydata <- read.delim("Input_Data/FRRF/Compiled_ALL_Raw_R_2016_07_FRRF.txt", sep="\t", header=T)
+mydata <- mydata %>% 
+  unite(Trtmt_comb, Species, Treatment, sep = " ", remove = FALSE) %>% 
+  mutate (Treatment_number = c(1,1,1,2,2,2,3,3,3,4,4,4, 1,1,1,2,2,2,3,3,3,4,4,4))
+
+mydata_stat <- mydata %>% 
+  filter(Treatment_number < 3) #this will leave me with only control and lowCu data
+
+str(mydata)
+```
+
+
+
+### Example how to make mean / std error table.... in long format..  
+```{r means and stderror_example}
+mydata.mean.stderr <- mydata %>%  
+  group_by(Trtmt_comb) %>% 
+    summarize(mean.sig. = mean(sig., na.rm = T),
+            mean.F.q.F.v  = mean( F.q.F.v, na.rm = T), #= (Fm' - F') / (Fm' - Fo'), aka fraction of functional RCII open = Qa oxidized => photochemical quenching of variable fluorescence
+            mean.F.v.F.m  = mean(F.v.F.m , na.rm = T), # = (Fm' - Fo') / Fm', aka maximum quantum yield @ certain light level ; can be used to quntify extend to which photochemistry in PSII is limited by NPQ
+            mean.F.q.F.m  = mean(F.q.F.m, na.rm = T ), #= (Fm' - F') / Fm', aka, = φPSII'  => overall quantum efficiency of photochemical of photochemical energy conversion on PSII at a given light intensity
+            mean.ETR.160  = mean(ETR, na.rm = T ),#ETR measured at 160 u Einstin
+            mean.ETR_160_measure = mean(ETR_160_measure, na.rm=T),
+            mean.ETR_160_calc = mean(ETR_160_calc, na.rm=T),
+            mean.NPQ.nsv.  = mean(NPQ.nsv., na.rm = T ), #mean NPQ as per normalized Stein Vollmer equation
+            mean.ETR.alpha.JP  = mean(ETR.alpha.JP, na.rm = T ),
+            mean.ETR.ek.JP  = mean(ETR.ek.JP, na.rm = T ),
+            mean.ETR.pmax.JP  = mean(ETR.pmax.JP, na.rm = T ),
+            mean.ETR_155_calc = mean(ETR_155_calc, na.rm = T),
+            mean.ETR_div_14C.per.Chla_at155 = mean(ETR_div_14C.per.Chla_at155, na.rm = T), #aka conversion factor
+            mean.Converse_corr = mean(Converse_corr, na.rm = T),
+            sd.err.sig. = sd(sig., na.rm = T)/sqrt(n()),
+            sd.err.F.q.F.v = sd(F.q.F.v, na.rm = T)/sqrt(n()),
+            sd.err.F.v.F.m = sd(F.v.F.m, na.rm = T)/sqrt(n()),
+            sd.err.F.q.F.m = sd(F.q.F.m, na.rm = T)/sqrt(n()),
+            sd.err.ETR.160 = sd(ETR, na.rm = T)/sqrt(n()),
+            sd.err.ETR_160_measure = sd(ETR_160_measure, na.rm = T)/sqrt(n()),
+            sd.err.ETR_160_calc = sd(ETR_160_calc, na.rm = T)/sqrt(n()),
+            sd.err.NPQ.nsv. = sd(NPQ.nsv., na.rm = T)/sqrt(n()),
+            sd.err.ETR.alpha.JP = sd(ETR.alpha.JP, na.rm = T)/sqrt(n()),
+            sd.err.ETR.ek.JP = sd(ETR.ek.JP, na.rm = T)/sqrt(n()),
+            sd.err.ETR.pmax.JP = sd(ETR.pmax.JP, na.rm = T)/sqrt(n()),
+            sd.err.ETR_155_calc = sd(ETR_155_calc, na.rm = T)/sqrt(n()),
+            sd.err.ETR_div_14C.per.Chla_at155 = sd(ETR_div_14C.per.Chla_at155, na.rm = T)/sqrt(n()),
+            sd.err.Converse_corr = sd(Converse_corr, na.rm = T)/sqrt(n()))
+
+mydata.mean.stderr <- mydata.mean.stderr %>% 
+  separate(Trtmt_comb, c("Species", "Treatment"), remove = F)
+
+
+
+mydata.mean.stderr$Trtmt_comb <- as.factor(mydata.mean.stderr$Trtmt_comb)
+mydata.mean.stderr$Species <- as.factor(mydata.mean.stderr$Species)
+mydata.mean.stderr$Treatment <- as.factor(mydata.mean.stderr$Treatment)
+
+
+mydata.mean.stderr.lowCu <- mydata.mean.stderr %>% 
+   mutate (Treatment_number = c(1:4, 1:4)) %>% 
+  filter(Treatment_number < 3 )
+
+str(mydata.mean.stderr)
+#knitr::kable(mydata.mean.stderr, format= "markdown")
+write.table(mydata.mean.stderr, file="Output_Data/FRRF/FRRF_physiology_Stats_TO03_TO05_mean_stderror.txt", sep="\t", row.names=F)
+
+```
+
+
+
+
+```{r ggplot barplot01}
+
+# first I create my colour vectors
+
+
+
+border_colour <- scale_colour_manual(values = c("black", "black"))
+
+Species_colours <- structure(c('grey50', 'grey80'), Names =c("TO1003", "TO1005"))
+
+
+#here is a cleanup code that gets rid of ggplots default background colours etc:
+cleanup = theme (panel.grid.major = element_blank(),
+                 panel.grid.minor = element_blank(),
+                 panel.background = element_blank(),
+                 axis.line = element_line(color = "black"))
+
+#now my first graph:
+
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.sig., fill = Species)) + 
+  labs(title="Comparison of sigma @ 160 E", y="sigma", x="Treatments")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.sig. - sd.err.sig., ymax = mean.sig. + sd.err.sig.),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+#and one tryout with just Ctrl and lowCu
+
+
+mydata.mean.stderr.lowCu <- mydata.mean.stderr %>% 
+   mutate (Treatment_number = c(1:4, 1:4)) %>% 
+  filter(Treatment_number < 3 )
+
+
+
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.sig., fill = Species)) + 
+  labs(title="Comparison of sigma @ 160 E", y="sigma", x="Treatments")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.sig. - sd.err.sig., ymax = mean.sig. + sd.err.sig.),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+``` {r possible plot modifications, eval=F, echo=T}
+#possible modifications for future references...
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(colour = "grey50"),
+        plot.title = element_text(size = rel(1.5), face = "bold", vjust = 1.5),
+        axis.title = element_text(face = "bold"),
+        legend.position = "top",
+        legend.title = element_blank(),
+        legend.key.size = unit(0.4, "cm"),
+        legend.key = element_rect(fill = "black"))
+  
+```
+
+
+
+
+```{r graph_Growthrate, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, sig. ))
+p + geom_point(aes(group=Trtmt_comb, colour=Species), size = 3)+
+  labs(title="Sigma' @ 160", x ="")+
+  geom_point(data=mydata.mean.stderr , aes(Treatment, mean.sig., size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")
+
+```
+
+
+
+<a id="Sigma'"></a>
+
+#### z_all - linear model checking for main effects and interactions in Sigma
+
+[Back Up](#BackUP)
+
+I am testing now the __sigma' at 160 uEinstein__ data for control and lowCu for both strains
+
+```{r lm sig._allMain and Interaction, eval=TRUE}
+z <- lm(data=mydata_stat, sig.~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+To look at the actual differences, we need to look at the `anova` table:
+
+```{r lm sig._allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does have a significant effect on sigma' (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ has an effect on sigma' (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is an __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`)
+    + i.e. depending on the Species sigma' is different under similar Fe conditions
+
+
+__NOTE:__ the anova table only tells me that there are differences e.g. between the Species. IT DOES NOT TELL ME depending on what variables etc... for that we need to do pairwise comparisons.
+
+
+
+
+```{r lm sig., eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### What if we use the `phia` package to look into interactions or main effects?
+
+<a id="phia_interaction"></a>
+
+[Back Up](#BackUP)
+
+This is basically from the tutorial / examples given in the `R` vignette by _Helios De Rosario Martinez_ ["Analysing interactions of fitted models"](https://cran.r-project.org/web/packages/phia/vignettes/phia.pdf)
+
+[...] In factorial experiments like this one, the dependency between factor levels and the response variable is usually represented in a contingency table, where the rows and columns are related to the different levels of both treatments, and __each cell contains the adjusted mean of the response for the corresponding interaction of factors__. When there is an interaction effect, the cell means are taken as the most straightforward way of representing this effect. 
+
+These values and their standard errors can be obtained from the model coeffients with the function `interactionMeans` in the package `phia`, using the fitted model as first (and in this case only) argument:
+
+```{r phia_interaction sig. means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+This plot shows us main effects (such as species  = different, upper left corner; Cu.level = different, lower right corner) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do  seem to have an interaction effect. They change in differnet way (lines are NOT parallel). When we look at lower left  cell, we see that sigma' is the same for both species under high Cu (=control), but is very different when we look at the red line, as sigma' is high unde rlow Cu for TO03 and stays the same low under low Cu for To05. The same is shown in the upper right corner
+
+#### Pairwise Comparisons
+
+<a id="phia_pairwise"></a>
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+```{r phia_interaction_sig._Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change sigma' at 160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change sigma' significantly in TO 1005 (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`))
+
+
+
+
+```{r phia_interaction_sig._Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same sigma' at 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have significantly differnet sigma' under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+
+__Note__: I am using "strain" and "species" interchangeably, even though the correct term would be "strain" in the current context
+
+
+
+
+
+
+
+
+
+
+<a id="ETR_155"><a>
+
+## ETR @ 155uEinstein - calculated from fitted curve
+
+[Back Up](#BackUP)
+
+Now I am doing it in a little slimmer version... not as much explanatory text
+
+```{r ETR_155_calc, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR_155_calc, fill = Species)) + 
+  labs(title="Comparison of ETR @ 155 E - calc", y="ETR", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_155_calc - sd.err.ETR_155_calc, ymax = mean.ETR_155_calc + sd.err.ETR_155_calc),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR_155_calc_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR_155_calc.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_155_calc - sd.err.ETR_155_calc, ymax = mean.ETR_155_calc + sd.err.ETR_155_calc),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+```{r lm ETR_155_calc_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR_155_calc~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR_155_calc_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does not have a significant effect on ETR @ 155uEinstein (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does not have a significant effect on ETR @ 155uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`)
+
+
+```{r lm ETR_155_calc, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR_155_calc means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR_155_calc_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR at 155 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do not change ETR at 155 uEinstein significantly in TO 1005 either (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`))
+
+
+
+
+```{r phia_interaction_ETR_155_calc_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same ETR at 155 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do have the same ETR at 155 uEinstein under low Cu as well (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+
+
+
+
+<a id=""><a>
+<a id="ETR_160_measure"><a>
+
+## ETR @ 160uEinstein - measured
+
+[Back Up](#BackUP)
+
+This is the ETR data that has been calculated from the direct measurements of the FRRF at 160 uEinstein
+
+```{r ETR_160_measure, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR_160_measure, fill = Species)) + 
+  labs(title="Comparison of ETR @ 160 E - measure", y="ETR", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_160_measure - sd.err.ETR_160_measure, ymax = mean.ETR_160_measure + sd.err.ETR_160_measure),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR_160_measure_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR_160_measure.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_160_measure - sd.err.ETR_160_measure, ymax = mean.ETR_160_measure + sd.err.ETR_160_measure),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm ETR_160_measure_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR_160_measure~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR_160_measure_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does not have a significant effect on ETR @ 160uEinstein (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does not have a significant effect on ETR @ 160uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`)
+
+
+```{r lm ETR_160_measure, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR_160_measure means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR_160_measure_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR at 160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do not change ETR at 160 uEinstein significantly in TO 1005 either (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`))
+
+
+
+
+```{r phia_interaction_ETR_160_measure_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same ETR at 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do have the same ETR at 160 uEinstein under low Cu as well (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: ETR_160_measure
+
+
+
+
+
+
+
+<a id="ETR_160_calc"><a>
+
+## ETR @ 160uEinstein - measured
+
+[Back Up](#BackUP)
+
+This is the ETR data that has been calculated from the direct measurements of the FRRF at 160 uEinstein
+
+```{r ETR_160_calc, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR_160_calc, fill = Species)) + 
+  labs(title="Comparison of ETR @ 160 E - calculated", y="ETR", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_160_calc - sd.err.ETR_160_calc, ymax = mean.ETR_160_calc + sd.err.ETR_160_calc),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR_160_calc_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR_160_calc.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_160_calc - sd.err.ETR_160_calc, ymax = mean.ETR_160_calc + sd.err.ETR_160_calc),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm ETR_160_calc_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR_160_calc~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR_160_calc_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does not have a significant effect on ETR @ 160uEinstein (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does not have a significant effect on ETR @ 160uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`)
+
+
+```{r lm ETR_160_calc, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR_160_calc means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR_160_calc_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR at 160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do not change ETR at 160 uEinstein significantly in TO 1005 either (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`))
+
+
+
+
+```{r phia_interaction_ETR_160_calc_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same ETR at 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do have the same ETR at 160 uEinstein under low Cu as well (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+
+<a id="F.q.F.v"><a>
+
+## Fq' / Fv' - Fraction of functional RC II open
+
+[Back Up](#BackUP)
+
+Fq'/Fv' gives the fraction of functional RCII that are open at a specific actinitic irradiance ( = primary electron acceptor QA oxidized). This is at 160 uEinstein (so very close to the 155 uEinstein growth irradiance)
+
+```{r F.q.F.v, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.F.q.F.v, fill = Species)) + 
+  labs(title="Comparison of Fq' / Fv' @ 160 E", y="Fq' / Fv'", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.F.q.F.v - sd.err.F.q.F.v, ymax = mean.F.q.F.v + sd.err.F.q.F.v),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r F.q.F.v_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_F.q.F.v.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.F.q.F.v - sd.err.F.q.F.v, ymax = mean.F.q.F.v + sd.err.F.q.F.v),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm F.q.F.v_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, F.q.F.v~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm F.q.F.v_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does not have a significant effect on Fq'/Fv' @ 160uEinstein, only a trend (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does have a significant effect on Fq'/Fv' @ 160uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) (even though I would argue, that there is a trend as well)
+
+
+```{r lm F.q.F.v, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction F.q.F.v means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_F.q.F.v_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change Fq'/Fv' at 160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change Fq'/Fv' at 160 uEinstein significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_F.q.F.v_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same Fq'/Fv' at 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do have the same Fq'/Fv' at 160 uEinstein under low Cu as well (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __F.q.F.v__
+
+
+
+
+
+
+<a id="F.v.F.m"><a>
+
+## Fv' / Fm' - Maximum quantum yield at certain light level
+
+[Back Up](#BackUP)
+
+Fv'/Fm' gives the maximum qantum yield at 160 uEinstein (so very close to the 155 uEinstein growth irradiance). It can be used to quantify the extend to which photochemistry in RC II is limited by NPQ
+
+```{r F.v.F.m, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.F.v.F.m, fill = Species)) + 
+  labs(title="Comparison of Fv' / Fm' @ 160 E", y="Fv' / Fm'", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.F.v.F.m - sd.err.F.v.F.m, ymax = mean.F.v.F.m + sd.err.F.v.F.m),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r F.v.F.m_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_F.v.F.m.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.F.v.F.m - sd.err.F.v.F.m, ymax = mean.F.v.F.m + sd.err.F.v.F.m),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm F.v.F.m_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, F.v.F.m~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm F.v.F.m_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ does  have a significant effect on Fv'/Fm' @ 160uEinstein, only a trend (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does have a significant effect on Fv'/Fm' @  160uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm F.v.F.m, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction F.v.F.m means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_F.v.F.m_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change Fv'/Fm' @  160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change Fv'/Fm' @ 160 uEinstein significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_F.v.F.m_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same Fv'/Fm' @ 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically very different Fv'/Fm' @  160 uEinstein under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __F.v.F.m__
+
+<a id=""><a>
+
+
+<a id="F.q.F.m"><a>
+
+## Fq' / Fm' - φPSII'  => overall quantum efficiency at certain light level
+
+[Back Up](#BackUP)
+
+Fq'/Fm' overall quantum efficiency of photochemical energy conversion on PSII at a given light intensity (here 160 uEinstein:  very close to the 155 uEinstein growth irradiance). 
+
+```{r F.q.F.m, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.F.q.F.m, fill = Species)) + 
+  labs(title="Comparison of Fq' / Fm' @ 160 E", y="Fv' / Fm'", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.F.q.F.m - sd.err.F.q.F.m, ymax = mean.F.q.F.m + sd.err.F.q.F.m),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r F.q.F.m_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_F.q.F.m.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.F.q.F.m - sd.err.F.q.F.m, ymax = mean.F.q.F.m + sd.err.F.q.F.m),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm F.q.F.m_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, F.q.F.m~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm F.q.F.m_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ alone does  not have a significant effect on Fq'/Fm' @ 160uEinstein, only a trend (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does have a significant effect on Fq'/Fm'' @  160uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm F.q.F.m, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction F.q.F.m means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_F.q.F.m_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change Fq'/Fm' @  160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change Fq'/Fm' @ 160 uEinstein significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_F.q.F.m_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same Fq'/Fm' @ 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically very different Fq'/Fm' @  160 uEinstein under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __F.q.F.m__
+
+
+
+<a id="NPQ.nsv"><a>
+
+## NPQ (nsv) - non photochemical quenching (normalized Stern-Vollmer quenching coefficient )
+
+[Back Up](#BackUP)
+
+NPQ (nsv) is the non photochemical quenching coefficientat (normalized Stern-Vollmer) at a given light intensity (here 160 uEinstein:  very close to the 155 uEinstein growth irradiance). 
+
+```{r NPQ.nsv., echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.NPQ.nsv., fill = Species)) + 
+  labs(title="Comparison of NPQ (nsv) @ 160 E", y="NPQ (nsv)", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.NPQ.nsv. - sd.err.NPQ.nsv., ymax = mean.NPQ.nsv. + sd.err.NPQ.nsv.),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r NPQ.nsv._plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_NPQ.nsv..png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.NPQ.nsv. - sd.err.NPQ.nsv., ymax = mean.NPQ.nsv. + sd.err.NPQ.nsv.),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm NPQ.nsv._allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, NPQ.nsv.~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm NPQ.nsv._allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__ alone does have a significant effect on NPQ (nsv) @ 160uEinstein, only a trend (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does have a significant effect on NPQ (nsv) @  160uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm NPQ.nsv., eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction NPQ.nsv. means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_NPQ.nsv._Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  significantly change NPQ (nsv) @  160 uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change NPQ (nsv) @ 160 uEinstein significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_NPQ.nsv._Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same NPQ (nsv) @ 160 uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically very different NPQ (nsv) @  160 uEinstein under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __NPQ.nsv.__
+
+
+
+
+
+
+<a id="Conversion"><a>
+
+## \φe:C / \ηPSII - Conversion factor ETR / 14C uptake per Chla
+
+[Back Up](#BackUP)
+
+e:C / PSII is the conversion factor when the rate of charge separation ETR at a given light level is divided by the 14C uptake normalized to Chla at a given light intensity (here 155 uEinstein:  the same uEinstein as the growth irradiance). The error bar for To03 low Cu is only so terrifyingly big, because of one outlier. I will run the analysis here with the outlier and then again below without this outlier.
+
+```{r ETR_div_14C.per.Chla_at155, echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.ETR_div_14C.per.Chla_at155, fill = Species)) + 
+  labs(title="Comparison of Conversion factor @ 155 E", y="e:C / PSII", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_div_14C.per.Chla_at155 - sd.err.ETR_div_14C.per.Chla_at155, ymax = mean.ETR_div_14C.per.Chla_at155 + sd.err.ETR_div_14C.per.Chla_at155),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r ETR_div_14C.per.Chla_at155_plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_ETR_div_14C.per.Chla_at155.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.ETR_div_14C.per.Chla_at155 - sd.err.ETR_div_14C.per.Chla_at155, ymax = mean.ETR_div_14C.per.Chla_at155 + sd.err.ETR_div_14C.per.Chla_at155),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm ETR_div_14C.per.Chla_at155_allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, ETR_div_14C.per.Chla_at155~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm ETR_div_14C.per.Chla_at155_allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__  does not have a significant effect on the conversion factor @ 155uEinstein, only a trend (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does not have a significant effect on the conversion factor @  155uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`)
+* there is  no __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm ETR_div_14C.per.Chla_at155, eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction ETR_div_14C.per.Chla_at155 means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_ETR_div_14C.per.Chla_at155_Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  not change the conversion factor @  155uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do not change the conversion factor @  155uEinstein significantly in TO 1005 either (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_ETR_div_14C.per.Chla_at155_Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same conversion factor @  155uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) and they do have statistically also the same conversion factor @  155uEinstein under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __ETR_div_14C.per.Chla_at155__
+
+
+
+<a id="Conversion_corr"><a>
+
+## e:C / PSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out
+
+[Back Up](#BackUP)
+
+e:C / PSII is the conversion factor when the rate of charge separation ETR at a given light level is divided by the 14C uptake normalized to Chla at a given light intensity (here 155 uEinstein:  the same uEinstein as the growth irradiance). I have taken out hte extreme outlier (TO03 lowCu A) I will run the analysis here without the outlier
+
+```{r Converse_corr , echo=FALSE}
+p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.Converse_corr , fill = Species)) + 
+  labs(title="Comparison of corrected Conversion factor @ 155 E", y="e:C / PSII", x="")+
+    theme(axis.text.x = element_text(angle=0))+
+  theme(axis.title.y = element_text(angle=0))
+    
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.Converse_corr  - sd.err.Converse_corr , ymax = mean.Converse_corr  + sd.err.Converse_corr ),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+```
+
+```{r Converse_corr _plot, eval=FALSE, echo=FALSE}
+png('Plots/FRRF/lowCu_Converse_corr .png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.Converse_corr  - sd.err.Converse_corr , ymax = mean.Converse_corr  + sd.err.Converse_corr ),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+```{r lm Converse_corr _allMain and Interaction, eval=TRUE, echo=FALSE}
+z <- lm(data=mydata_stat, Converse_corr ~(Species*Cu.level)) #this will model the parameter dependend on the 
+#two main effects (Species,  Cu.level) and will include  possible interactions
+summary(z)
+
+```
+
+
+```{r lm Converse_corr _allMain and Interaction_ANOVA, eval=TRUE}
+(anova <- anova(z)) #this will use the linear model and give us a table of the analysis of the variance in our dataset
+
+```
+
+
+
+Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
+
+* __Species__  does  have a significant effect on the corrected conversion factor @ 155uEinstein (F (1,`r anova[4,1]`) = `r anova[1,4]`, p.val = `r anova[1,5]`)
+* __Cu. level__ does not have a significant effect on the conversion factor @  155uEinstein (F (1,`r anova[4,1]`) = `r anova[2,4]`, p.val = `r anova[2,5]`), only a trend
+* there is  an even stronger trend in __interaction__ between __Species and Cu LEVEL__ (F (1,`r anova[4,1]`) = `r anova[3,4]`, p.val = `r anova[3,5]`) 
+
+
+```{r lm Converse_corr , eval=TRUE}
+
+plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
+
+```
+
+
+
+### Using  `phia` package to look into interactions or main effects
+
+
+```{r phia_interaction Converse_corr  means, eval=TRUE}
+
+(mydata.means <- interactionMeans(z))
+plot(mydata.means)
+```
+
+Pretty much parrallel and error bars overlap almost completely! 
+
+#### Pairwise Comparisons
+
+```{r phia_interaction_Converse_corr _Species_Cu.level, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Species", across="Cu.level"))
+
+```
+
+
+This means that the two different Cu.levels I used (high and low) do  change the corrected conversion factor @  155uEinstein in TO 1003 (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do not change the corrected conversion factor @  155uEinstein significantly in TO 1005  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)) 
+
+
+
+
+```{r phia_interaction_Converse_corr _Cu.level_Species, eval=TRUE}
+(testInteractions <- testInteractions(z, fixed="Cu.level", across="Species"))
+
+```
+
+
+This means that the two different strains have statistically the same corrected conversion factor @  155uEinstein  (F(1,`r testInteractions[3,2]`) = `r testInteractions[1,4]`, p.val = `r testInteractions[1,5]`) but they do have statistically  a different corrected conversion factor @  155uEinstein under low Cu  (F(1,`r testInteractions[3,2]`) = `r testInteractions[2,4]`, p.val = `r testInteractions[2,5]`)).
+
+
+END: __ETR_div_14C.per.Chla_at155__
