@@ -46,6 +46,9 @@ library(knitr)
   + [Chl a per Cell Vol (fg/fL)](#Chla)
   + [Chl a per Cell (pg/cell)](#Chla.cell)
   + [Cell Size (um)](#cellsize)
+  + [Cell vol (fL)](#cellvol)
+  + [Cell Surface area (um^2)](#cellSA)
+  + [Cell Surface area / Vol - SA/V (um^2/fL)](#cellSA/V)
   + [FeDFB uptake per cell (zmol/cell*h)](#FeDFB.cell)
   + [FeDFB uptake per cell surface area (zmol/um^2*h))](#FeDFB.cellvol)
   + [14C uptake - alpha (per cell)](#14C.alpha.cell)
@@ -91,6 +94,9 @@ Let's start by loading in my data and having a look at it:
 mydata <- read.delim("ALL_PhysiologicalData_2015_04_withMerged_Variable.txt", sep="\t", header=T)
 
 mean.df <- read.delim("Physiological_Data_Mean_Values.txt", sep="\t", header=T)
+
+mean.new <- read.delim("Input_Data/ALL_Phys_Barplots/ALL_Phys_both_TO03_TO05_mean_stderror.txt", sep="\t", header=T)
+
 
 str(mydata)
 ```
@@ -1193,7 +1199,6 @@ Low Cu decreases cell size significantly across the dataset (F(1,19) = 54.31, p-
 Under low Fe conditions, strains react differently. Cell size decreases significatnly in TO 1005 but not in TO 1003. Hence cell size is different under low Fe for the two strains (i.e. TO 1005 is smaller compared to TO 1003).
 
 
-
 <a id="cellvol"></a>
 
 #### Cell Volume (fl/cell)
@@ -1290,11 +1295,200 @@ Low Cu decreases cell size significantly across the dataset (F(1,19) = 47.17, p-
 Under low Fe conditions, strains react differently. Cell size decreases significatnly in TO 1005 but not in TO 1003. Hence cell size is different under low Fe for the two strains (i.e. TO 1005 is smaller compared to TO 1003).
 
 
+<a id="cellSA"></a>
 
+###Cell Surface area (um^2)
+
+[Back Up](#BackUP)
+
+
+
+First a look at the graph: 
+
+```{r graph_cell.SA.um2, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, cell.SA.um2))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Cell Surface area [um^2/cell]", x ="")+
+  geom_point(data=mean.new , aes(Treatment, mean.cell.SA.um2, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_cell.SA.um2, eval=TRUE}
+lm_all_cell.SA.um2 <- lm(data = mydata, cell.SA.um2 ~ (Species * Fe.level * Cu.level))
+summary(lm_all_cell.SA.um2) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_cell.SA.um2) 
+```
+
+There seems to be a *Species : Fe.level*  interaction. We keep everything in
+
+```{r lm_cell.SA.um2, eval=TRUE}
+lm_cell.SA.um2 <- lm (data = mydata, cell.SA.um2 ~ (Species * Fe.level * Cu.level))
+
+summary(lm_cell.SA.um2) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_cell.SA.um2)
+
+anova(lm_cell.SA.um2)
+```
+
+### Anova Table - cell.SA.um2
+
+
+
+
+* __Species__ alone has no significant effect
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Fe level__ 
+
+
+
+### Using the `phia` package to look into significant effects regarding cell.SA.um2
+
+Again, any main effects ( here Cu. level) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_cell.SA.um2, eval=TRUE}
+
+(cell.SA.um2.means <- interactionMeans(lm_cell.SA.um2))
+plot(cell.SA.um2.means)
+```
+
+ 
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons
+
+
+
+First: Species against Fe + Cu level
+```{r phia_interaction_Contrasts_Species_Felevel_cell.SA.um2, eval=TRUE}
+testInteractions(lm_cell.SA.um2, fixed="Species", across="Fe.level")
+```
+
+
+```{r phia_interaction_Contrasts_Felevel_and_Species_cell.SA.um2, eval=TRUE}
+testInteractions(lm_cell.SA.um2, fixed = "Fe.level", across="Species")
+```
+
+Interaction testing for copper
+```{r phia_interaction_Contrasts_2fixed_against1_cell.SA.um2, eval=TRUE}
+testInteractions(lm_cell.SA.um2, fixed = c("Species", "Fe.level"), across="Cu.level") #low 
+testInteractions(lm_cell.SA.um2, fixed = c("Species", "Cu.level"), across="Fe.level")
+testInteractions(lm_cell.SA.um2, fixed = c("Fe.level", "Cu.level"), across="Species")
+```
+
+lowCu compared to control decreases cell Surface area significantly in both strains (**)
+there is no statistical difference between the two strains in either control or low Cu. only in the lowFe treatment si a statistical different difference between the two
+###Summary 
+
+
+
+<a id="cellSA/V"></a>
+
+###Cell Surface area / Vol - SA/V (um^2/fL)
+
+[Back Up](#BackUP)
+
+
+
+First a look at the graph: 
+
+```{r graph_cell.SA.Vol.ratio, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, cell.SA.Vol.ratio))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="Cell SA/V [um^2 /fl*cell]", x ="")+
+  geom_point(data=mean.new , aes(Treatment, mean.cell.SA.Vol.ratio, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_cell.SA.Vol.ratio, eval=TRUE}
+lm_all_cell.SA.Vol.ratio <- lm(data = mydata, cell.SA.Vol.ratio ~ (Species * Fe.level * Cu.level))
+summary(lm_all_cell.SA.Vol.ratio) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_cell.SA.Vol.ratio) 
+```
+
+There seems to be a *Species : Fe.level*  interaction. We keep everything in
+
+```{r lm_cell.SA.Vol.ratio, eval=TRUE}
+lm_cell.SA.Vol.ratio <- lm (data = mydata, cell.SA.Vol.ratio ~ (Species * Fe.level * Cu.level))
+
+summary(lm_cell.SA.Vol.ratio) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_cell.SA.Vol.ratio)
+
+anova(lm_cell.SA.Vol.ratio)
+```
+
+### Anova Table - cell.SA.Vol.ratio
+
+
+
+
+* __Species__ alone has no significant effect
+* __Fe. level__ alone has a significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Fe level__ 
+
+
+
+### Using the `phia` package to look into significant effects regarding cell.SA.Vol.ratio
+
+Again, any main effects ( here Cu. level) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_cell.SA.Vol.ratio, eval=TRUE}
+
+(cell.SA.Vol.ratio.means <- interactionMeans(lm_cell.SA.Vol.ratio))
+plot(cell.SA.Vol.ratio.means)
+```
+
+ 
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons
+
+
+
+First: Species against Fe + Cu level
+```{r phia_interaction_Contrasts_Species_Felevel_cell.SA.Vol.ratio, eval=TRUE}
+testInteractions(lm_cell.SA.Vol.ratio, fixed="Species", across="Fe.level")
+```
+
+
+```{r phia_interaction_Contrasts_Felevel_and_Species_cell.SA.Vol.ratio, eval=TRUE}
+testInteractions(lm_cell.SA.Vol.ratio, fixed = "Fe.level", across="Species")
+```
+
+Interaction testing for copper
+```{r phia_interaction_Contrasts_2fixed_against1_cell.SA.Vol.ratio, eval=TRUE}
+testInteractions(lm_cell.SA.Vol.ratio, fixed = c("Species", "Fe.level"), across="Cu.level") #low 
+testInteractions(lm_cell.SA.Vol.ratio, fixed = c("Species", "Cu.level"), across="Fe.level")
+testInteractions(lm_cell.SA.Vol.ratio, fixed = c("Fe.level", "Cu.level"), across="Species")
+```
+
+lowCu compared to control increases __SA/V ratio   significantly__ in both strains (**)
+there is no statistical difference between the two strains in either control or low Cu. only in the lowFe treatment si a statistical different difference between the two (*)
+lowFe increases SA/V only for TO1005 significantly (*)
+###Summary 
 
 <a id="FeDFB.cell"></a>
 
-#### FeDFB uptake per cell
+### FeDFB uptake per cell
 
 [Back Up](#BackUP)
 
