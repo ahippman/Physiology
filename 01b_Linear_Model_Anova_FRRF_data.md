@@ -95,7 +95,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   + [ETR PE curve - ek](#ETR.ek)
   + [ETR PE curve - pmax](#ETR.pmax)
 
-
+* [Making the big Statistical Summary Tables](#stat_sum_table)
 
 
 
@@ -2290,3 +2290,488 @@ This means that the two different Cu.levels I used (high and low) do not signifi
 Same here, this means that the two different strains have statistically the same ETR PE curve - __Pmax__  (F(1,6) = 0.02178, p.val = 1) but they do have statistically very different ETR PE curve - __Pmax__ under low Cu  (F(1,6) = 0.0093749, p.val = 1)).
 
 
+<a id="stat_sum_table"></a>
+
+### Making the big Statistical Summary Tables
+
+####First for Sigma', then the rest
+
+[Back Up](#BackUP)
+
+
+```r
+lm_sig. <- lm(data=mydata_stat, sig.~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_sig. <- anova(lm_sig.)
+anova_sig. <- anova_sig. %>% 
+  mutate(Analysis = "anova", Data = "sig.", Effects_Tested = rownames(anova_sig.))
+
+anova_sig. <- data.frame(anova_sig.[, 6:8], anova_sig.[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_sig._Species_vs_Cu <- testInteractions(lm_sig., fixed="Species", across = "Cu.level")
+phia_sig._Species_vs_Cu <- phia_sig._Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "sig.",test_intrctn = "Species_vs_Cu", tested = rownames(phia_sig._Species_vs_Cu))
+
+phia_sig._Species_vs_Cu <- data.frame(phia_sig._Species_vs_Cu[,6:9], phia_sig._Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_sig._Cu_vs_Species <- testInteractions(lm_sig., fixed="Cu.level", across = "Species")
+phia_sig._Cu_vs_Species <- phia_sig._Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "sig.",test_intrctn = "Cu_vs_Species", tested = rownames(phia_sig._Cu_vs_Species))
+
+phia_sig._Cu_vs_Species <- data.frame(phia_sig._Cu_vs_Species[,6:9], phia_sig._Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_sig. table
+
+all_phia_sig. <- bind_rows(phia_sig._Species_vs_Cu, phia_sig._Cu_vs_Species )
+```
+
+### ETR_155_calc
+
+```r
+lm_ETR_155_calc <- lm(data=mydata_stat, ETR_155_calc~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR_155_calc <- anova(lm_ETR_155_calc)
+anova_ETR_155_calc <- anova_ETR_155_calc %>% 
+  mutate(Analysis = "anova", Data = "ETR_155_calc", Effects_Tested = rownames(anova_ETR_155_calc))
+
+anova_ETR_155_calc <- data.frame(anova_ETR_155_calc[, 6:8], anova_ETR_155_calc[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR_155_calc_Species_vs_Cu <- testInteractions(lm_ETR_155_calc, fixed="Species", across = "Cu.level")
+phia_ETR_155_calc_Species_vs_Cu <- phia_ETR_155_calc_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR_155_calc",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR_155_calc_Species_vs_Cu))
+
+phia_ETR_155_calc_Species_vs_Cu <- data.frame(phia_ETR_155_calc_Species_vs_Cu[,6:9], phia_ETR_155_calc_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR_155_calc_Cu_vs_Species <- testInteractions(lm_ETR_155_calc, fixed="Cu.level", across = "Species")
+phia_ETR_155_calc_Cu_vs_Species <- phia_ETR_155_calc_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR_155_calc",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR_155_calc_Cu_vs_Species))
+
+phia_ETR_155_calc_Cu_vs_Species <- data.frame(phia_ETR_155_calc_Cu_vs_Species[,6:9], phia_ETR_155_calc_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR_155_calc table
+
+all_phia_ETR_155_calc <- bind_rows(phia_ETR_155_calc_Species_vs_Cu, phia_ETR_155_calc_Cu_vs_Species )
+```
+
+### ETR_160_calc
+
+```r
+lm_ETR_160_calc <- lm(data=mydata_stat, ETR_160_calc~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR_160_calc <- anova(lm_ETR_160_calc)
+anova_ETR_160_calc <- anova_ETR_160_calc %>% 
+  mutate(Analysis = "anova", Data = "ETR_160_calc", Effects_Tested = rownames(anova_ETR_160_calc))
+
+anova_ETR_160_calc <- data.frame(anova_ETR_160_calc[, 6:8], anova_ETR_160_calc[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR_160_calc_Species_vs_Cu <- testInteractions(lm_ETR_160_calc, fixed="Species", across = "Cu.level")
+phia_ETR_160_calc_Species_vs_Cu <- phia_ETR_160_calc_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR_160_calc",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR_160_calc_Species_vs_Cu))
+
+phia_ETR_160_calc_Species_vs_Cu <- data.frame(phia_ETR_160_calc_Species_vs_Cu[,6:9], phia_ETR_160_calc_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR_160_calc_Cu_vs_Species <- testInteractions(lm_ETR_160_calc, fixed="Cu.level", across = "Species")
+phia_ETR_160_calc_Cu_vs_Species <- phia_ETR_160_calc_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR_160_calc",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR_160_calc_Cu_vs_Species))
+
+phia_ETR_160_calc_Cu_vs_Species <- data.frame(phia_ETR_160_calc_Cu_vs_Species[,6:9], phia_ETR_160_calc_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR_160_calc table
+
+all_phia_ETR_160_calc <- bind_rows(phia_ETR_160_calc_Species_vs_Cu, phia_ETR_160_calc_Cu_vs_Species )
+```
+
+### ETR_160_measure
+
+```r
+lm_ETR_160_measure <- lm(data=mydata_stat, ETR_160_measure~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR_160_measure <- anova(lm_ETR_160_measure)
+anova_ETR_160_measure <- anova_ETR_160_measure %>% 
+  mutate(Analysis = "anova", Data = "ETR_160_measure", Effects_Tested = rownames(anova_ETR_160_measure))
+
+anova_ETR_160_measure <- data.frame(anova_ETR_160_measure[, 6:8], anova_ETR_160_measure[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR_160_measure_Species_vs_Cu <- testInteractions(lm_ETR_160_measure, fixed="Species", across = "Cu.level")
+phia_ETR_160_measure_Species_vs_Cu <- phia_ETR_160_measure_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR_160_measure",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR_160_measure_Species_vs_Cu))
+
+phia_ETR_160_measure_Species_vs_Cu <- data.frame(phia_ETR_160_measure_Species_vs_Cu[,6:9], phia_ETR_160_measure_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR_160_measure_Cu_vs_Species <- testInteractions(lm_ETR_160_measure, fixed="Cu.level", across = "Species")
+phia_ETR_160_measure_Cu_vs_Species <- phia_ETR_160_measure_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR_160_measure",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR_160_measure_Cu_vs_Species))
+
+phia_ETR_160_measure_Cu_vs_Species <- data.frame(phia_ETR_160_measure_Cu_vs_Species[,6:9], phia_ETR_160_measure_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR_160_measure table
+
+all_phia_ETR_160_measure <- bind_rows(phia_ETR_160_measure_Species_vs_Cu, phia_ETR_160_measure_Cu_vs_Species )
+```
+
+
+### F.q.F.v
+
+```r
+lm_F.q.F.v <- lm(data=mydata_stat, F.q.F.v~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_F.q.F.v <- anova(lm_F.q.F.v)
+anova_F.q.F.v <- anova_F.q.F.v %>% 
+  mutate(Analysis = "anova", Data = "F.q.F.v", Effects_Tested = rownames(anova_F.q.F.v))
+
+anova_F.q.F.v <- data.frame(anova_F.q.F.v[, 6:8], anova_F.q.F.v[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_F.q.F.v_Species_vs_Cu <- testInteractions(lm_F.q.F.v, fixed="Species", across = "Cu.level")
+phia_F.q.F.v_Species_vs_Cu <- phia_F.q.F.v_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "F.q.F.v",test_intrctn = "Species_vs_Cu", tested = rownames(phia_F.q.F.v_Species_vs_Cu))
+
+phia_F.q.F.v_Species_vs_Cu <- data.frame(phia_F.q.F.v_Species_vs_Cu[,6:9], phia_F.q.F.v_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_F.q.F.v_Cu_vs_Species <- testInteractions(lm_F.q.F.v, fixed="Cu.level", across = "Species")
+phia_F.q.F.v_Cu_vs_Species <- phia_F.q.F.v_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "F.q.F.v",test_intrctn = "Cu_vs_Species", tested = rownames(phia_F.q.F.v_Cu_vs_Species))
+
+phia_F.q.F.v_Cu_vs_Species <- data.frame(phia_F.q.F.v_Cu_vs_Species[,6:9], phia_F.q.F.v_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_F.q.F.v table
+
+all_phia_F.q.F.v <- bind_rows(phia_F.q.F.v_Species_vs_Cu, phia_F.q.F.v_Cu_vs_Species )
+```
+
+### F.v.F.m
+
+```r
+lm_F.v.F.m <- lm(data=mydata_stat, F.v.F.m~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_F.v.F.m <- anova(lm_F.v.F.m)
+anova_F.v.F.m <- anova_F.v.F.m %>% 
+  mutate(Analysis = "anova", Data = "F.v.F.m", Effects_Tested = rownames(anova_F.v.F.m))
+
+anova_F.v.F.m <- data.frame(anova_F.v.F.m[, 6:8], anova_F.v.F.m[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_F.v.F.m_Species_vs_Cu <- testInteractions(lm_F.v.F.m, fixed="Species", across = "Cu.level")
+phia_F.v.F.m_Species_vs_Cu <- phia_F.v.F.m_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "F.v.F.m",test_intrctn = "Species_vs_Cu", tested = rownames(phia_F.v.F.m_Species_vs_Cu))
+
+phia_F.v.F.m_Species_vs_Cu <- data.frame(phia_F.v.F.m_Species_vs_Cu[,6:9], phia_F.v.F.m_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_F.v.F.m_Cu_vs_Species <- testInteractions(lm_F.v.F.m, fixed="Cu.level", across = "Species")
+phia_F.v.F.m_Cu_vs_Species <- phia_F.v.F.m_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "F.v.F.m",test_intrctn = "Cu_vs_Species", tested = rownames(phia_F.v.F.m_Cu_vs_Species))
+
+phia_F.v.F.m_Cu_vs_Species <- data.frame(phia_F.v.F.m_Cu_vs_Species[,6:9], phia_F.v.F.m_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_F.v.F.m table
+
+all_phia_F.v.F.m <- bind_rows(phia_F.v.F.m_Species_vs_Cu, phia_F.v.F.m_Cu_vs_Species )
+```
+
+### F.q.F.m
+
+```r
+lm_F.q.F.m <- lm(data=mydata_stat, F.q.F.m~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_F.q.F.m <- anova(lm_F.q.F.m)
+anova_F.q.F.m <- anova_F.q.F.m %>% 
+  mutate(Analysis = "anova", Data = "F.q.F.m", Effects_Tested = rownames(anova_F.q.F.m))
+
+anova_F.q.F.m <- data.frame(anova_F.q.F.m[, 6:8], anova_F.q.F.m[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_F.q.F.m_Species_vs_Cu <- testInteractions(lm_F.q.F.m, fixed="Species", across = "Cu.level")
+phia_F.q.F.m_Species_vs_Cu <- phia_F.q.F.m_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "F.q.F.m",test_intrctn = "Species_vs_Cu", tested = rownames(phia_F.q.F.m_Species_vs_Cu))
+
+phia_F.q.F.m_Species_vs_Cu <- data.frame(phia_F.q.F.m_Species_vs_Cu[,6:9], phia_F.q.F.m_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_F.q.F.m_Cu_vs_Species <- testInteractions(lm_F.q.F.m, fixed="Cu.level", across = "Species")
+phia_F.q.F.m_Cu_vs_Species <- phia_F.q.F.m_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "F.q.F.m",test_intrctn = "Cu_vs_Species", tested = rownames(phia_F.q.F.m_Cu_vs_Species))
+
+phia_F.q.F.m_Cu_vs_Species <- data.frame(phia_F.q.F.m_Cu_vs_Species[,6:9], phia_F.q.F.m_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_F.q.F.m table
+
+all_phia_F.q.F.m <- bind_rows(phia_F.q.F.m_Species_vs_Cu, phia_F.q.F.m_Cu_vs_Species )
+```
+
+### NPQ.nsv.
+
+```r
+lm_NPQ.nsv. <- lm(data=mydata_stat, NPQ.nsv.~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_NPQ.nsv. <- anova(lm_NPQ.nsv.)
+anova_NPQ.nsv. <- anova_NPQ.nsv. %>% 
+  mutate(Analysis = "anova", Data = "NPQ.nsv.", Effects_Tested = rownames(anova_NPQ.nsv.))
+
+anova_NPQ.nsv. <- data.frame(anova_NPQ.nsv.[, 6:8], anova_NPQ.nsv.[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_NPQ.nsv._Species_vs_Cu <- testInteractions(lm_NPQ.nsv., fixed="Species", across = "Cu.level")
+phia_NPQ.nsv._Species_vs_Cu <- phia_NPQ.nsv._Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "NPQ.nsv.",test_intrctn = "Species_vs_Cu", tested = rownames(phia_NPQ.nsv._Species_vs_Cu))
+
+phia_NPQ.nsv._Species_vs_Cu <- data.frame(phia_NPQ.nsv._Species_vs_Cu[,6:9], phia_NPQ.nsv._Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_NPQ.nsv._Cu_vs_Species <- testInteractions(lm_NPQ.nsv., fixed="Cu.level", across = "Species")
+phia_NPQ.nsv._Cu_vs_Species <- phia_NPQ.nsv._Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "NPQ.nsv.",test_intrctn = "Cu_vs_Species", tested = rownames(phia_NPQ.nsv._Cu_vs_Species))
+
+phia_NPQ.nsv._Cu_vs_Species <- data.frame(phia_NPQ.nsv._Cu_vs_Species[,6:9], phia_NPQ.nsv._Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_NPQ.nsv. table
+
+all_phia_NPQ.nsv. <- bind_rows(phia_NPQ.nsv._Species_vs_Cu, phia_NPQ.nsv._Cu_vs_Species )
+```
+
+### ETR_div_14C.per.Chla_at155
+
+```r
+lm_ETR_div_14C.per.Chla_at155 <- lm(data=mydata_stat, ETR_div_14C.per.Chla_at155~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR_div_14C.per.Chla_at155 <- anova(lm_ETR_div_14C.per.Chla_at155)
+anova_ETR_div_14C.per.Chla_at155 <- anova_ETR_div_14C.per.Chla_at155 %>% 
+  mutate(Analysis = "anova", Data = "ETR_div_14C.per.Chla_at155", Effects_Tested = rownames(anova_ETR_div_14C.per.Chla_at155))
+
+anova_ETR_div_14C.per.Chla_at155 <- data.frame(anova_ETR_div_14C.per.Chla_at155[, 6:8], anova_ETR_div_14C.per.Chla_at155[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu <- testInteractions(lm_ETR_div_14C.per.Chla_at155, fixed="Species", across = "Cu.level")
+phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu <- phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR_div_14C.per.Chla_at155",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu))
+
+phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu <- data.frame(phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu[,6:9], phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species <- testInteractions(lm_ETR_div_14C.per.Chla_at155, fixed="Cu.level", across = "Species")
+phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species <- phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR_div_14C.per.Chla_at155",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species))
+
+phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species <- data.frame(phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species[,6:9], phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR_div_14C.per.Chla_at155 table
+
+all_phia_ETR_div_14C.per.Chla_at155 <- bind_rows(phia_ETR_div_14C.per.Chla_at155_Species_vs_Cu, phia_ETR_div_14C.per.Chla_at155_Cu_vs_Species )
+```
+
+### Converse_corr
+
+```r
+lm_Converse_corr <- lm(data = mydata_stat, Converse_corr ~ (Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_Converse_corr <- anova(lm_Converse_corr)
+anova_Converse_corr <- anova_Converse_corr %>% 
+  mutate(Analysis = "anova", Data = "Converse_corr", Effects_Tested = rownames(anova_Converse_corr))
+
+anova_Converse_corr <- data.frame(anova_Converse_corr[, 6:8], anova_Converse_corr[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_Converse_corr_Species_vs_Cu <- testInteractions(lm_Converse_corr, fixed="Species", across = "Cu.level")
+phia_Converse_corr_Species_vs_Cu <- phia_Converse_corr_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "Converse_corr",test_intrctn = "Species_vs_Cu", tested = rownames(phia_Converse_corr_Species_vs_Cu))
+
+phia_Converse_corr_Species_vs_Cu <- data.frame(phia_Converse_corr_Species_vs_Cu[,6:9], phia_Converse_corr_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_Converse_corr_Cu_vs_Species <- testInteractions(lm_Converse_corr, fixed="Cu.level", across = "Species")
+phia_Converse_corr_Cu_vs_Species <- phia_Converse_corr_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "Converse_corr",test_intrctn = "Cu_vs_Species", tested = rownames(phia_Converse_corr_Cu_vs_Species))
+
+phia_Converse_corr_Cu_vs_Species <- data.frame(phia_Converse_corr_Cu_vs_Species[,6:9], phia_Converse_corr_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_Converse_corr table
+
+all_phia_Converse_corr <- bind_rows(phia_Converse_corr_Species_vs_Cu, phia_Converse_corr_Cu_vs_Species )
+```
+
+
+## ETR.alpha.JP
+
+```r
+lm_ETR.alpha.JP <- lm(data=mydata_stat, ETR.alpha.JP~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR.alpha.JP <- anova(lm_ETR.alpha.JP)
+anova_ETR.alpha.JP <- anova_ETR.alpha.JP %>% 
+  mutate(Analysis = "anova", Data = "ETR.alpha.JP", Effects_Tested = rownames(anova_ETR.alpha.JP))
+
+anova_ETR.alpha.JP <- data.frame(anova_ETR.alpha.JP[, 6:8], anova_ETR.alpha.JP[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR.alpha.JP_Species_vs_Cu <- testInteractions(lm_ETR.alpha.JP, fixed="Species", across = "Cu.level")
+phia_ETR.alpha.JP_Species_vs_Cu <- phia_ETR.alpha.JP_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR.alpha.JP",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR.alpha.JP_Species_vs_Cu))
+
+phia_ETR.alpha.JP_Species_vs_Cu <- data.frame(phia_ETR.alpha.JP_Species_vs_Cu[,6:9], phia_ETR.alpha.JP_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR.alpha.JP_Cu_vs_Species <- testInteractions(lm_ETR.alpha.JP, fixed="Cu.level", across = "Species")
+phia_ETR.alpha.JP_Cu_vs_Species <- phia_ETR.alpha.JP_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR.alpha.JP",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR.alpha.JP_Cu_vs_Species))
+
+phia_ETR.alpha.JP_Cu_vs_Species <- data.frame(phia_ETR.alpha.JP_Cu_vs_Species[,6:9], phia_ETR.alpha.JP_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR.alpha.JP table
+
+all_phia_ETR.alpha.JP <- bind_rows(phia_ETR.alpha.JP_Species_vs_Cu, phia_ETR.alpha.JP_Cu_vs_Species )
+```
+
+
+
+
+## ETR.pmax.JP
+
+```r
+lm_ETR.pmax.JP <- lm(data=mydata_stat, ETR.pmax.JP~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR.pmax.JP <- anova(lm_ETR.pmax.JP)
+anova_ETR.pmax.JP <- anova_ETR.pmax.JP %>% 
+  mutate(Analysis = "anova", Data = "ETR.pmax.JP", Effects_Tested = rownames(anova_ETR.pmax.JP))
+
+anova_ETR.pmax.JP <- data.frame(anova_ETR.pmax.JP[, 6:8], anova_ETR.pmax.JP[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR.pmax.JP_Species_vs_Cu <- testInteractions(lm_ETR.pmax.JP, fixed="Species", across = "Cu.level")
+phia_ETR.pmax.JP_Species_vs_Cu <- phia_ETR.pmax.JP_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR.pmax.JP",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR.pmax.JP_Species_vs_Cu))
+
+phia_ETR.pmax.JP_Species_vs_Cu <- data.frame(phia_ETR.pmax.JP_Species_vs_Cu[,6:9], phia_ETR.pmax.JP_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR.pmax.JP_Cu_vs_Species <- testInteractions(lm_ETR.pmax.JP, fixed="Cu.level", across = "Species")
+phia_ETR.pmax.JP_Cu_vs_Species <- phia_ETR.pmax.JP_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR.pmax.JP",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR.pmax.JP_Cu_vs_Species))
+
+phia_ETR.pmax.JP_Cu_vs_Species <- data.frame(phia_ETR.pmax.JP_Cu_vs_Species[,6:9], phia_ETR.pmax.JP_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR.pmax.JP table
+
+all_phia_ETR.pmax.JP <- bind_rows(phia_ETR.pmax.JP_Species_vs_Cu, phia_ETR.pmax.JP_Cu_vs_Species )
+```
+
+
+
+## ETR.ek.JP
+
+```r
+lm_ETR.ek.JP <- lm(data=mydata_stat, ETR.ek.JP~(Species*Cu.level))
+
+#~~~~~~~~~~~~~~
+anova_ETR.ek.JP <- anova(lm_ETR.ek.JP)
+anova_ETR.ek.JP <- anova_ETR.ek.JP %>% 
+  mutate(Analysis = "anova", Data = "ETR.ek.JP", Effects_Tested = rownames(anova_ETR.ek.JP))
+
+anova_ETR.ek.JP <- data.frame(anova_ETR.ek.JP[, 6:8], anova_ETR.ek.JP[,1:5])
+
+#~~~~~~~~~~~~~~
+#phia Species vs Cu
+phia_ETR.ek.JP_Species_vs_Cu <- testInteractions(lm_ETR.ek.JP, fixed="Species", across = "Cu.level")
+phia_ETR.ek.JP_Species_vs_Cu <- phia_ETR.ek.JP_Species_vs_Cu %>% 
+  mutate(Analysis = "phia_interaction", Data = "ETR.ek.JP",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR.ek.JP_Species_vs_Cu))
+
+phia_ETR.ek.JP_Species_vs_Cu <- data.frame(phia_ETR.ek.JP_Species_vs_Cu[,6:9], phia_ETR.ek.JP_Species_vs_Cu[, 1:5])
+
+#~~~~~~~~~~~~~~
+#phia Cu vs Species
+phia_ETR.ek.JP_Cu_vs_Species <- testInteractions(lm_ETR.ek.JP, fixed="Cu.level", across = "Species")
+phia_ETR.ek.JP_Cu_vs_Species <- phia_ETR.ek.JP_Cu_vs_Species %>%  
+  mutate(Analysis = "phia_interaction", Data = "ETR.ek.JP",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR.ek.JP_Cu_vs_Species))
+
+phia_ETR.ek.JP_Cu_vs_Species <- data.frame(phia_ETR.ek.JP_Cu_vs_Species[,6:9], phia_ETR.ek.JP_Cu_vs_Species[, 1:5])
+
+
+#~~~~~~~~~~~~~~~~~~~
+#making the big Phia_ETR.ek.JP table
+
+all_phia_ETR.ek.JP <- bind_rows(phia_ETR.ek.JP_Species_vs_Cu, phia_ETR.ek.JP_Cu_vs_Species )
+```
+
+<a id="BigTables"></a>
+
+## Big Tables with all stat info combined
+
+[Back Up](#BackUP)
+
+
+```r
+all_phia <- bind_rows (all_phia_sig. , all_phia_ETR_155_calc , all_phia_ETR_160_calc , all_phia_ETR_160_measure , all_phia_F.q.F.v , all_phia_F.v.F.m , all_phia_F.q.F.m , all_phia_NPQ.nsv. , all_phia_ETR_div_14C.per.Chla_at155 , all_phia_Converse_corr , all_phia_ETR.alpha.JP , all_phia_ETR.pmax.JP , all_phia_ETR.ek.JP )
+
+write.table(all_phia, "Output_Data/FRRF/All_Phia_Stats_Physiology_FRRF_lowCu.txt", row.names = FALSE, col.names = TRUE, sep="\t")
+
+all_anova <- bind_rows(anova_sig. , anova_ETR_155_calc , anova_ETR_160_calc , anova_ETR_160_measure , anova_F.q.F.v , anova_F.v.F.m , anova_F.q.F.m , anova_NPQ.nsv. , anova_ETR_div_14C.per.Chla_at155 , anova_Converse_corr , anova_ETR.alpha.JP , anova_ETR.pmax.JP , anova_ETR.ek.JP )
+
+write.table(all_anova, "Output_Data/FRRF/All_ANOVA_Stats_Physiology_FRRF_lowCu.txt", row.names = FALSE, col.names = TRUE, sep="\t")
+```

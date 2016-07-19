@@ -1860,41 +1860,6 @@ all_phia_ETR_160_measure <- bind_rows(phia_ETR_160_measure_Species_vs_Cu, phia_E
 
 ```
 
-### ETR_160_calc
-```{r stat_SummaryTable_ETR_160_calc, eval = FALSE}
-
-lm_ETR_160_calc <- lm(data=mydata_stat, ETR_160_calc~(Species*Cu.level))
-
-#~~~~~~~~~~~~~~
-anova_ETR_160_calc <- anova(lm_ETR_160_calc)
-anova_ETR_160_calc <- anova_ETR_160_calc %>% 
-  mutate(Analysis = "anova", Data = "ETR_160_calc", Effects_Tested = rownames(anova_ETR_160_calc))
-
-anova_ETR_160_calc <- data.frame(anova_ETR_160_calc[, 6:8], anova_ETR_160_calc[,1:5])
-
-#~~~~~~~~~~~~~~
-#phia Species vs Cu
-phia_ETR_160_calc_Species_vs_Cu <- testInteractions(lm_ETR_160_calc, fixed="Species", across = "Cu.level")
-phia_ETR_160_calc_Species_vs_Cu <- phia_ETR_160_calc_Species_vs_Cu %>% 
-  mutate(Analysis = "phia_interaction", Data = "ETR_160_calc",test_intrctn = "Species_vs_Cu", tested = rownames(phia_ETR_160_calc_Species_vs_Cu))
-
-phia_ETR_160_calc_Species_vs_Cu <- data.frame(phia_ETR_160_calc_Species_vs_Cu[,6:9], phia_ETR_160_calc_Species_vs_Cu[, 1:5])
-
-#~~~~~~~~~~~~~~
-#phia Cu vs Species
-phia_ETR_160_calc_Cu_vs_Species <- testInteractions(lm_ETR_160_calc, fixed="Cu.level", across = "Species")
-phia_ETR_160_calc_Cu_vs_Species <- phia_ETR_160_calc_Cu_vs_Species %>%  
-  mutate(Analysis = "phia_interaction", Data = "ETR_160_calc",test_intrctn = "Cu_vs_Species", tested = rownames(phia_ETR_160_calc_Cu_vs_Species))
-
-phia_ETR_160_calc_Cu_vs_Species <- data.frame(phia_ETR_160_calc_Cu_vs_Species[,6:9], phia_ETR_160_calc_Cu_vs_Species[, 1:5])
-
-
-#~~~~~~~~~~~~~~~~~~~
-#making the big Phia_ETR_160_calc table
-
-all_phia_ETR_160_calc <- bind_rows(phia_ETR_160_calc_Species_vs_Cu, phia_ETR_160_calc_Cu_vs_Species )
-
-```
 
 ### F.q.F.v
 ```{r stat_SummaryTable_F.q.F.v, eval = FALSE}
@@ -2079,7 +2044,7 @@ all_phia_ETR_div_14C.per.Chla_at155 <- bind_rows(phia_ETR_div_14C.per.Chla_at155
 ### Converse_corr
 ```{r stat_SummaryTable_Converse_corr, eval = FALSE}
 
-lm_Converse_corr <- lm(data=mydata_stat, Converse_corr~(Species*Cu.level))
+lm_Converse_corr <- lm(data = mydata_stat, Converse_corr ~ (Species*Cu.level))
 
 #~~~~~~~~~~~~~~
 anova_Converse_corr <- anova(lm_Converse_corr)
@@ -2108,7 +2073,7 @@ phia_Converse_corr_Cu_vs_Species <- data.frame(phia_Converse_corr_Cu_vs_Species[
 #~~~~~~~~~~~~~~~~~~~
 #making the big Phia_Converse_corr table
 
-all_phia_Converse_corr <- bind_rows(phia_Converse_corr_Species_vs_Cu, phia_sig._Cu_vs_Species )
+all_phia_Converse_corr <- bind_rows(phia_Converse_corr_Species_vs_Cu, phia_Converse_corr_Cu_vs_Species )
 
 ```
 
