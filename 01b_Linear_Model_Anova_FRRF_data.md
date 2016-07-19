@@ -91,9 +91,9 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla](#Conversion)
   + [e:C / PSII - Conversion factor ETR / 14C uptake per Chla - 1 outlier taken out](#Conversion_corr)
 
-  + [ETR PE curve - alpha (per cell)](#ETR.alpha)
-  + [ETR PE curve - ek (per Chl a)](#ETR.ek)
-  + [ETR PE curve - pmax (per Chl a)](#ETR.pmax)
+  + [ETR PE curve - alpha](#ETR.alpha)
+  + [ETR PE curve - ek](#ETR.ek)
+  + [ETR PE curve - pmax](#ETR.pmax)
 
 
 
@@ -297,9 +297,9 @@ cleanup = theme (panel.grid.major = element_blank(),
 #now my first graph:
 
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.sig., fill = Species)) + 
-  labs(title="Comparison of sigma @ 160 E", y="sigma", x="Treatments")+
+  labs(title = bquote("Comparison of " ~ sigma[PSII]~" @ 160 E" ), y=bquote(sigma ~ "' (" ), x="")+
     theme(axis.text.x = element_text(angle=0))+
-  theme(axis.title.y = element_text(angle=0))
+  theme (axis.title.y = element_text(angle=0))
     
 p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -308,10 +308,18 @@ p + geom_bar(color = "black", position=position_dodge(), stat="identity", width 
                   position = position_dodge(.6), #so the error bars are dodged to the side
                   colour = "black") +
   cleanup +
-  theme(plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
 ```
 
 ![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/ggplot barplot01-1.png) 
+
+```r
+bquote("ETR PE curve -" ~ P["max"])
+```
+
+```
+## "ETR PE curve -" ~ P["max"]
+```
 
 ```r
 #and one tryout with just Ctrl and lowCu
@@ -322,11 +330,11 @@ mydata.mean.stderr.lowCu <- mydata.mean.stderr %>%
   filter(Treatment_number < 3 )
 
 
-
 p <- ggplot(mydata.mean.stderr.lowCu, aes(x=Treatment, y=mean.sig., fill = Species)) + 
-  labs(title="Comparison of sigma @ 160 E", y="sigma", x="Treatments")+
-    theme(axis.text.x = element_text(angle=0))+
-  theme(axis.title.y = element_text(angle=0))
+  labs(title = bquote("Comparison of " ~ sigma[PSII]~" @ 160 E" ), y=bquote(sigma ~ "' (" ~ ring(A)^2 ~ RCII^{-1} ~")"), x="") 
+  #theme(axis.text.x = element_text(angle=0))+
+  #theme (axis.title.y = element_text(angle=0))
+
     
 p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -362,7 +370,7 @@ p + geom_point(aes(group=Trtmt_comb, colour=Species), size = 3)+
 ## Warning: Removed 1 rows containing missing values (geom_point).
 ```
 
-![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/graph_Growthrate-1.png) 
+![](01b_Linear_Model_Anova_FRRF_data_files/figure-html/graph_sig.-1.png) 
 
 
 
@@ -548,7 +556,7 @@ __Note__: I am using "strain" and "species" interchangeably, even though the cor
 
 <a id="ETR_155"><a>
 
-## ETR @ 155uEinstein - calculated from fitted curve
+## ETR' @ 155uEinstein - calculated from fitted curve
 
 [Back Up](#BackUP)
 
@@ -604,8 +612,8 @@ Now I am doing it in a little slimmer version... not as much explanatory text
 
 Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
 
-* __Species__ does not have a significant effect on ETR @ 155uEinstein (F (1,6) = 0.2904342, p.val = 0.6093408)
-* __Cu. level__ does not have a significant effect on ETR @ 155uEinstein (F (1,6) = 0.4017408, p.val = 0.5495759)
+* __Species__ does not have a significant effect on ETR' @ 155uEinstein (F (1,6) = 0.2904342, p.val = 0.6093408)
+* __Cu. level__ does not have a significant effect on ETR' @ 155uEinstein (F (1,6) = 0.4017408, p.val = 0.5495759)
 * there is no __interaction__ between __Species and Cu LEVEL__ (F (1,6) = 0.0571283, p.val = 0.8190486)
 
 
@@ -659,7 +667,7 @@ Pretty much parrallel and error bars overlap almost completely!
 ```
 
 
-This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR at 155 uEinstein in TO 1003 (F(1,6) = 0.1154615, p.val = 1) and they do not change ETR at 155 uEinstein significantly in TO 1005 either (F(1,6) = 0.3434076, p.val = 1))
+This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR' at 155 uEinstein in TO 1003 (F(1,6) = 0.1154615, p.val = 1) and they do not change ETR' at 155 uEinstein significantly in TO 1005 either (F(1,6) = 0.3434076, p.val = 1))
 
 
 
@@ -679,7 +687,7 @@ This means that the two different Cu.levels I used (high and low) do NOT signifi
 ```
 
 
-This means that the two different strains have statistically the same ETR at 155 uEinstein  (F(1,6) = 0.0449713, p.val = 1) and they do have the same ETR at 155 uEinstein under low Cu as well (F(1,6) = 0.3025913, p.val = 1)).
+This means that the two different strains have statistically the same ETR' at 155 uEinstein  (F(1,6) = 0.0449713, p.val = 1) and they do have the same ETR' at 155 uEinstein under low Cu as well (F(1,6) = 0.3025913, p.val = 1)).
 
 
 
@@ -746,8 +754,8 @@ This is the ETR data that has been calculated from the direct measurements of th
 
 Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
 
-* __Species__ does not have a significant effect on ETR @ 160uEinstein (F (1,6) = 0.0729182, p.val = 0.7961819)
-* __Cu. level__ does not have a significant effect on ETR @ 160uEinstein (F (1,6) = 1.0719621, p.val = 0.3404168)
+* __Species__ does not have a significant effect on ETR' @ 160uEinstein (F (1,6) = 0.0729182, p.val = 0.7961819)
+* __Cu. level__ does not have a significant effect on ETR' @ 160uEinstein (F (1,6) = 1.0719621, p.val = 0.3404168)
 * there is no __interaction__ between __Species and Cu LEVEL__ (F (1,6) = 0.002304, p.val = 0.9632737)
 
 
@@ -801,7 +809,7 @@ Pretty much parrallel and error bars overlap almost completely!
 ```
 
 
-This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR at 160 uEinstein in TO 1003 (F(1,6) = 0.6927924, p.val = 0.8741689) and they do not change ETR at 160 uEinstein significantly in TO 1005 either (F(1,6) = 0.3814738, p.val = 0.8741689))
+This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR' at 160 uEinstein in TO 1003 (F(1,6) = 0.6927924, p.val = 0.8741689) and they do not change ETR' at 160 uEinstein significantly in TO 1005 either (F(1,6) = 0.3814738, p.val = 0.8741689))
 
 
 
@@ -821,7 +829,7 @@ This means that the two different Cu.levels I used (high and low) do NOT signifi
 ```
 
 
-This means that the two different strains have statistically the same ETR at 160 uEinstein  (F(1,6) = 0.0505729, p.val = 1) and they do have the same ETR at 160 uEinstein under low Cu as well (F(1,6) = 0.0246494, p.val = 1)).
+This means that the two different strains have statistically the same ETR' at 160 uEinstein  (F(1,6) = 0.0505729, p.val = 1) and they do have the same ETR' at 160 uEinstein under low Cu as well (F(1,6) = 0.0246494, p.val = 1)).
 
 
 END: ETR_160_measure
@@ -891,8 +899,8 @@ This is the ETR data that has been calculated from the direct measurements of th
 
 Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
 
-* __Species__ does not have a significant effect on ETR @ 160uEinstein (F (1,6) = 0.2379028, p.val = 0.6430344)
-* __Cu. level__ does not have a significant effect on ETR @ 160uEinstein (F (1,6) = 0.5017306, p.val = 0.5053145)
+* __Species__ does not have a significant effect on ETR' @ 160uEinstein (F (1,6) = 0.2379028, p.val = 0.6430344)
+* __Cu. level__ does not have a significant effect on ETR' @ 160uEinstein (F (1,6) = 0.5017306, p.val = 0.5053145)
 * there is no __interaction__ between __Species and Cu LEVEL__ (F (1,6) = 0.0477576, p.val = 0.8342558)
 
 
@@ -946,7 +954,7 @@ Pretty much parrallel and error bars overlap almost completely!
 ```
 
 
-This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR at 160 uEinstein in TO 1003 (F(1,6) = 0.1684741, p.val = 1) and they do not change ETR at 160 uEinstein significantly in TO 1005 either (F(1,6) = 0.3810141, p.val = 1))
+This means that the two different Cu.levels I used (high and low) do NOT significantly change ETR' at 160 uEinstein in TO 1003 (F(1,6) = 0.1684741, p.val = 1) and they do not change ETR' at 160 uEinstein significantly in TO 1005 either (F(1,6) = 0.3810141, p.val = 1))
 
 
 
@@ -966,7 +974,7 @@ This means that the two different Cu.levels I used (high and low) do NOT signifi
 ```
 
 
-This means that the two different strains have statistically the same ETR at 160 uEinstein  (F(1,6) = 0.0362391, p.val = 1) and they do have the same ETR at 160 uEinstein under low Cu as well (F(1,6) = 0.2494213, p.val = 1)).
+This means that the two different strains have statistically the same ETR' at 160 uEinstein  (F(1,6) = 0.0362391, p.val = 1) and they do have the same ETR' at 160 uEinstein under low Cu as well (F(1,6) = 0.2494213, p.val = 1)).
 
 
 
@@ -1770,8 +1778,8 @@ e:C / PSII is the conversion factor when the rate of charge separation ETR at a 
 Looking at the ANOVA table for the linear model that test for both main effects and interactions, we see that
 
 * __Species__  does  have a significant effect on the corrected conversion factor @ 155uEinstein (F (1,7) = 11.0602043, p.val = 0.0126658)
-* __Cu. level__ does not have a significant effect on the conversion factor @  155uEinstein (F (1,7) = 3.496619, p.val = 0.1036893), only a trend
-* there is  an even stronger trend in __interaction__ between __Species and Cu LEVEL__ (F (1,7) = 4.9139963, p.val = 0.0621744) 
+* __Cu. level__ does not have a significant effect on the corrected conversion factor @  155uEinstein (F (1,7) = 3.496619, p.val = 0.1036893), only a slight trend
+* there is  a  stronger trend in __interaction__ between __Species and Cu LEVEL__ (F (1,7) = 4.9139963, p.val = 0.0621744) 
 
 
 
