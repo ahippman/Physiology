@@ -13,7 +13,7 @@ suppressPackageStartupMessages(library(visreg))
 ```
 
 ```
-## Warning: package 'visreg' was built under R version 3.2.3
+## Warning: package 'visreg' was built under R version 3.2.5
 ```
 
 ```r
@@ -51,6 +51,7 @@ library(knitr)
   + [FeDFB uptake per cell surface area (zmol/um^2*h))](#FeDFB.cellvol)
   + [14C uptake - alpha (per cell)](#14C.alpha.cell)
   + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
+  + [14C uptake - pmax (per Chl a)](#14C.pmax.chla)
   + [14C uptake - ek (per Chl a)](#14C.ek.chla)
   + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
   + [AOX - Alternative Oxidase (percent)](#AOX)
@@ -97,7 +98,7 @@ str(mydata)
 ```
 
 ```
-## 'data.frame':	24 obs. of  31 variables:
+## 'data.frame':	24 obs. of  33 variables:
 ##  $ Species                             : Factor w/ 2 levels "TO 1003","TO 1005": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ Fe.level                            : Factor w/ 2 levels "high","low": 1 1 1 1 1 1 2 2 2 2 ...
 ##  $ Cu.level                            : Factor w/ 2 levels "high","low": 1 1 1 2 2 2 1 1 1 2 ...
@@ -129,6 +130,8 @@ str(mydata)
 ##  $ Cell.Density                        : int  165000 110000 312000 79900 111000 96700 149000 116000 161000 80000 ...
 ##  $ Treatment                           : Factor w/ 4 levels "control","low Cu",..: 1 1 1 2 2 2 3 3 3 4 ...
 ##  $ Merged                              : Factor w/ 8 levels "TO 1003 control",..: 1 1 1 2 2 2 3 3 3 4 ...
+##  $ X14C.per.Chla.pmaxa                 : num  5.5 2.892 3.276 0.383 1.247 ...
+##  $ X14C.per.Chla.pmax                  : num  5.5 2.892 3.276 0.383 1.247 ...
 ```
 
 
@@ -4403,6 +4406,360 @@ However, integrating over the low Cu treatments, the two species do have signifi
 ###Summary 14C per cell vol - alpha
 
 
+<a id="14C.pmax.chla"></a>
+
+#### 14C Uptake per Chl a - alpha
+
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, X14C.per.Chla.pmax))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="14C uptake per Chla - pmax", x ="")+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_14C.pmax.chla-1.png) 
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_14C.pmax.chla <- lm(data = mydata, X14C.per.Chla.pmax ~ (Species * Fe.level * Cu.level))
+summary(lm_all_14C.pmax.chla) # we need to look at the actual anova to know where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = X14C.per.Chla.pmax ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.0400 -0.4249 -0.1253  0.2826  1.6104 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                              3.8894     0.4826   8.060
+## SpeciesTO 1005                          -0.4311     0.6824  -0.632
+## Fe.levellow                             -1.3031     0.6824  -1.909
+## Cu.levellow                             -2.9243     0.6824  -4.285
+## SpeciesTO 1005:Fe.levellow               1.8481     0.9651   1.915
+## SpeciesTO 1005:Cu.levellow               3.8617     0.9651   4.001
+## Fe.levellow:Cu.levellow                  2.1576     0.9651   2.236
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  -4.7206     1.3649  -3.459
+##                                        Pr(>|t|)    
+## (Intercept)                            5.03e-07 ***
+## SpeciesTO 1005                         0.536457    
+## Fe.levellow                            0.074299 .  
+## Cu.levellow                            0.000568 ***
+## SpeciesTO 1005:Fe.levellow             0.073548 .  
+## SpeciesTO 1005:Cu.levellow             0.001029 ** 
+## Fe.levellow:Cu.levellow                0.039981 *  
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 0.003234 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.8358 on 16 degrees of freedom
+## Multiple R-squared:  0.7289,	Adjusted R-squared:  0.6103 
+## F-statistic: 6.145 on 7 and 16 DF,  p-value: 0.001304
+```
+
+```r
+anova(lm_all_14C.pmax.chla) 
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: X14C.per.Chla.pmax
+##                           Df  Sum Sq Mean Sq F value   Pr(>F)   
+## Species                    1  9.2795  9.2795 13.2836 0.002183 **
+## Fe.level                   1  1.3845  1.3845  1.9819 0.178321   
+## Cu.level                   1  7.1925  7.1925 10.2961 0.005476 **
+## Species:Fe.level           1  0.3934  0.3934  0.5632 0.463866   
+## Species:Cu.level           1  3.3812  3.3812  4.8402 0.042843 * 
+## Fe.level:Cu.level          1  0.0616  0.0616  0.0882 0.770269   
+## Species:Fe.level:Cu.level  1  8.3564  8.3564 11.9622 0.003234 **
+## Residuals                 16 11.1770  0.6986                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+there is a three way Species:Fe.level:Cu.level* interaction. Let's leave everything in, again:
+
+
+
+```r
+lm_14C.pmax.chla <- lm (data = mydata, X14C.per.Chla.pmax ~ (Species * Fe.level * Cu.level))
+summary(lm_14C.pmax.chla) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = X14C.per.Chla.pmax ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.0400 -0.4249 -0.1253  0.2826  1.6104 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                              3.8894     0.4826   8.060
+## SpeciesTO 1005                          -0.4311     0.6824  -0.632
+## Fe.levellow                             -1.3031     0.6824  -1.909
+## Cu.levellow                             -2.9243     0.6824  -4.285
+## SpeciesTO 1005:Fe.levellow               1.8481     0.9651   1.915
+## SpeciesTO 1005:Cu.levellow               3.8617     0.9651   4.001
+## Fe.levellow:Cu.levellow                  2.1576     0.9651   2.236
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  -4.7206     1.3649  -3.459
+##                                        Pr(>|t|)    
+## (Intercept)                            5.03e-07 ***
+## SpeciesTO 1005                         0.536457    
+## Fe.levellow                            0.074299 .  
+## Cu.levellow                            0.000568 ***
+## SpeciesTO 1005:Fe.levellow             0.073548 .  
+## SpeciesTO 1005:Cu.levellow             0.001029 ** 
+## Fe.levellow:Cu.levellow                0.039981 *  
+## SpeciesTO 1005:Fe.levellow:Cu.levellow 0.003234 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.8358 on 16 degrees of freedom
+## Multiple R-squared:  0.7289,	Adjusted R-squared:  0.6103 
+## F-statistic: 6.145 on 7 and 16 DF,  p-value: 0.001304
+```
+
+```r
+plot.new()
+plot(lm_14C.pmax.chla)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-4.png) 
+
+```r
+anova(lm_14C.pmax.chla)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: X14C.per.Chla.pmax
+##                           Df  Sum Sq Mean Sq F value   Pr(>F)   
+## Species                    1  9.2795  9.2795 13.2836 0.002183 **
+## Fe.level                   1  1.3845  1.3845  1.9819 0.178321   
+## Cu.level                   1  7.1925  7.1925 10.2961 0.005476 **
+## Species:Fe.level           1  0.3934  0.3934  0.5632 0.463866   
+## Species:Cu.level           1  3.3812  3.3812  4.8402 0.042843 * 
+## Fe.level:Cu.level          1  0.0616  0.0616  0.0882 0.770269   
+## Species:Fe.level:Cu.level  1  8.3564  8.3564 11.9622 0.003234 **
+## Residuals                 16 11.1770  0.6986                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __14C.pmax.chla__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has no significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Cu level__ 
+* there is  __ a three-way interaction__ between __Species, Fe level and Cu level__ 
+
+
+
+### Using the `phia` package to look into significant effects regarding 14C.pmax.chla
+
+Again, any main effects ( none here) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(C14.alpha.cell.means <- interactionMeans(lm_14C.pmax.chla))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high     3.8893941  0.4825502
+## 2 TO 1005     high     high     3.4582525  0.4825502
+## 3 TO 1003      low     high     2.5863109  0.4825502
+## 4 TO 1005      low     high     4.0033082  0.4825502
+## 5 TO 1003     high      low     0.9650445  0.4825502
+## 6 TO 1005     high      low     4.3955571  0.4825502
+## 7 TO 1003      low      low     1.8195448  0.4825502
+## 8 TO 1005      low      low     2.3776328  0.4825502
+```
+
+```r
+plot(C14.alpha.cell.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.pmax.chla-1.png) 
+
+This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*First: Testing the three differnet variables against each other:*
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed="Species", across=c("Fe.level", "Cu.level")) # no significance
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F  Pr(>F)  
+## TO 1003    2.1576  1    3.4914 4.9979 0.03998 *
+## TO 1005   -2.5630  1    4.9266 7.0525 0.03454 *
+## Residuals         16   11.1770                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed="Cu.level", across=c("Species", "Fe.level")) # no significance
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F  Pr(>F)  
+## high       1.8481  1    2.5617 3.6671 0.07355 .
+##  low      -2.8724  1    6.1881 8.8583 0.01782 *
+## Residuals         16   11.1770                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed="Fe.level", across=c("Species", "Cu.level"))
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F   Pr(>F)   
+## high       3.8617  1   11.1843 16.010 0.002058 **
+##  low      -0.8589  1    0.5533  0.792 0.386669   
+## Residuals         16   11.1770                   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+*Second: Species : Cu level*
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed="Species", across="Cu.level") # no significance
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003   1.84556  1   10.2183 14.6275 0.002986 **
+## TO 1005   0.34419  1    0.3554  0.5087 0.485957   
+## Residuals         16   11.1770                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed = "Cu.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F   Pr(>F)   
+## high      -0.49293  1    0.7289  1.0435 0.322213   
+##  low      -1.99430  1   11.9317 17.0803 0.001562 **
+## Residuals          16   11.1770                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+let's check the 2 fixed and against one other, especially in regards to low Cu
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed= c( "Species", "Fe.level"), across= "Cu.level") # lowCu in TO1003 **
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                   Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003 : high  2.92435  1   12.8277 18.3630 0.002272 **
+## TO 1005 : high -0.93730  1    1.3178  1.8865 0.377086   
+## TO 1003 :  low  0.76677  1    0.8819  1.2624 0.377086   
+## TO 1005 :  low  1.62568  1    3.9642  5.6748 0.089885 . 
+## Residuals               16   11.1770                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed= c( "Fe.level", "Cu.level"), across="Species") # low Cu *** diff between strains
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##               Value Df Sum of Sq       F    Pr(>F)    
+## high : high  0.4311  1    0.2788  0.3991 0.8509701    
+##  low : high -1.4170  1    3.0118  4.3114 0.1629910    
+## high :  low -3.4305  1   17.6526 25.2699 0.0004958 ***
+##  low :  low -0.5581  1    0.4672  0.6688 0.8509701    
+## Residuals           16   11.1770                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+testInteractions(lm_14C.pmax.chla, fixed=c( "Species", "Cu.level"), across= "Fe.level") 
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                   Value Df Sum of Sq      F Pr(>F)  
+## TO 1003 : high  1.30308  1    2.5470 3.6461 0.2229  
+## TO 1005 : high -0.54506  1    0.4456 0.6379 0.4570  
+## TO 1003 :  low -0.85450  1    1.0953 1.5679 0.4570  
+## TO 1005 :  low  2.01792  1    6.1080 8.7437 0.0371 *
+## Residuals               16   11.1770                
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+
+
+
+###Summary 14C per cell vol - pmax
+
 
 
 
@@ -5049,12 +5406,62 @@ Integrated over the high Cu treatment (ctrl and lowFe), the two species have sim
 
 However, integrating over the low Cu treatments (lowCu and lowFeCu), the two species do have significantly different responses (F(1,16) = 19.26, p-val < 0.001). 
 
+let's check the 2 fixed and against one other, especially in regards to low Cu
+
+```r
+testInteractions(lm_14C.155uEinstein.chla, fixed= c( "Species", "Fe.level"), across= "Cu.level") # lowCu in TO1003
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                   Value Df Sum of Sq       F  Pr(>F)  
+## TO 1003 : high  1.39333  1    2.9121 11.0925 0.01695 *
+## TO 1005 : high -0.77333  1    0.8971  3.4171 0.24928  
+## TO 1003 :  low  0.73667  1    0.8140  3.1007 0.24928  
+## TO 1005 :  low  0.58667  1    0.5163  1.9665 0.24928  
+## Residuals               16    4.2004                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+testInteractions(lm_14C.155uEinstein.chla, fixed= c( "Fe.level", "Cu.level"), across="Species") # low Cu diff between strains
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                Value Df Sum of Sq       F   Pr(>F)    
+## high : high  0.15667  1    0.0368  0.1402 0.712959    
+##  low : high -0.43667  1    0.2860  1.0895 0.624201    
+## high :  low -2.01000  1    6.0601 23.0841 0.000778 ***
+##  low :  low -0.58667  1    0.5163  1.9665 0.539758    
+## Residuals            16    4.2004                     
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+testInteractions(lm_14C.155uEinstein.chla, fixed=c( "Species", "Cu.level"), across= "Fe.level") #no significane
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                   Value Df Sum of Sq      F Pr(>F)
+## TO 1003 : high  0.17667  1    0.0468 0.1783 0.8043
+## TO 1005 : high -0.41667  1    0.2604 0.9920 0.8043
+## TO 1003 :  low -0.48000  1    0.3456 1.3164 0.8043
+## TO 1005 :  low  0.94333  1    1.3348 5.0845 0.1540
+## Residuals               16    4.2004
+```
 
 
-###Summary 14C per Chla at 155 uEinstein - alpha
+###Summary 14C per Chla at 155 uEinstein - 
 
 
-TO 1003 decreases 14C uptake per Chla at 155 uEinstein significantly in response to low Cu. low Fe alone does not have an effect on 14C uptake when normalized to Chla. lowFeCu has only on effect on TO1003. To 1005 is not affected
+TO 1003 decreases 14C uptake per Chla at 155 uEinstein significantly in response to low Cu. And under low Cu the results are significantly different for both strains. low Fe alone does not have an effect on 14C uptake when normalized to Chla. lowFeCu has only on effect on TO1003. To 1005 is not affected
 
 
 

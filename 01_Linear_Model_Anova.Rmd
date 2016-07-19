@@ -50,6 +50,7 @@ library(knitr)
   + [FeDFB uptake per cell surface area (zmol/um^2*h))](#FeDFB.cellvol)
   + [14C uptake - alpha (per cell)](#14C.alpha.cell)
   + [14C uptake - alpha (per Chl a)](#14C.alpha.chla)
+  + [14C uptake - pmax (per Chl a)](#14C.pmax.chla)
   + [14C uptake - ek (per Chl a)](#14C.ek.chla)
   + [14C uptake - at 155 uEinstein (per Chla)](#14C.@155.chla)
   + [AOX - Alternative Oxidase (percent)](#AOX)
@@ -1769,6 +1770,111 @@ However, integrating over the low Cu treatments, the two species do have signifi
 ###Summary 14C per cell vol - alpha
 
 
+<a id="14C.pmax.chla"></a>
+
+#### 14C Uptake per Chl a - alpha
+
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+```{r graph_14C.pmax.chla, eval=TRUE}
+p <- ggplot (mydata , aes(Treatment, X14C.per.Chla.pmax))
+p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
+  labs(title="14C uptake per Chla - pmax", x ="")+
+  guides(alpha = "none", size = "none", shape = "none")+
+  expand_limits(y=0)
+
+```
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+```{r lm_all_14C.pmax.chla, eval=TRUE}
+lm_all_14C.pmax.chla <- lm(data = mydata, X14C.per.Chla.pmax ~ (Species * Fe.level * Cu.level))
+summary(lm_all_14C.pmax.chla) # we need to look at the actual anova to know where we need to look further
+anova(lm_all_14C.pmax.chla) 
+```
+
+there is a three way Species:Fe.level:Cu.level* interaction. Let's leave everything in, again:
+
+
+```{r lm_14C.pmax.chla, eval=TRUE}
+lm_14C.pmax.chla <- lm (data = mydata, X14C.per.Chla.pmax ~ (Species * Fe.level * Cu.level))
+summary(lm_14C.pmax.chla) # we need to look at the actual anova to knwo where we need to look further
+plot.new()
+plot(lm_14C.pmax.chla)
+
+anova(lm_14C.pmax.chla)
+```
+
+### Anova Table - 14C Uptake per Chl a - alpha
+
+Looking at the ANOVA table for the linear model that tests for all interactions for the data __14C.pmax.chla__, we see the following significant factors:
+
+
+* __Species__ alone has a significant effect 
+* __Fe. level__ alone has no significant effect  
+* __Cu level__ alone has a significant effect 
+* there is  an __interaction__ between __Species and Cu level__ 
+* there is  __ a three-way interaction__ between __Species, Fe level and Cu level__ 
+
+
+
+### Using the `phia` package to look into significant effects regarding 14C.pmax.chla
+
+Again, any main effects ( none here) that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+```{r phia_interaction means_14C.pmax.chla, eval=TRUE}
+
+(C14.alpha.cell.means <- interactionMeans(lm_14C.pmax.chla))
+plot(C14.alpha.cell.means)
+```
+
+This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+
+#### Pairwise Comparisons
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will do pairwise comparisons. As there is a hint of a three way interaction, I will fix one and run it across the two others and will go through all of them.
+
+*First: Testing the three differnet variables against each other:*
+```{r phia_interaction_Contrasts_Species_Culevel_and_Felevel_14C.pmax.chla, eval=TRUE}
+testInteractions(lm_14C.pmax.chla, fixed="Species", across=c("Fe.level", "Cu.level")) # no significance
+testInteractions(lm_14C.pmax.chla, fixed="Cu.level", across=c("Species", "Fe.level")) # no significance
+testInteractions(lm_14C.pmax.chla, fixed="Fe.level", across=c("Species", "Cu.level"))
+```
+
+
+
+*Second: Species : Cu level*
+```{r phia_interaction_Contrasts_Species_Culevel_14C.pmax.chla, eval=TRUE}
+testInteractions(lm_14C.pmax.chla, fixed="Species", across="Cu.level") # no significance
+```
+
+
+
+```{r phia_interaction_Contrasts_Culevel_and_Species_14C.pmax.chla, eval=TRUE}
+testInteractions(lm_14C.pmax.chla, fixed = "Cu.level", across="Species")
+```
+
+
+let's check the 2 fixed and against one other, especially in regards to low Cu
+```{r phia_interaction_Contrasts_lowCu_related_14C.pmax.chla, eval=TRUE}
+testInteractions(lm_14C.pmax.chla, fixed= c( "Species", "Fe.level"), across= "Cu.level") # lowCu in TO1003 **
+testInteractions(lm_14C.pmax.chla, fixed= c( "Fe.level", "Cu.level"), across="Species") # low Cu *** diff between strains
+testInteractions(lm_14C.pmax.chla, fixed=c( "Species", "Cu.level"), across= "Fe.level") 
+```
+
+
+
+
+
+
+###Summary 14C per cell vol - pmax
+
 
 
 
@@ -1990,12 +2096,18 @@ Integrated over the high Cu treatment (ctrl and lowFe), the two species have sim
 
 However, integrating over the low Cu treatments (lowCu and lowFeCu), the two species do have significantly different responses (F(1,16) = 19.26, p-val < 0.001). 
 
+let's check the 2 fixed and against one other, especially in regards to low Cu
+```{r phia_interaction_Contrasts_lowCu_related_14C.155uEinstein.chla, eval=TRUE}
+testInteractions(lm_14C.155uEinstein.chla, fixed= c( "Species", "Fe.level"), across= "Cu.level") # lowCu in TO1003
+testInteractions(lm_14C.155uEinstein.chla, fixed= c( "Fe.level", "Cu.level"), across="Species") # low Cu diff between strains
+testInteractions(lm_14C.155uEinstein.chla, fixed=c( "Species", "Cu.level"), across= "Fe.level") #no significane
+```
 
 
-###Summary 14C per Chla at 155 uEinstein - alpha
+###Summary 14C per Chla at 155 uEinstein - 
 
 
-TO 1003 decreases 14C uptake per Chla at 155 uEinstein significantly in response to low Cu. low Fe alone does not have an effect on 14C uptake when normalized to Chla. lowFeCu has only on effect on TO1003. To 1005 is not affected
+TO 1003 decreases 14C uptake per Chla at 155 uEinstein significantly in response to low Cu. And under low Cu the results are significantly different for both strains. low Fe alone does not have an effect on 14C uptake when normalized to Chla. lowFeCu has only on effect on TO1003. To 1005 is not affected
 
 
 
