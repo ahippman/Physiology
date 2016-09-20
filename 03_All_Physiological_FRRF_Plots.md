@@ -91,7 +91,7 @@ mydata.mean.stderr.Phys <- read.delim("Input_Data/ALL_Phys_Barplots/ALL_Phys_bot
 mydata_Phys_lowCu <- mydata_Phys %>% 
   filter(Treatment_number < 3) #this will leave me with only control and lowCu data
 
-mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:53])
+mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:61])
 
 mydata.mean.stderr <- mydata.mean.stderr %>% 
   mutate (Treatment_number = c(1:4,1:4)) %>% # as I just want to make plots showing ctrl and lowCu
@@ -128,6 +128,10 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             mean.Cell.Density  = mean( Cell.Density,na.rm=T),
             mean.Fe.tot.nmol  = mean(Fe.tot.nmol ,na.rm=T),
             mean.Cu.tot.nmol  = mean( Cu.tot.nmol,na.rm=T),
+            mean.mol.O2.mol.Chla.h.mod  = mean(mol.O2.mol.Chla.h.mod ,na.rm=T),
+            mean.X14C.molC.per.mol.Chla.h  = mean(X14C.molC.per.mol.Chla.h ,na.rm=T),
+            mean.PQ.Chla.all  = mean(PQ.Chla.all ,na.rm=T),
+            mean.PQ.Chla.all.delete  = mean(PQ.Chla.all.delete ,na.rm=T),
             sd.err.Growthrate.dd.1 = sd( Growthrate.dd.1, na.rm=T)/sqrt(n()),
             sd.err.Growthrate.Percent..u.umax. = sd(Growthrate.Percent..u.umax. ,na.rm=T)/sqrt(n()),
             sd.err.Growthrate.specific.d.1 = sd(Growthrate.specific.d.1 ,na.rm=T)/sqrt(n()),
@@ -152,7 +156,11 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             sd.err.AOXactivity = sd(AOXactivity ,na.rm=T)/sqrt(n()),
             sd.err.Cell.Density = sd( Cell.Density,na.rm=T)/sqrt(n()),
             sd.err.Fe.tot.nmol = sd(Fe.tot.nmol ,na.rm=T)/sqrt(n()),
-            sd.errCu.tot.nmol. = sd(Cu.tot.nmol ,na.rm=T)/sqrt(n()))
+            sd.err.Cu.tot.nmol. = sd(Cu.tot.nmol ,na.rm=T)/sqrt(n()),
+            sd.err.mol.O2.mol.Chla.h.mod = sd(mol.O2.mol.Chla.h.mod ,na.rm=T)/sqrt(n()),
+            sd.err.X14C.molC.per.mol.Chla.h = sd(X14C.molC.per.mol.Chla.h ,na.rm=T)/sqrt(n()),
+            sd.err.PQ.Chla.all = sd(PQ.Chla.all ,na.rm=T)/sqrt(n()),
+            sd.err.PQ.Chla.all.delete = sd(PQ.Chla.all.delete ,na.rm=T)/sqrt(n()))
 
         
 
@@ -618,12 +626,30 @@ p26
 
 
 
+# p27 - mol.O2.mol.Chla.h.mod
 
+
+
+
+
+# p28 - X14C.molC.per.mol.Chla.h
+
+
+
+
+# p29 - PQ.Chla.all
+
+
+
+
+# p30 - PQ.Chla.all.delete
 
 
 
 
 # p1 - OOOOOOOO
+
+
 
 
 
