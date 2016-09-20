@@ -238,7 +238,7 @@ dev.off()
 # p2 - cell.size..um
 ``` {r  plot cell.size..um}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.size..um, fill = Species)) + 
-  labs(title = bquote("Cell" ~ size ), y=bquote("Cell diameter (" ~ mu ~"m)"), x= "")
+  labs(title = bquote("Cell" ~ diameter  ), y=bquote(mu ~"m"), x= "")
     
 p2 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -278,7 +278,7 @@ dev.off()
 # p3 - cell.volume.fl.cell
 ``` {r  plot cell.volume.fl.cell}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.volume.fl.cell, fill = Species)) + 
-  labs(title = bquote("Cell" ~ volume ), y=bquote("Cell volume (" ~ mu ~"L)"), x= "")
+  labs(title = bquote("Cell" ~ volume ), y=bquote(~ mu ~"L " ~ cell^-1), x= "")
     
 p3 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -317,7 +317,7 @@ dev.off()
 # p4 - GrossPchla.mol.O2.mol.Chla..h.
 ``` {r  plot GrossPchla.mol.O2.mol.Chla..h.}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.GrossPchla.mol.O2.mol.Chla..h., fill = Species)) + 
-  labs(title = bquote("Gross " ~ O[2]~"Production per Chl"~ italic(a) ), y=bquote("Gross " ~ O[2]~"Production ( mol " ~O[2] ~ " Chl"~ italic(a)^{-1}~")"), x= "")
+  labs(title = bquote("Gross " ~ O[2]~"Production per Chl"~ italic(a) ), y=bquote("mol " ~O[2] ~ " Chl"~ italic(a)^{-1} ~ h^-1), x= "")
     
 p4 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -357,7 +357,7 @@ dev.off()
 # p5 - FeDFB.zmol.um.2.h.
 ``` {r  plot FeDFB.zmol.um.2.h.}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.FeDFB.zmol.um.2.h., fill = Species)) + 
-  labs(title = bquote("FeDFB" ~ uptake ), y=bquote(atop("FeDFB uptake ", "(zmol " ~ mu ~ m^{-2}~h^{-1}~")" )), x= "")
+  labs(title = bquote("FeDFB" ~ uptake ), y=bquote("zmol " ~ mu ~ m^{-2}~h^{-1}), x= "")
     
 p5 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -394,7 +394,7 @@ dev.off()
 # p6 - Chla.per.cell.pg.cell 
 ``` {r  plot Chla.per.cell.pg.cell }
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Chla.per.cell.pg.cell , fill = Species)) + 
-  labs(title = bquote("Chl"~italic(a)~"per cell" ), y=bquote("Chl" ~ italic(a)~ "(pg " ~cell^{-1}~")"), x= "")
+  labs(title = bquote("Chl"~italic(a)~"per cell" ), y=bquote("pg " ~cell^{-1}), x= "")
     
 p6 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -433,7 +433,7 @@ dev.off()
 # p7 - Chla.per.cell.vol.fg.fL
 ``` {r  plot Chla.per.cell.vol.fg.fL}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Chla.per.cell.vol.fg.fL, fill = Species)) + 
-  labs(title = bquote("Chl"~italic(a)~"per volume" ), y=bquote("Chl" ~ italic(a)~ "(fg " ~fL^{-1}~")"), x= "")
+  labs(title = bquote("Chl"~italic(a)~"per volume" ), y=bquote("fg " ~fL^{-1}), x= "")
     
 p7 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -472,7 +472,7 @@ dev.off()
 # p8 - AOXactivity
 ``` {r  plot AOXactivity}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.AOXactivity, fill = Species)) + 
-  labs(title = bquote("AOX" ~ activity ), y=bquote("AOX activity (%)"), x= "")
+  labs(title = bquote("AOX" ~ activity ), y=bquote("%"), x= "")
     
 p8 <- p+ geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -511,7 +511,7 @@ dev.off()
 # p9 - FvFm.old
 ``` {r  plot FvFm.old}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.FvFm.old, fill = Species)) + 
-  labs(title = bquote("Fv/" ~ Fm ), y=bquote("Fv/Fm "), x= "")
+  labs(title = bquote("Fv/" ~ Fm ), y=bquote("A.U."), x= "")
     
 p9 <- p+ geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -550,7 +550,7 @@ dev.off()
 # p10 - Sig.old
 ``` {r  plot Sig.old}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Sig.old, fill = Species)) + 
-  labs(title = bquote(  sigma[PSII] ), y=bquote( sigma[PSII]), x= "")
+  labs(title = bquote(  sigma[PSII] ), y=bquote( ring(A)~" "~RCII^-1), x= "")
     
 p10 <-  p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -589,7 +589,7 @@ dev.off()
 # p11 - PQ_Siz.old 
 ``` {r  plot PQ_Siz.old }
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.PQ_Siz.old , fill = Species)) + 
-  labs(title = bquote("PQ-Pool" ~ size ), y=bquote("PQ-Pool (mol PQ mol " ~Q[B]^{-1}~")"), x= "")
+  labs(title = bquote("PQ-Pool" ~ size ), y=bquote("mol PQ mol " ~Q[B]^{-1}), x= "")
     
 p11 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -629,7 +629,7 @@ dev.off()
 # p12 - Converse_corr
 ``` {r  plot Converse_corr}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Converse_corr, fill = Species)) + 
-  labs(title = bquote("Conversion factor" ~ Phi[e:C] ~"/" ~eta[PSII]~"@ 155 E" ), y=bquote(atop(Phi[e:C] ~"/" ~eta[PSII], "mol "~e^{-1}~ "mol " ~ C^{-1} ~ "mol Chl" ~ italic(a) ~ "mol "~ RCII^{-1})), x= "")
+  labs(title = bquote(atop("Conversion factor" ~ Phi[e:C] ~"/" ~eta[PSII], "@ growth irradiance" )), y=bquote(atop(ETR[PSII] ~"/ C uptake  : " ~Phi[e:C] ~"/" ~eta[PSII], "mol "~e^{-1}~ "mol " ~ C^{-1} ~ " / mol Chl" ~ italic(a) ~ "mol "~ RCII^{-1})), x= "")
     
 p12 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -681,12 +681,97 @@ dev.off()
 ```
 
 
+
+
+
+
+
+
+
+# p25 - cell.SA.um2
+``` {r  plot cell.SA.um2, eval=T, echo=T}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.SA.um2, fill = Species)) + 
+  labs(title = bquote("Cell surface"~ area ), y=bquote( mu ~ m^{2} ~ cell^{-1} ), x= "")
+    
+p25 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.cell.SA.um2 - sd.err.cell.SA.um2, ymax = mean.cell.SA.um2 + sd.err.cell.SA.um2),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p25
+```
+
+```{r plot_file_cell.SA.um2, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_cell.SA.um2.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.cell.SA.um2 - sd.err.cell.SA.um2, ymax = mean.cell.SA.um2 + sd.err.cell.SA.um2),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+
+
+
+
+# p26 - cell.SA.Vol.ratio
+``` {r  plot cell.SA.Vol.ratio, eval=T, echo=T}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.SA.Vol.ratio, fill = Species)) + 
+  labs(title = bquote("Cell SA / vol"~ ratio ), y=bquote( mu ~ m^{2} ~ fL^{-1} ~cell^{-1}), x= "")
+    
+p26 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.cell.SA.Vol.ratio - sd.err.cell.SA.Vol.ratio, ymax = mean.cell.SA.Vol.ratio + sd.err.cell.SA.Vol.ratio),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p26
+
+```
+
+```{r plot_file_cell.SA.Vol.ratio, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_cell.SA.Vol.ratio.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.cell.SA.Vol.ratio - sd.err.cell.SA.Vol.ratio, ymax = mean.cell.SA.Vol.ratio + sd.err.cell.SA.Vol.ratio),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+
+
+
+
+
+
 # p1 - OOOOOOOO
 ``` {r  plot OOOOOOOO, eval=FALSE, echo=FALSE}
-p1 <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.OOOOOOOO, fill = Species)) + 
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.OOOOOOOO, fill = Species)) + 
   labs(title = bquote("Growthrate %" ~ mu/mu[max] ), y=bquote("% " ~ mu / mu[max]), x= "")
     
-p1 + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+p1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
   geom_errorbar(aes(ymin = mean.OOOOOOOO - sd.err.OOOOOOOO, ymax = mean.OOOOOOOO + sd.err.OOOOOOOO),
                   width = .15,                    # Width of the error bars
@@ -695,13 +780,14 @@ p1 + geom_bar(color = "black", position=position_dodge(), stat="identity", width
   cleanup +
   theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
 
+p1
 
 ```
 
 ```{r plot_file_OOOOOOOO, eval=FALSE, echo=FALSE}
 png('plots/ALL_Phys_Barplots/lowCu_OOOOOOOO.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
 
-p1 + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
   geom_errorbar(aes(ymin = mean.OOOOOOOO - sd.err.OOOOOOOO, ymax = mean.OOOOOOOO + sd.err.OOOOOOOO),
                   width = .15,                    # Width of the error bars
