@@ -209,23 +209,6 @@ cleanup = theme (panel.grid.major = element_blank(),
 ```
 
 # p1 - Growthrate.Percent..u.umax.
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y = mean.Growthrate.Percent..u.umax., fill = Species)) + 
-  labs(title = bquote("Growthrate %" ~ mu/mu[max] ), y=bquote("% " ~ mu / mu[max]), x= "")
-    
-p1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.Growthrate.Percent..u.umax. - sd.err.Growthrate.Percent..u.umax., ymax = mean.Growthrate.Percent..u.umax. + sd.err.Growthrate.Percent..u.umax.),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p1
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Growthrate.Percent..u.umax.-1.png) 
 
 
@@ -233,23 +216,6 @@ p1
 
 
 # p2 - cell.size..um
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.size..um, fill = Species)) + 
-  labs(title = bquote("Cell" ~ diameter  ), y=bquote(mu ~"m"), x= "")
-    
-p2 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.cell.size..um - sd.err.cell.size..um, ymax = mean.cell.size..um + sd.err.cell.size..um),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p2
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.size..um-1.png) 
 
 
@@ -262,78 +228,28 @@ p2
 
 
 # p3 - cell.volume.fl.cell
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.volume.fl.cell, fill = Species)) + 
-  labs(title = bquote("Cell" ~ volume ), y=bquote(~ mu ~"L " ~ cell^-1), x= "")
-    
-p3 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.cell.volume.fl.cell - sd.err.cell.volume.fl.cell, ymax = mean.cell.volume.fl.cell + sd.err.cell.volume.fl.cell),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-p3
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.volume.fl.cell-1.png) 
 
 
 
-#OOOOOOOO
+
 
 
 
 
 
 # p4 - GrossPchla.mol.O2.mol.Chla..h.
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.GrossPchla.mol.O2.mol.Chla..h., fill = Species)) + 
-  labs(title = bquote("Gross " ~ O[2]~"Production per Chl"~ italic(a) ), y=bquote("mol " ~O[2] ~ " Chl"~ italic(a)^{-1} ~ h^-1), x= "")
-    
-p4 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.GrossPchla.mol.O2.mol.Chla..h. - sd.err.GrossPchla.mol.O2.mol.Chla..h., ymax = mean.GrossPchla.mol.O2.mol.Chla..h. + sd.err.GrossPchla.mol.O2.mol.Chla..h.),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p4
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot GrossPchla.mol.O2.mol.Chla..h.-1.png) 
 
 
 
-#GrossPchla.mol.O2.mol.Chla..h.
+
 
 
 
 
 
 # p5 - FeDFB.zmol.um.2.h.
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.FeDFB.zmol.um.2.h., fill = Species)) + 
-  labs(title = bquote("FeDFB" ~ uptake ), y=bquote("zmol " ~ mu ~ m^{-2}~h^{-1}), x= "")
-    
-p5 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.FeDFB.zmol.um.2.h. - sd.err.FeDFB.zmol.um.2.h., ymax = mean.FeDFB.zmol.um.2.h. + sd.err.FeDFB.zmol.um.2.h.),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p5
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot FeDFB.zmol.um.2.h.-1.png) 
 
 
@@ -343,135 +259,47 @@ p5
 
 
 # p6 - Chla.per.cell.pg.cell 
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Chla.per.cell.pg.cell , fill = Species)) + 
-  labs(title = bquote("Chl"~italic(a)~"per cell" ), y=bquote("pg " ~cell^{-1}), x= "")
-    
-p6 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.Chla.per.cell.pg.cell  - sd.err.Chla.per.cell.pg.cell , ymax = mean.Chla.per.cell.pg.cell  + sd.err.Chla.per.cell.pg.cell ),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p6
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Chla.per.cell.pg.cell-1.png) 
 
 
 
-#Chla.per.cell.pg.cell 
+
 
 
 
 
 
 # p7 - Chla.per.cell.vol.fg.fL
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Chla.per.cell.vol.fg.fL, fill = Species)) + 
-  labs(title = bquote("Chl"~italic(a)~"per volume" ), y=bquote("fg " ~fL^{-1}), x= "")
-    
-p7 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.Chla.per.cell.vol.fg.fL - sd.err.Chla.per.cell.vol.fg.fL, ymax = mean.Chla.per.cell.vol.fg.fL + sd.err.Chla.per.cell.vol.fg.fL),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p7
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Chla.per.cell.vol.fg.fL-1.png) 
 
 
 
-#Chla.per.cell.vol.fg.fL
 
 
 
 
 
 # p8 - AOXactivity
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.AOXactivity, fill = Species)) + 
-  labs(title = bquote("AOX" ~ activity ), y=bquote("%"), x= "")
-    
-p8 <- p+ geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.AOXactivity - sd.err.AOXactivity, ymax = mean.AOXactivity + sd.err.AOXactivity),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p8
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot AOXactivity-1.png) 
 
 
-
-#AOXactivity
 
 
 
 
 
 # p9 - FvFm.old
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.FvFm.old, fill = Species)) + 
-  labs(title = bquote("Fv/" ~ Fm ), y=bquote("A.U."), x= "")
-    
-p9 <- p+ geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.FvFm.old - sd.err.FvFm.old, ymax = mean.FvFm.old + sd.err.FvFm.old),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p9
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot FvFm.old-1.png) 
 
 
 
-#FvFm.old
+
 
 
 
 
 
 # p10 - Sig.old
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Sig.old, fill = Species)) + 
-  labs(title = bquote(  sigma[PSII] ), y=bquote( ring(A)~" "~RCII^-1), x= "")
-    
-p10 <-  p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.Sig.old - sd.err.Sig.old, ymax = mean.Sig.old + sd.err.Sig.old),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p10
-```
-
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Sig.old-1.png) 
 
 
@@ -483,24 +311,7 @@ p10
 
 
 # p11 - PQ_Siz.old 
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.PQ_Siz.old , fill = Species)) + 
-  labs(title = bquote("PQ-Pool" ~ size ), y=bquote("mol PQ mol " ~Q[B]^{-1}), x= "")
-    
-p11 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.PQ_Siz.old  - sd.err.PQ_Siz.old , ymax = mean.PQ_Siz.old  + sd.err.PQ_Siz.old ),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p11
-```
-
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ_Siz.old-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ_Siz.old -1.png) 
 
 
 
@@ -532,7 +343,170 @@ p12
 
 
 
-#Converse_corr
+# p13 - ETR.alpha.JP
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.alpha.JP-1.png) 
+
+
+
+
+# p14 - ETR.pmax.JP
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.pmax.JP-1.png) 
+
+
+
+
+# p15 - ETR.ek.JP
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.ek.JP-1.png) 
+
+
+
+# p16 - ETR_155_calc
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR_155_calc-1.png) 
+
+
+
+
+# p17 - F.q.F.v
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot F.q.F.v-1.png) 
+
+
+
+# p18 - F.q.F.m
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot F.q.F.m-1.png) 
+
+
+
+# p19 - NPQ.nsv.
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NPQ.nsv.-1.png) 
+
+
+
+
+
+# p20 - X14C.per.Chla.alpha
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.alpha-1.png) 
+
+
+
+# p21 - X14C.per.Chla.pmax
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.pmax-1.png) 
+
+
+
+# p22 - X14C.per.Chla.ek
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.ek-1.png) 
+
+
+
+# p23 - X14C.per.Chla.at.155uE
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.at.155uE-1.png) 
+
+
+
+
+
+
+
+
+# p25 - cell.SA.um2
+
+```r
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.SA.um2, fill = Species)) + 
+  labs(title = bquote("Cell surface"~ area ), y=bquote( mu ~ m^{2} ~ cell^{-1} ), x= "")
+    
+p25 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.cell.SA.um2 - sd.err.cell.SA.um2, ymax = mean.cell.SA.um2 + sd.err.cell.SA.um2),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p25
+```
+
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.um2-1.png) 
+
+
+
+
+
+
+
+
+
+
+
+
+# p26 - cell.SA.Vol.ratio
+
+```r
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.SA.Vol.ratio, fill = Species)) + 
+  labs(title = bquote("Cell SA / vol"~ ratio ), y=bquote( mu ~ m^{2} ~ fL^{-1} ~cell^{-1}), x= "")
+    
+p26 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.cell.SA.Vol.ratio - sd.err.cell.SA.Vol.ratio, ymax = mean.cell.SA.Vol.ratio + sd.err.cell.SA.Vol.ratio),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p26
+```
+
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.Vol.ratio-1.png) 
+
+
+
+
+# p27 - mol.O2.mol.Chla.h.mod
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot mol.O2.mol.Chla.h.mod-1.png) 
+
+
+
+
+# p28 - X14C.molC.per.mol.Chla.h
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.molC.per.mol.Chla.h-1.png) 
+
+
+
+# p29 - PQ.Chla.all
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all-1.png) 
+
+
+
+# p30 - PQ.Chla.all.delete
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all.delete-1.png) 
+
+
+
+# p1 - OOOOOOOO
+
+```r
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.OOOOOOOO, fill = Species)) + 
+  labs(title = bquote("Growthrate %" ~ mu/mu[max] ), y=bquote("% " ~ mu / mu[max]), x= "")
+    
+p1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.OOOOOOOO - sd.err.OOOOOOOO, ymax = mean.OOOOOOOO + sd.err.OOOOOOOO),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p1
+```
+
+
+
+
+
+#OOOOOOOO
+
 
 #Making the first multi plot
 
@@ -570,94 +544,18 @@ dev.off()
 
 
 
-
-
-
-
-
-
-# p25 - cell.SA.um2
-
 ```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.SA.um2, fill = Species)) + 
-  labs(title = bquote("Cell surface"~ area ), y=bquote( mu ~ m^{2} ~ cell^{-1} ), x= "")
-    
-p25 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.cell.SA.um2 - sd.err.cell.SA.um2, ymax = mean.cell.SA.um2 + sd.err.cell.SA.um2),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+png('plots/ALL_Phys_Barplots/multiplot_Results01.png', width=1360, height = 960, units ="px", pointsize = 12)
 
-p25
+multiplot(p1, p9, p29, p2, p10, p30,p6, p11, p12, p27, p19 , p5, cols=4)
+
+dev.off()
 ```
 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.um2-1.png) 
-
-
-
-
-
-
-
-
-# p26 - cell.SA.Vol.ratio
-
-```r
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.cell.SA.Vol.ratio, fill = Species)) + 
-  labs(title = bquote("Cell SA / vol"~ ratio ), y=bquote( mu ~ m^{2} ~ fL^{-1} ~cell^{-1}), x= "")
-    
-p26 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
-  scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.cell.SA.Vol.ratio - sd.err.cell.SA.Vol.ratio, ymax = mean.cell.SA.Vol.ratio + sd.err.cell.SA.Vol.ratio),
-                  width = .15,                    # Width of the error bars
-                  position = position_dodge(.6), #so the error bars are dodged to the side
-                  colour = "black") +
-  cleanup +
-  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
-
-p26
 ```
-
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.Vol.ratio-1.png) 
-
-
-
-
-# p27 - mol.O2.mol.Chla.h.mod
-
-
-
-
-
-# p28 - X14C.molC.per.mol.Chla.h
-
-
-
-
-# p29 - PQ.Chla.all
-
-
-
-
-# p30 - PQ.Chla.all.delete
-
-
-
-
-# p1 - OOOOOOOO
-
-
-
-
-
-
-#OOOOOOOO
-
-
-
+## png 
+##   2
+```
 
 
 
