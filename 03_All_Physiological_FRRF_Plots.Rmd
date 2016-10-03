@@ -90,7 +90,7 @@ mydata.mean.stderr.Phys <- read.delim("Input_Data/ALL_Phys_Barplots/ALL_Phys_bot
 mydata_Phys_lowCu <- mydata_Phys %>% 
   filter(Treatment_number < 3) #this will leave me with only control and lowCu data
 
-mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:61])
+mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:67])
 
 mydata.mean.stderr <- mydata.mean.stderr %>% 
   mutate (Treatment_number = c(1:4,1:4)) %>% # as I just want to make plots showing ctrl and lowCu
@@ -126,10 +126,13 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             mean.Cell.Density  = mean( Cell.Density,na.rm=T),
             mean.Fe.tot.nmol  = mean(Fe.tot.nmol ,na.rm=T),
             mean.Cu.tot.nmol  = mean( Cu.tot.nmol,na.rm=T),
-            mean.mol.O2.mol.Chla.h.mod  = mean(mol.O2.mol.Chla.h.mod ,na.rm=T),
             mean.X14C.molC.per.mol.Chla.h  = mean(X14C.molC.per.mol.Chla.h ,na.rm=T),
             mean.PQ.Chla.all  = mean(PQ.Chla.all ,na.rm=T),
             mean.PQ.Chla.all.delete  = mean(PQ.Chla.all.delete ,na.rm=T),
+            mean.Gross.mol.O2.mol.Chla.h.mod  = mean(Gross.mol.O2.mol.Chla.h.mod ,na.rm=T),
+            mean.NET.mol.O2.mol.Chla.h  = mean(NET.mol.O2.mol.Chla.h ,na.rm=T),
+            mean.NET.PQ.Chla  = mean(NET.PQ.Chla ,na.rm=T),
+            mean.Resp.mol.O2.mol.Chla.h  = mean(Resp.mol.O2.mol.Chla.h ,na.rm=T),
             sd.err.Growthrate.dd.1 = sd( Growthrate.dd.1, na.rm=T)/sqrt(n()),
             sd.err.Growthrate.Percent..u.umax. = sd(Growthrate.Percent..u.umax. ,na.rm=T)/sqrt(n()),
             sd.err.Growthrate.specific.d.1 = sd(Growthrate.specific.d.1 ,na.rm=T)/sqrt(n()),
@@ -155,10 +158,13 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             sd.err.Cell.Density = sd( Cell.Density,na.rm=T)/sqrt(n()),
             sd.err.Fe.tot.nmol = sd(Fe.tot.nmol ,na.rm=T)/sqrt(n()),
             sd.err.Cu.tot.nmol. = sd(Cu.tot.nmol ,na.rm=T)/sqrt(n()),
-            sd.err.mol.O2.mol.Chla.h.mod = sd(mol.O2.mol.Chla.h.mod ,na.rm=T)/sqrt(n()),
             sd.err.X14C.molC.per.mol.Chla.h = sd(X14C.molC.per.mol.Chla.h ,na.rm=T)/sqrt(n()),
             sd.err.PQ.Chla.all = sd(PQ.Chla.all ,na.rm=T)/sqrt(n()),
-            sd.err.PQ.Chla.all.delete = sd(PQ.Chla.all.delete ,na.rm=T)/sqrt(n()))
+            sd.err.PQ.Chla.all.delete = sd(PQ.Chla.all.delete ,na.rm=T)/sqrt(n()),
+            sd.err.Gross.mol.O2.mol.Chla.h.mod = sd(Gross.mol.O2.mol.Chla.h.mod ,na.rm=T)/sqrt(n()),
+            sd.err.NET.mol.O2.mol.Chla.h = sd(NET.mol.O2.mol.Chla.h ,na.rm=T)/sqrt(n()),
+            sd.err.NET.PQ.Chla = sd( NET.PQ.Chla,na.rm=T)/sqrt(n()),
+            sd.err.Resp.mol.O2.mol.Chla.h = sd( Resp.mol.O2.mol.Chla.h,na.rm=T)/sqrt(n()))
 
         
 
@@ -1012,7 +1018,7 @@ dev.off()
 # p23 - X14C.per.Chla.at.155uE
 ``` {r  plot X14C.per.Chla.at.155uE, eval=TRUE, echo=FALSE}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.X14C.per.Chla.at.155uE, fill = Species)) + 
-  labs(title = bquote("14C uptake @ 155"~mu~"E" ), y=bquote("mg C mg Chl" ~italic(a)^-1~h-1 ), x= "")
+  labs(title = bquote("14C uptake @ " ~"growth irradiance"), y=bquote("mg C mg Chl" ~italic(a)^-1~h-1 ), x= "")
     
 p23 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -1125,14 +1131,14 @@ dev.off()
 ```
 
 
-# p27 - mol.O2.mol.Chla.h.mod
-``` {r  plot mol.O2.mol.Chla.h.mod, eval=TRUE, echo=FALSE}
-p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.mol.O2.mol.Chla.h.mod, fill = Species)) + 
+# p27 - Gross.mol.O2.mol.Chla.h.mod
+``` {r  plot Gross.mol.O2.mol.Chla.h.mod, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Gross.mol.O2.mol.Chla.h.mod, fill = Species)) + 
   labs(title = bquote("Gross " ~ O[2] ~ "production per Chl" ~  italic(a)), y=bquote("mol " ~ O[2] ~ "mol Chl" ~ italic(a)^-1), x= "")
     
 p27 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.mol.O2.mol.Chla.h.mod - sd.err.mol.O2.mol.Chla.h.mod, ymax = mean.mol.O2.mol.Chla.h.mod + sd.err.mol.O2.mol.Chla.h.mod),
+  geom_errorbar(aes(ymin = mean.Gross.mol.O2.mol.Chla.h.mod - sd.err.Gross.mol.O2.mol.Chla.h.mod, ymax = mean.Gross.mol.O2.mol.Chla.h.mod + sd.err.Gross.mol.O2.mol.Chla.h.mod),
                   width = .15,                    # Width of the error bars
                   position = position_dodge(.6), #so the error bars are dodged to the side
                   colour = "black") +
@@ -1143,12 +1149,12 @@ p27
 
 ```
 
-```{r plot_file_mol.O2.mol.Chla.h.mod, eval=FALSE, echo=FALSE}
-png('plots/ALL_Phys_Barplots/lowCu_mol.O2.mol.Chla.h.mod.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+```{r plot_file_Gross.mol.O2.mol.Chla.h.mod, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_Gross.mol.O2.mol.Chla.h.mod.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
 
 p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
-  geom_errorbar(aes(ymin = mean.mol.O2.mol.Chla.h.mod - sd.err.mol.O2.mol.Chla.h.mod, ymax = mean.mol.O2.mol.Chla.h.mod + sd.err.mol.O2.mol.Chla.h.mod),
+  geom_errorbar(aes(ymin = mean.Gross.mol.O2.mol.Chla.h.mod - sd.err.Gross.mol.O2.mol.Chla.h.mod, ymax = mean.Gross.mol.O2.mol.Chla.h.mod + sd.err.Gross.mol.O2.mol.Chla.h.mod),
                   width = .15,                    # Width of the error bars
                   position = position_dodge(.6), #so the error bars are dodged to the side
                   colour = "black") +
@@ -1159,6 +1165,39 @@ dev.off()
 
 ```
 
+# p27_1 - NET.mol.O2.mol.Chla.h.mod mean.NET.mol.O2.mol.Chla.h
+``` {r  plot NET.mol.O2.mol.Chla.h.mod, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.NET.mol.O2.mol.Chla.h, fill = Species)) + 
+  labs(title = bquote("Net " ~ O[2] ~ "production per Chl" ~  italic(a)), y=bquote("mol " ~ O[2] ~ "mol Chl" ~ italic(a)^-1), x= "")
+    
+p27_1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.NET.mol.O2.mol.Chla.h - sd.err.NET.mol.O2.mol.Chla.h, ymax = mean.NET.mol.O2.mol.Chla.h + sd.err.NET.mol.O2.mol.Chla.h),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p27_1
+
+```
+
+```{r plot_file_NET.mol.O2.mol.Chla.h.mod, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_NET.mol.O2.mol.Chla.h.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.NET.mol.O2.mol.Chla.h - sd.err.NET.mol.O2.mol.Chla.h, ymax = mean.NET.mol.O2.mol.Chla.h + sd.err.NET.mol.O2.mol.Chla.h),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
 
 # p28 - X14C.molC.per.mol.Chla.h
 ``` {r  plot X14C.molC.per.mol.Chla.h, eval=TRUE, echo=FALSE}
@@ -1231,7 +1270,7 @@ dev.off()
 # p30 - PQ.Chla.all.delete
 ``` {r  plot PQ.Chla.all.delete, eval=TRUE, echo=FALSE}
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.PQ.Chla.all.delete, fill = Species)) + 
-  labs(title = bquote(atop("Photosynthetic quotient", PQ )), y=bquote("mol " ~ O[2] ~ "mol" ~ C^-1), x= "")
+  labs(title = bquote(atop("Photosynthetic quotient", PQ[Gross.O2] )), y=bquote("mol " ~ O[2] ~ "mol" ~ C^-1), x= "")
     
 p30 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
@@ -1261,6 +1300,75 @@ p + geom_bar(color = "black", position=position_dodge(), stat="identity", width 
 dev.off()
 
 ```
+
+# p31 - NET.PQ.Chla
+``` {r  plot NET.PQ.Chla, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.NET.PQ.Chla, fill = Species)) + 
+  labs(title = bquote(atop("Photosynthetic quotient", PQ )), y=bquote("mol " ~ O[2] ~ "mol" ~ C^-1), x= "")
+    
+p31 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.NET.PQ.Chla - sd.err.NET.PQ.Chla, ymax = mean.NET.PQ.Chla + sd.err.NET.PQ.Chla),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p31
+
+```
+
+```{r plot_file_NET.PQ.Chla, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_NET.PQ.Chla.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.NET.PQ.Chla - sd.err.NET.PQ.Chla, ymax = mean.NET.PQ.Chla + sd.err.NET.PQ.Chla),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
+# p32 - Resp.mol.O2.mol.Chla.h
+``` {r  plot Resp.mol.O2.mol.Chla.h, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.Resp.mol.O2.mol.Chla.h, fill = Species)) + 
+  labs(title = bquote(atop("Respiration ",O[2]~ "consumption per Chl" ~  italic(a))), y=bquote("mol " ~ O[2] ~ "mol Chl" ~ italic(a)^-1), x= "")
+    
+p32 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.Resp.mol.O2.mol.Chla.h - sd.err.Resp.mol.O2.mol.Chla.h, ymax = mean.Resp.mol.O2.mol.Chla.h + sd.err.Resp.mol.O2.mol.Chla.h),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p32
+
+```
+
+```{r plot_file_Resp.mol.O2.mol.Chla.h, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_Resp.mol.O2.mol.Chla.h.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.Resp.mol.O2.mol.Chla.h - sd.err.Resp.mol.O2.mol.Chla.h, ymax = mean.Resp.mol.O2.mol.Chla.h + sd.err.Resp.mol.O2.mol.Chla.h),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+dev.off()
+
+```
+
 
 # p1 - OOOOOOOO
 ``` {r  plot OOOOOOOO, eval=FALSE, echo=TRUE}
@@ -1297,6 +1405,80 @@ dev.off()
 ```
 
 
+# Plot of growthrates dd-1 of tubes before big cultures to determine copper concentrations needed
+
+```{r data_input_growthrates_tubes, eval=T}
+
+mydata.growth <- read.delim("Input_Data/ALL_Phys_Barplots/Growthrate_lowCu_tubes.txt")
+
+mydata.growth.comb <- mydata.growth %>% 
+  unite(Trtmt_comb, Strain, Treatment, sep= " ")
+
+
+
+```
+
+```{r mean_std_error_table_tube growthrates, eval=T}
+mydata_growth.mean.stderr <- mydata.growth.comb %>%  #I double checked via calculating it by hand in excel, this works! 
+  group_by(Trtmt_comb) %>% 
+    summarize(mean.growthrate.dd = mean(growthrate.dd, na.rm=T),
+                sd.err.growthrate.dd = sd( growthrate.dd, na.rm=T)/sqrt(n()))
+          
+        
+
+mydata_growth.mean.stderr <- mydata_growth.mean.stderr %>% 
+  separate(Trtmt_comb, c("Species", "Treatment"), sep = " ", remove = F)
+
+
+mydata_growth.mean.stderr$Trtmt_comb <- as.factor(mydata_growth.mean.stderr$Trtmt_comb)
+mydata_growth.mean.stderr$Species <- as.factor(mydata_growth.mean.stderr$Species)
+mydata_growth.mean.stderr$Treatment <- as.factor(mydata_growth.mean.stderr$Treatment)
+
+mydata_growth.mean.stderr <- mydata_growth.mean.stderr %>% 
+  mutate(Factor = Treatment)
+
+mydata_growth.mean.stderr$Factor <- as.character(mydata_growth.mean.stderr$Factor)
+mydata_growth.mean.stderr$Factor <- as.numeric(mydata_growth.mean.stderr$Factor)
+
+
+
+
+knitr::kable(mydata_growth.mean.stderr, format= "markdown")
+#write.table(mydata_Phys.mean.stderr, file="Input_Data/ALL_Phys_Barplots/ALL_Phys_both_TO03_TO05_mean_stderror.txt", sep="\t", col.names=T, row.names = F) 
+```
+
+
+
+
+
+# p50 - growthrates of tubes
+``` {r  plot growthrates of tubes, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata_growth.mean.stderr, aes(x=reorder(Treatment, Factor), y=mean.growthrate.dd, fill = Species)) + 
+  labs(title = bquote("Growthrate" ~  "comparison"), y=bquote("d" ~ d^-1), x= Cu[tot]~ "(nmol)")
+    
+p50 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.growthrate.dd - sd.err.growthrate.dd, ymax = mean.growthrate.dd + sd.err.growthrate.dd),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p50
+
+```
+
+```{r plot_file_growthrates_Tubes, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/TUBES_growthrates_lowCu.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p50 
+dev.off()
+
+```
+
+
+
 
 #OOOOOOOO
 
@@ -1312,8 +1494,8 @@ multiplot(p1, p2, p3, p4, cols=2)
 ```
 
 
-```{r print multiplot 01}
-png('plots/ALL_Phys_Barplots/multiplot_01_new.png', width=1360, height = 960, units ="px", pointsize = 12)
+```{r print multiplot 01_a}
+png('plots/ALL_Phys_Barplots/multiplot_01_a.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p1, p5, p9, p2, p6, p10,p3, p7, p11, p4, p8 , p12, cols=4)
 
@@ -1321,15 +1503,37 @@ dev.off()
 ```
 
 
-```{r print multiplot 02}
+```{r print multiplot 01_b}
 png('plots/ALL_Phys_Barplots/multiplot_Results01.png', width=1360, height = 960, units ="px", pointsize = 12)
 
-multiplot(p1, p9, p29, p2, p10, p30,p6, p11, p12, p27, p19 , p5, cols=4)
+multiplot(p1, p9, p19, p2, p10, p30,p6, p11, p31, p27, p27_1 , p32, cols=4)
 
 dev.off()
 ```
 
+```{r print multiplot 01_c}
+png('plots/ALL_Phys_Barplots/multiplot_Results01c.png', width=1360, height = 960, units ="px", pointsize = 12)
 
+multiplot(p1, p9, p19, p2, p10, p30,p6, p11, p31, p27, p19 , p32, cols=4)
+
+dev.off()
+```
+
+```{r print multiplot 02_a}
+png('plots/ALL_Phys_Barplots/multiplot_Results02.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p5  , cols=4)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```{r print multiplot 02_b}
+png('plots/ALL_Phys_Barplots/multiplot_Results02b.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p31  , cols=4)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
 
 # Making mean and std error table (including `na.rm=T`!)
 

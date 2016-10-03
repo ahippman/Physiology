@@ -91,7 +91,7 @@ mydata.mean.stderr.Phys <- read.delim("Input_Data/ALL_Phys_Barplots/ALL_Phys_bot
 mydata_Phys_lowCu <- mydata_Phys %>% 
   filter(Treatment_number < 3) #this will leave me with only control and lowCu data
 
-mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:61])
+mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:67])
 
 mydata.mean.stderr <- mydata.mean.stderr %>% 
   mutate (Treatment_number = c(1:4,1:4)) %>% # as I just want to make plots showing ctrl and lowCu
@@ -128,10 +128,13 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             mean.Cell.Density  = mean( Cell.Density,na.rm=T),
             mean.Fe.tot.nmol  = mean(Fe.tot.nmol ,na.rm=T),
             mean.Cu.tot.nmol  = mean( Cu.tot.nmol,na.rm=T),
-            mean.mol.O2.mol.Chla.h.mod  = mean(mol.O2.mol.Chla.h.mod ,na.rm=T),
             mean.X14C.molC.per.mol.Chla.h  = mean(X14C.molC.per.mol.Chla.h ,na.rm=T),
             mean.PQ.Chla.all  = mean(PQ.Chla.all ,na.rm=T),
             mean.PQ.Chla.all.delete  = mean(PQ.Chla.all.delete ,na.rm=T),
+            mean.Gross.mol.O2.mol.Chla.h.mod  = mean(Gross.mol.O2.mol.Chla.h.mod ,na.rm=T),
+            mean.NET.mol.O2.mol.Chla.h  = mean(NET.mol.O2.mol.Chla.h ,na.rm=T),
+            mean.NET.PQ.Chla  = mean(NET.PQ.Chla ,na.rm=T),
+            mean.Resp.mol.O2.mol.Chla.h  = mean(Resp.mol.O2.mol.Chla.h ,na.rm=T),
             sd.err.Growthrate.dd.1 = sd( Growthrate.dd.1, na.rm=T)/sqrt(n()),
             sd.err.Growthrate.Percent..u.umax. = sd(Growthrate.Percent..u.umax. ,na.rm=T)/sqrt(n()),
             sd.err.Growthrate.specific.d.1 = sd(Growthrate.specific.d.1 ,na.rm=T)/sqrt(n()),
@@ -157,10 +160,13 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             sd.err.Cell.Density = sd( Cell.Density,na.rm=T)/sqrt(n()),
             sd.err.Fe.tot.nmol = sd(Fe.tot.nmol ,na.rm=T)/sqrt(n()),
             sd.err.Cu.tot.nmol. = sd(Cu.tot.nmol ,na.rm=T)/sqrt(n()),
-            sd.err.mol.O2.mol.Chla.h.mod = sd(mol.O2.mol.Chla.h.mod ,na.rm=T)/sqrt(n()),
             sd.err.X14C.molC.per.mol.Chla.h = sd(X14C.molC.per.mol.Chla.h ,na.rm=T)/sqrt(n()),
             sd.err.PQ.Chla.all = sd(PQ.Chla.all ,na.rm=T)/sqrt(n()),
-            sd.err.PQ.Chla.all.delete = sd(PQ.Chla.all.delete ,na.rm=T)/sqrt(n()))
+            sd.err.PQ.Chla.all.delete = sd(PQ.Chla.all.delete ,na.rm=T)/sqrt(n()),
+            sd.err.Gross.mol.O2.mol.Chla.h.mod = sd(Gross.mol.O2.mol.Chla.h.mod ,na.rm=T)/sqrt(n()),
+            sd.err.NET.mol.O2.mol.Chla.h = sd(NET.mol.O2.mol.Chla.h ,na.rm=T)/sqrt(n()),
+            sd.err.NET.PQ.Chla = sd( NET.PQ.Chla,na.rm=T)/sqrt(n()),
+            sd.err.Resp.mol.O2.mol.Chla.h = sd( Resp.mol.O2.mol.Chla.h,na.rm=T)/sqrt(n()))
 
         
 
@@ -462,9 +468,13 @@ p26
 
 
 
-# p27 - mol.O2.mol.Chla.h.mod
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot mol.O2.mol.Chla.h.mod-1.png) 
+# p27 - Gross.mol.O2.mol.Chla.h.mod
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Gross.mol.O2.mol.Chla.h.mod-1.png) 
 
+
+
+# p27_1 - NET.mol.O2.mol.Chla.h.mod mean.NET.mol.O2.mol.Chla.h
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NET.mol.O2.mol.Chla.h.mod-1.png) 
 
 
 
@@ -480,6 +490,17 @@ p26
 
 # p30 - PQ.Chla.all.delete
 ![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all.delete-1.png) 
+
+
+
+# p31 - NET.PQ.Chla
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NET.PQ.Chla-1.png) 
+
+
+
+# p32 - Resp.mol.O2.mol.Chla.h
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Resp.mol.O2.mol.Chla.h-1.png) 
+
 
 
 
@@ -500,6 +521,77 @@ p1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", 
 
 p1
 ```
+
+
+
+
+# Plot of growthrates dd-1 of tubes before big cultures to determine copper concentrations needed
+
+
+```r
+mydata.growth <- read.delim("Input_Data/ALL_Phys_Barplots/Growthrate_lowCu_tubes.txt")
+
+mydata.growth.comb <- mydata.growth %>% 
+  unite(Trtmt_comb, Strain, Treatment, sep= " ")
+```
+
+
+```r
+mydata_growth.mean.stderr <- mydata.growth.comb %>%  #I double checked via calculating it by hand in excel, this works! 
+  group_by(Trtmt_comb) %>% 
+    summarize(mean.growthrate.dd = mean(growthrate.dd, na.rm=T),
+                sd.err.growthrate.dd = sd( growthrate.dd, na.rm=T)/sqrt(n()))
+          
+        
+
+mydata_growth.mean.stderr <- mydata_growth.mean.stderr %>% 
+  separate(Trtmt_comb, c("Species", "Treatment"), sep = " ", remove = F)
+
+
+mydata_growth.mean.stderr$Trtmt_comb <- as.factor(mydata_growth.mean.stderr$Trtmt_comb)
+mydata_growth.mean.stderr$Species <- as.factor(mydata_growth.mean.stderr$Species)
+mydata_growth.mean.stderr$Treatment <- as.factor(mydata_growth.mean.stderr$Treatment)
+
+mydata_growth.mean.stderr <- mydata_growth.mean.stderr %>% 
+  mutate(Factor = Treatment)
+
+mydata_growth.mean.stderr$Factor <- as.character(mydata_growth.mean.stderr$Factor)
+mydata_growth.mean.stderr$Factor <- as.numeric(mydata_growth.mean.stderr$Factor)
+
+
+
+
+knitr::kable(mydata_growth.mean.stderr, format= "markdown")
+```
+
+
+
+|Trtmt_comb |Species |Treatment | mean.growthrate.dd| sd.err.growthrate.dd| Factor|
+|:----------|:-------|:---------|------------------:|--------------------:|------:|
+|TO03 0.2   |TO03    |0.2       |          0.6909636|            0.0394708|   0.20|
+|TO03 1.96  |TO03    |1.96      |                NaN|                  NaN|   1.96|
+|TO03 10.2  |TO03    |10.2      |          1.5614000|            0.0547560|  10.20|
+|TO03 14.32 |TO03    |14.32     |          1.5874200|            0.0500432|  14.32|
+|TO03 18.44 |TO03    |18.44     |          1.5105273|            0.0770310|  18.44|
+|TO03 6.08  |TO03    |6.08      |                NaN|                  NaN|   6.08|
+|TO05 0.2   |TO05    |0.2       |                NaN|                  NaN|   0.20|
+|TO05 1.96  |TO05    |1.96      |                NaN|                  NaN|   1.96|
+|TO05 10.2  |TO05    |10.2      |          1.5592186|            0.0267513|  10.20|
+|TO05 14.32 |TO05    |14.32     |          1.7805719|            0.0399470|  14.32|
+|TO05 18.44 |TO05    |18.44     |          1.7185267|            0.0741560|  18.44|
+|TO05 6.08  |TO05    |6.08      |          1.2251167|            0.0312064|   6.08|
+
+```r
+#write.table(mydata_Phys.mean.stderr, file="Input_Data/ALL_Phys_Barplots/ALL_Phys_both_TO03_TO05_mean_stderror.txt", sep="\t", col.names=T, row.names = F) 
+```
+
+
+
+
+
+# p50 - growthrates of tubes
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot growthrates of tubes-1.png) 
+
 
 
 
@@ -530,7 +622,7 @@ multiplot(p1, p2, p3, p4, cols=2)
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_01_new.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/multiplot_01_a.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p1, p5, p9, p2, p6, p10,p3, p7, p11, p4, p8 , p12, cols=4)
 
@@ -547,7 +639,7 @@ dev.off()
 ```r
 png('plots/ALL_Phys_Barplots/multiplot_Results01.png', width=1360, height = 960, units ="px", pointsize = 12)
 
-multiplot(p1, p9, p29, p2, p10, p30,p6, p11, p12, p27, p19 , p5, cols=4)
+multiplot(p1, p9, p19, p2, p10, p30,p6, p11, p31, p27, p27_1 , p32, cols=4)
 
 dev.off()
 ```
@@ -558,6 +650,46 @@ dev.off()
 ```
 
 
+```r
+png('plots/ALL_Phys_Barplots/multiplot_Results01c.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p1, p9, p19, p2, p10, p30,p6, p11, p31, p27, p19 , p32, cols=4)
+
+dev.off()
+```
+
+```
+## png 
+##   2
+```
+
+
+```r
+png('plots/ALL_Phys_Barplots/multiplot_Results02.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p5  , cols=4)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```
+## png 
+##   2
+```
+
+
+```r
+png('plots/ALL_Phys_Barplots/multiplot_Results02b.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p31  , cols=4)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```
+## png 
+##   2
+```
 
 # Making mean and std error table (including `na.rm=T`!)
 
