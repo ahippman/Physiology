@@ -719,6 +719,19 @@ dev.off()
 ##   2
 ```
 
+
+```r
+png('plots/ALL_Phys_Barplots/multiplot_X14C_normalization_Compare.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p20  ,p33  ,p21  ,p34  ,p22  ,p35  ,p23  ,p36  , cols=4)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```
+## png 
+##   2
+```
 # Making mean and std error table (including `na.rm=T`!)
 
 

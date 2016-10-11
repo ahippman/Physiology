@@ -1650,6 +1650,13 @@ multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p31 
 dev.off()
 ```
 
+```{r print multiplot compare 14C data normalization Chla vs Cell}
+png('plots/ALL_Phys_Barplots/multiplot_X14C_normalization_Compare.png', width=1360, height = 960, units ="px", pointsize = 12)
+
+multiplot(p20  ,p33  ,p21  ,p34  ,p22  ,p35  ,p23  ,p36  , cols=4)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
 # Making mean and std error table (including `na.rm=T`!)
 
 ```{r mean_std_error_table_empty, eval=F}
