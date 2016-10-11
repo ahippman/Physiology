@@ -90,7 +90,7 @@ mydata.mean.stderr.Phys <- read.delim("Input_Data/ALL_Phys_Barplots/ALL_Phys_bot
 mydata_Phys_lowCu <- mydata_Phys %>% 
   filter(Treatment_number < 3) #this will leave me with only control and lowCu data
 
-mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:67])
+mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:75])
 
 mydata.mean.stderr <- mydata.mean.stderr %>% 
   mutate (Treatment_number = c(1:4,1:4)) %>% # as I just want to make plots showing ctrl and lowCu
@@ -133,6 +133,10 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             mean.NET.mol.O2.mol.Chla.h  = mean(NET.mol.O2.mol.Chla.h ,na.rm=T),
             mean.NET.PQ.Chla  = mean(NET.PQ.Chla ,na.rm=T),
             mean.Resp.mol.O2.mol.Chla.h  = mean(Resp.mol.O2.mol.Chla.h ,na.rm=T),
+            mean.X14C.fgC.per.cell.h.alpha  = mean(X14C.fgC.per.cell.h.alpha ,na.rm=T),
+            mean.X14C.fgC.per.cell.h.pmax  = mean(X14C.fgC.per.cell.h.pmax ,na.rm=T),
+            mean.X14C.fgC.per.cell.h.ek  = mean(X14C.fgC.per.cell.h.ek ,na.rm=T),
+            mean.X14C.fgC.per.cell.h.at.155E  = mean(X14C.fgC.per.cell.h.at.155E ,na.rm=T),
             sd.err.Growthrate.dd.1 = sd( Growthrate.dd.1, na.rm=T)/sqrt(n()),
             sd.err.Growthrate.Percent..u.umax. = sd(Growthrate.Percent..u.umax. ,na.rm=T)/sqrt(n()),
             sd.err.Growthrate.specific.d.1 = sd(Growthrate.specific.d.1 ,na.rm=T)/sqrt(n()),
@@ -164,7 +168,11 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             sd.err.Gross.mol.O2.mol.Chla.h.mod = sd(Gross.mol.O2.mol.Chla.h.mod ,na.rm=T)/sqrt(n()),
             sd.err.NET.mol.O2.mol.Chla.h = sd(NET.mol.O2.mol.Chla.h ,na.rm=T)/sqrt(n()),
             sd.err.NET.PQ.Chla = sd( NET.PQ.Chla,na.rm=T)/sqrt(n()),
-            sd.err.Resp.mol.O2.mol.Chla.h = sd( Resp.mol.O2.mol.Chla.h,na.rm=T)/sqrt(n()))
+            sd.err.Resp.mol.O2.mol.Chla.h = sd( Resp.mol.O2.mol.Chla.h,na.rm=T)/sqrt(n()),
+             sd.err.X14C.fgC.per.cell.h.alpha = sd(X14C.fgC.per.cell.h.alpha ,na.rm=T)/sqrt(n()),
+            sd.err.X14C.fgC.per.cell.h.pmax = sd(X14C.fgC.per.cell.h.pmax ,na.rm=T)/sqrt(n()),
+            sd.err.X14C.fgC.per.cell.h.ek = sd(X14C.fgC.per.cell.h.ek ,na.rm=T)/sqrt(n()),
+            sd.err.X14C.fgC.per.cell.h.at.155E = sd(X14C.fgC.per.cell.h.at.155E ,na.rm=T)/sqrt(n()))
 
         
 
@@ -1369,6 +1377,113 @@ dev.off()
 
 ```
 
+
+# p33 - X14C.fgC.per.cell.h.alpha
+``` {r  plot X14C.fgC.per.cell.h.alpha, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.X14C.fgC.per.cell.h.alpha, fill = Species)) + 
+  labs(title = bquote("14C PE curve - "~ alpha ), y=bquote("(fg C " ~ cell^-1 ~ h^-1 ~ ")" / "(" ~mu~ "mol quanta "~m^-2~ s^-1 ~")"), x= "")
+    
+p33 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.X14C.fgC.per.cell.h.alpha - sd.err.X14C.fgC.per.cell.h.alpha, ymax = mean.X14C.fgC.per.cell.h.alpha + sd.err.X14C.fgC.per.cell.h.alpha),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p33
+
+```
+
+```{r plot_file_X14C.fgC.per.cell.h.alpha, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_X14C.fgC.per.cell.h.alpha.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p33
+
+dev.off()
+
+```
+
+# p34 - X14C.fgC.per.cell.h.pmax
+``` {r  plot X14C.fgC.per.cell.h.pmax, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.X14C.fgC.per.cell.h.pmax, fill = Species)) + 
+  labs(title = bquote("14C PE curve - "~ P[max] ), y=bquote("fg C " ~ cell^-1 ~ h^-1 ), x= "")
+    
+p34 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.X14C.fgC.per.cell.h.pmax - sd.err.X14C.fgC.per.cell.h.pmax, ymax = mean.X14C.fgC.per.cell.h.pmax + sd.err.X14C.fgC.per.cell.h.pmax),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p34
+
+```
+
+```{r plot_file_X14C.fgC.per.cell.h.pmax, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_X14C.fgC.per.cell.h.pmax.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p34
+
+dev.off()
+
+```
+
+# p35 - X14C.fgC.per.cell.h.ek
+``` {r  plot X14C.fgC.per.cell.h.ek, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.X14C.fgC.per.cell.h.ek, fill = Species)) + 
+  labs(title = bquote("14C PE curve - "~ E[k] ), y=bquote( ~mu~ "mol quanta "~m^-2~ s^-1 ), x= "")
+    
+p35 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.X14C.fgC.per.cell.h.ek - sd.err.X14C.fgC.per.cell.h.ek, ymax = mean.X14C.fgC.per.cell.h.ek + sd.err.X14C.fgC.per.cell.h.ek),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p35
+
+```
+
+```{r plot_file_X14C.fgC.per.cell.h.ek, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_X14C.fgC.per.cell.h.ek.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p35
+
+dev.off()
+
+```
+
+# p36 - X14C.fgC.per.cell.h.at.155E
+``` {r  plot X14C.fgC.per.cell.h.at.155E, eval=TRUE, echo=FALSE}
+p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.X14C.fgC.per.cell.h.at.155E, fill = Species)) + 
+  labs(title = bquote("14C uptake @ " ~"growth irradiance"), y=bquote("fg C " ~cell^-1~h-1 ), x= "")
+    
+p36 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.X14C.fgC.per.cell.h.at.155E - sd.err.X14C.fgC.per.cell.h.at.155E, ymax = mean.X14C.fgC.per.cell.h.at.155E + sd.err.X14C.fgC.per.cell.h.at.155E),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p36
+
+```
+
+```{r plot_file_X14C.fgC.per.cell.h.at.155E, eval=FALSE, echo=FALSE}
+png('plots/ALL_Phys_Barplots/lowCu_X14C.fgC.per.cell.h.at.155E.png', width=680, height = 480, units ="px", pointsize = 12) #directly puts plot into file without showing it in plot window first!
+
+p36
+dev.off()
+
+```
 
 # p1 - OOOOOOOO
 ``` {r  plot OOOOOOOO, eval=FALSE, echo=TRUE}
