@@ -10,18 +10,14 @@ July 18, 2016
 suppressPackageStartupMessages(library(lsmeans))
 suppressPackageStartupMessages(library(phia))
 suppressPackageStartupMessages(library(visreg))
-```
-
-```
-## Warning: package 'visreg' was built under R version 3.2.5
-```
-
-```r
 suppressPackageStartupMessages(library(dplyr))
 library(tidyr)
 library(ggplot2)
 library(knitr)
+#library (gridExtra)
+#library(cowplot)
 ```
+Have a look at http://www.sthda.com/english/wiki/ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page-r-software-and-data-visualization on how to use gridExtra and Cowplot to make good multiplots for publication!
 
 ## Functions used
 
@@ -91,7 +87,7 @@ mydata.mean.stderr.Phys <- read.delim("Input_Data/ALL_Phys_Barplots/ALL_Phys_bot
 mydata_Phys_lowCu <- mydata_Phys %>% 
   filter(Treatment_number < 3) #this will leave me with only control and lowCu data
 
-mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:75])
+mydata.mean.stderr <- bind_cols(mydata.mean.stderr.FRRF,mydata.mean.stderr.Phys[,4:81])
 
 mydata.mean.stderr <- mydata.mean.stderr %>% 
   mutate (Treatment_number = c(1:4,1:4)) %>% # as I just want to make plots showing ctrl and lowCu
@@ -120,6 +116,8 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             mean.FeDFB.zmol.cell.1.h.  = mean(FeDFB.zmol.cell.1.h. ,na.rm=T),
             mean.GrossPchla.mol.O2.mol.Chla..h.  = mean(GrossPchla.mol.O2.mol.Chla..h. ,na.rm=T),
             mean.GrossPcell..mol.O2.cell..h.   = mean(GrossPcell..mol.O2.cell..h.  ,na.rm=T),
+            mean.Resp.mol.O2.mol.Chla.h  = mean(Resp.mol.O2.mol.Chla.h ,na.rm=T),
+            mean.Resp.umol.O2.cell.h   = mean(Resp.umol.O2.cell.h  ,na.rm=T),
             mean.FvFm.old  = mean(FvFm.old ,na.rm=T),
             mean.Sig.old  = mean(Sig.old ,na.rm=T),
             mean.p.old  = mean(p.old ,na.rm=T),
@@ -139,6 +137,8 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             mean.X14C.fgC.per.cell.h.pmax  = mean(X14C.fgC.per.cell.h.pmax ,na.rm=T),
             mean.X14C.fgC.per.cell.h.ek  = mean(X14C.fgC.per.cell.h.ek ,na.rm=T),
             mean.X14C.fgC.per.cell.h.at.155E  = mean(X14C.fgC.per.cell.h.at.155E ,na.rm=T),
+            mean.pg.prot.cell  = mean(pg.prot.cell ,na.rm=T),
+            mean.pg.prot.fl.cell  = mean(pg.prot.fl.cell ,na.rm=T),
             sd.err.Growthrate.dd.1 = sd( Growthrate.dd.1, na.rm=T)/sqrt(n()),
             sd.err.Growthrate.Percent..u.umax. = sd(Growthrate.Percent..u.umax. ,na.rm=T)/sqrt(n()),
             sd.err.Growthrate.specific.d.1 = sd(Growthrate.specific.d.1 ,na.rm=T)/sqrt(n()),
@@ -156,6 +156,8 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
             sd.err.FeDFB.zmol.cell.1.h. = sd(FeDFB.zmol.cell.1.h. ,na.rm=T)/sqrt(n()),
             sd.err.GrossPchla.mol.O2.mol.Chla..h. = sd(GrossPchla.mol.O2.mol.Chla..h. ,na.rm=T)/sqrt(n()),
             sd.err.GrossPcell..mol.O2.cell..h.  = sd(GrossPcell..mol.O2.cell..h.  ,na.rm=T)/sqrt(n()),
+            sd.err.Resp.mol.O2.mol.Chla.h = sd( Resp.mol.O2.mol.Chla.h, na.rm=T)/sqrt(n()),
+            sd.err.Resp.umol.O2.cell.h  = sd(Resp.umol.O2.cell.h  ,na.rm=T)/sqrt(n()),
             sd.err.FvFm.old = sd(FvFm.old ,na.rm=T)/sqrt(n()),
             sd.err.Sig.old = sd( Sig.old,na.rm=T)/sqrt(n()),
             sd.err.p.old = sd(p.old ,na.rm=T)/sqrt(n()),
@@ -174,7 +176,9 @@ mydata_Phys.mean.stderr <- mydata_Phys %>%  #I double checked via calculating it
              sd.err.X14C.fgC.per.cell.h.alpha = sd(X14C.fgC.per.cell.h.alpha ,na.rm=T)/sqrt(n()),
             sd.err.X14C.fgC.per.cell.h.pmax = sd(X14C.fgC.per.cell.h.pmax ,na.rm=T)/sqrt(n()),
             sd.err.X14C.fgC.per.cell.h.ek = sd(X14C.fgC.per.cell.h.ek ,na.rm=T)/sqrt(n()),
-            sd.err.X14C.fgC.per.cell.h.at.155E = sd(X14C.fgC.per.cell.h.at.155E ,na.rm=T)/sqrt(n()))
+            sd.err.X14C.fgC.per.cell.h.at.155E = sd(X14C.fgC.per.cell.h.at.155E ,na.rm=T)/sqrt(n()),
+            sd.err.pg.prot.cell = sd(pg.prot.cell ,na.rm=T)/sqrt(n()),
+            sd.err.pg.prot.fl.cell = sd( pg.prot.fl.cell,na.rm=T)/sqrt(n()))
 
         
 
@@ -223,14 +227,14 @@ cleanup = theme (panel.grid.major = element_blank(),
 ```
 
 # p1 - Growthrate.Percent..u.umax.
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Growthrate.Percent..u.umax.-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Growthrate.Percent..u.umax.-1.png)<!-- -->
 
 
 
 
 
 # p2 - cell.size..um
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.size..um-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.size..um-1.png)<!-- -->
 
 
 
@@ -242,7 +246,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p3 - cell.volume.fl.cell
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.volume.fl.cell-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.volume.fl.cell-1.png)<!-- -->
 
 
 
@@ -253,7 +257,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p4 - GrossPchla.mol.O2.mol.Chla..h.
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot GrossPchla.mol.O2.mol.Chla..h.-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot GrossPchla.mol.O2.mol.Chla..h.-1.png)<!-- -->
 
 
 
@@ -264,7 +268,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p5 - FeDFB.zmol.um.2.h.
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot FeDFB.zmol.um.2.h.-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot FeDFB.zmol.um.2.h.-1.png)<!-- -->
 
 
 
@@ -273,7 +277,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p6 - Chla.per.cell.pg.cell 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Chla.per.cell.pg.cell-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Chla.per.cell.pg.cell-1.png)<!-- -->
 
 
 
@@ -284,7 +288,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p7 - Chla.per.cell.vol.fg.fL
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Chla.per.cell.vol.fg.fL-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Chla.per.cell.vol.fg.fL-1.png)<!-- -->
 
 
 
@@ -294,7 +298,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p8 - AOXactivity
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot AOXactivity-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot AOXactivity-1.png)<!-- -->
 
 
 
@@ -303,7 +307,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p9 - FvFm.old
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot FvFm.old-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot FvFm.old-1.png)<!-- -->
 
 
 
@@ -314,7 +318,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p10 - Sig.old
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Sig.old-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Sig.old-1.png)<!-- -->
 
 
 
@@ -325,7 +329,7 @@ cleanup = theme (panel.grid.major = element_blank(),
 
 
 # p11 - PQ_Siz.old 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ_Siz.old -1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ_Siz.old -1.png)<!-- -->
 
 
 
@@ -353,67 +357,67 @@ p12 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity",
 p12
 ```
 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Converse_corr-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Converse_corr-1.png)<!-- -->
 
 
 
 # p13 - ETR.alpha.JP
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.alpha.JP-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.alpha.JP-1.png)<!-- -->
 
 
 
 
 # p14 - ETR.pmax.JP
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.pmax.JP-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.pmax.JP-1.png)<!-- -->
 
 
 
 
 # p15 - ETR.ek.JP
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.ek.JP-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR.ek.JP-1.png)<!-- -->
 
 
 
 # p16 - ETR_155_calc
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR_155_calc-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ETR_155_calc-1.png)<!-- -->
 
 
 
 
 # p17 - F.q.F.v
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot F.q.F.v-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot F.q.F.v-1.png)<!-- -->
 
 
 
 # p18 - F.q.F.m
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot F.q.F.m-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot F.q.F.m-1.png)<!-- -->
 
 
 
 # p19 - NPQ.nsv.
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NPQ.nsv.-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NPQ.nsv.-1.png)<!-- -->
 
 
 
 
 
 # p20 - X14C.per.Chla.alpha
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.alpha-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.alpha-1.png)<!-- -->
 
 
 
 # p21 - X14C.per.Chla.pmax
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.pmax-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.pmax-1.png)<!-- -->
 
 
 
 # p22 - X14C.per.Chla.ek
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.ek-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.ek-1.png)<!-- -->
 
 
 
 # p23 - X14C.per.Chla.at.155uE
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.at.155uE-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.per.Chla.at.155uE-1.png)<!-- -->
 
 
 
@@ -440,7 +444,7 @@ p25 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity",
 p25
 ```
 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.um2-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.um2-1.png)<!-- -->
 
 
 
@@ -471,64 +475,93 @@ p26 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity",
 p26
 ```
 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.Vol.ratio-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot cell.SA.Vol.ratio-1.png)<!-- -->
 
 
 
 
 # p27 - Gross.mol.O2.mol.Chla.h.mod
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Gross.mol.O2.mol.Chla.h.mod-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Gross.mol.O2.mol.Chla.h.mod-1.png)<!-- -->
 
 
 
 # p27_1 - NET.mol.O2.mol.Chla.h.mod mean.NET.mol.O2.mol.Chla.h
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NET.mol.O2.mol.Chla.h.mod-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NET.mol.O2.mol.Chla.h.mod-1.png)<!-- -->
 
 
 
 # p28 - X14C.molC.per.mol.Chla.h
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.molC.per.mol.Chla.h-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.molC.per.mol.Chla.h-1.png)<!-- -->
 
 
 
 # p29 - PQ.Chla.all
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all-1.png)<!-- -->
 
 
 
 # p30 - PQ.Chla.all.delete
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all.delete-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot PQ.Chla.all.delete-1.png)<!-- -->
 
 
 
 # p31 - NET.PQ.Chla
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NET.PQ.Chla-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot NET.PQ.Chla-1.png)<!-- -->
 
 
 
 # p32 - Resp.mol.O2.mol.Chla.h
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Resp.mol.O2.mol.Chla.h-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Resp.mol.O2.mol.Chla.h-1.png)<!-- -->
 
 
 
 
 # p33 - X14C.fgC.per.cell.h.alpha
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.alpha-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.alpha-1.png)<!-- -->
 
 
 
 # p34 - X14C.fgC.per.cell.h.pmax
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.pmax-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.pmax-1.png)<!-- -->
 
 
 
 # p35 - X14C.fgC.per.cell.h.ek
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.ek-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.ek-1.png)<!-- -->
 
 
 
 # p36 - X14C.fgC.per.cell.h.at.155E
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.at.155E-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot X14C.fgC.per.cell.h.at.155E-1.png)<!-- -->
+
+
+
+
+# p37 - ug.prot.cell
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot ug.prot.cell-1.png)<!-- -->
+
+
+
+
+# p38 - pg.prot.fl.cell
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot pg.prot.fl.cell-1.png)<!-- -->
+ 
+ 
+
+
+
+# p39 - Resp.mol.O2.mol.Chla.h
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Resp.mol.O2.mol.Chla.h_02-1.png)<!-- -->
+
+
+
+
+# p40 - Resp.umol.O2.cell.h
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot Resp.umol.O2.cell.h-1.png)<!-- -->
+
+
+
+
 
 
 
@@ -618,7 +651,16 @@ knitr::kable(mydata_growth.mean.stderr, format= "markdown")
 
 
 # p50 - growthrates of tubes
-![](03_All_Physiological_FRRF_Plots_files/figure-html/plot growthrates of tubes-1.png) 
+
+```
+## Warning: Removed 4 rows containing missing values (geom_bar).
+```
+
+```
+## Warning: Removed 4 rows containing missing values (geom_errorbar).
+```
+
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot growthrates of tubes-1.png)<!-- -->
 
 
 
@@ -639,13 +681,13 @@ multiplot(p1, p5, p9, p2, p6, p10,p3, p7, p11, p4, p8 , p12, cols=4)
 ## Loading required package: grid
 ```
 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/multiplot 01-1.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/multiplot 01-1.png)<!-- -->
 
 ```r
 multiplot(p1, p2, p3, p4, cols=2)
 ```
 
-![](03_All_Physiological_FRRF_Plots_files/figure-html/multiplot 01-2.png) 
+![](03_All_Physiological_FRRF_Plots_files/figure-html/multiplot 01-2.png)<!-- -->
 
 
 
@@ -732,6 +774,49 @@ dev.off()
 ## png 
 ##   2
 ```
+
+
+
+```r
+png('plots/ALL_Phys_Barplots/multiplot_forPaper_Physiology_01.png', width=960, height = 1360, units ="px", pointsize = 12)
+
+multiplot(p1  ,p4  ,p9  ,p13  ,p20  ,p6  ,p23  ,p10  ,p14, p21  ,p16  ,p30  ,p19  ,p15  ,p22  ,  cols=3)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```
+## png 
+##   2
+```
+
+
+```r
+png('plots/ALL_Phys_Barplots/multiplot_forPaper_Physiology_03.png', width=960, height = 1360, units ="px", pointsize = 12)
+
+multiplot(p1  ,p4  ,p20  ,p13  ,p12  ,p2  ,p9  ,p21  ,p14, p19  ,p6  ,p10  ,p22  ,p15  ,p37  ,  cols=3)
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```
+## png 
+##   2
+```
+
+```r
+pdf('plots/ALL_Phys_Barplots/multiplot_forPaper_Physiology_03.pdf', width=8.5, height = 11, useDingbats=FALSE)
+
+print(qplot(multiplot(p1  ,p4  ,p20  ,p13  ,p12  ,p2  ,p9  ,p21  ,p14, p19  ,p6  ,p10  ,p22  ,p15  ,p37  ,  cols=3)))
+#(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
+dev.off()
+```
+
+```
+## png 
+##   2
+```
+
 # Making mean and std error table (including `na.rm=T`!)
 
 
