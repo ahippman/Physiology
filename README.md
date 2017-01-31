@@ -36,4 +36,18 @@ Now I would like to determine how different these two strains react to low Fe an
     + how is FeDFB uptake affected by low TM?
       + is it differently affected depending on the TM?
       + does this differ between species?
-  
+
+Following files can be found in this Repository:
+
+## 1) [Stats - ANOVA and post-hoc interaction analysis (`Phia`)](#https://github.com/ahippman/Physiology/blob/master/01_Linear_Model_Anova.md)
+this is where both the stats method is explained as well as executed for all my physiological data excluding FRRF, whic his done in... 1b
+
+## 1b) [Stats etc for FRRF data as per 1)](#https://github.com/ahippman/Physiology/blob/master/01b_Linear_Model_Anova_FRRF_data.md)
+Same as 1) just now done with FRRF data!:)
+
+## 3) [ALL physiological BAR plots - including Frrf](#https://github.com/ahippman/Physiology/blob/master/03_All_Physiological_FRRF_Plots.md)
+all plots.. right now just showing ctrl and lowCu
+
+this one also has the code to make mean and st error file! :)
+
+
