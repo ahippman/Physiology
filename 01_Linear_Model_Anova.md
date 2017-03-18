@@ -10,13 +10,6 @@ May 22nd, 2015
 suppressPackageStartupMessages(library(lsmeans))
 suppressPackageStartupMessages(library(phia))
 suppressPackageStartupMessages(library(visreg))
-```
-
-```
-## Warning: package 'visreg' was built under R version 3.2.5
-```
-
-```r
 suppressPackageStartupMessages(library(dplyr))
 library(ggplot2)
 library(knitr)
@@ -60,7 +53,11 @@ library(knitr)
   + [AOX - Alternative Oxidase (percent)](#AOX)
   + [Gross Production per Chl a (mol O2 / mol Chla * h)](#O2.Chla)
   + [Gross Production per cell (mol O2 / cell * h)](#O2.Cell)
+  + [Respiration per Chl a (mol O2 / mol Chla * h)](#Resp.O2.Chla)
+  + [Respiration per cell (mol O2 / cell * h)](#Resp.O2.Cell)
   + [Gross Production per cell vol (mol O2 / cell vol * h)](#O2.Cell.vol)
+  + [Total Cellular Protein (pg/cell)](#Protein.cell)
+  + [Total Protein percell volume (pg/fL cell vol)](#Protein.cell.vol)
   
 
 
@@ -104,7 +101,7 @@ str(mydata)
 ```
 
 ```
-## 'data.frame':	24 obs. of  35 variables:
+## 'data.frame':	24 obs. of  40 variables:
 ##  $ Species                             : Factor w/ 2 levels "TO 1003","TO 1005": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ Fe.level                            : Factor w/ 2 levels "high","low": 1 1 1 1 1 1 2 2 2 2 ...
 ##  $ Cu.level                            : Factor w/ 2 levels "high","low": 1 1 1 2 2 2 1 1 1 2 ...
@@ -114,6 +111,7 @@ str(mydata)
 ##  $ Growthrate.Specific.Percent..u.umax.: num  94.1 97.4 108.5 38.9 60.4 ...
 ##  $ X14C.per.Cell.Vol.alpha             : num  0.05 0.04 0.14 0 0.02 0.03 0.08 0.06 0.07 0.01 ...
 ##  $ X14C.per.Cell.Vol.ek                : num  242 216 297 177 170 ...
+##  $ X14C.per.Cell.Vol.at.155uE          : num  6.84 5.32 19.92 0 2.46 ...
 ##  $ X14C.per.Chla.alpha                 : num  0.01852 0.01336 0.01351 0.00216 0.00733 ...
 ##  $ X14C.per.Chla.ek                    : num  297 216 242 177 170 ...
 ##  $ X14C.per.Chla.at.155uE              : num  2.64 1.78 1.85 0.27 0.9 0.92 1.99 2.07 1.68 1.16 ...
@@ -140,6 +138,10 @@ str(mydata)
 ##  $ Merged                              : Factor w/ 8 levels "TO 1003 control",..: 1 1 1 2 2 2 3 3 3 4 ...
 ##  $ X14C.per.Chla.pmaxa                 : num  5.5 2.892 3.276 0.383 1.247 ...
 ##  $ X14C.per.Chla.pmax                  : num  5.5 2.892 3.276 0.383 1.247 ...
+##  $ pg.prot.cell                        : num  11.7 15.5 10.6 16 11.2 ...
+##  $ pg.prot.fl.cell                     : num  0.17 0.2 0.14 0.31 0.2 0.34 0.2 0.42 0.25 0.66 ...
+##  $ Resp.mol.O2.mol.Chla.h              : num  22.4 34.8 45.9 34.8 18.5 ...
+##  $ Resp.umol.O2.cell.h                 : num  7.29e-09 1.22e-08 1.52e-08 1.01e-08 6.79e-09 ...
 ```
 
 
@@ -151,7 +153,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   guides(alpha = "none", size = "none", shape = "none")
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate-1.png)<!-- -->
 
 To really understand what we are seeing, especially with the copper data, we need to remember the different metal concentrations that are used for the different strains and treatments:
 
@@ -323,7 +325,7 @@ summary(z)
 plot(z) ##these plots are diagnostic and will give indications if the assumptions are met
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm growthrate_allMain just known interaction-4.png)<!-- -->
 
 <a id="anova_z"></a>
 
@@ -397,7 +399,7 @@ These values and their standard errors can be obtained from the model coeffients
 plot(mydata.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means-1.png)<!-- -->
 
 This plot shows us main effects (such as Cu.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -518,7 +520,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate.dd-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate.dd-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -656,7 +658,7 @@ summary(lm_Growthrate.dd)
 plot(lm_Growthrate.dd) ##these plots are diagnostic and will give indications if the assumptions are met
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm growthrate.dd _allMain just known interaction-4.png)<!-- -->
 
 
 
@@ -728,7 +730,7 @@ These values and their standard errors can be obtained from the model coeffients
 plot(lm_Growthrate.dd.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.dd_phia_interaction means-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.dd_phia_interaction means-1.png)<!-- -->
 
 This plot shows us main effects (such as Cu.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -815,6 +817,331 @@ testInteractions(lm_Growthrate.dd, fixed="Cu.level", across="Fe.level")
 ```
 ~~~~~~~~~~~~`
 
+<a id="Growthrate.spec"></a>
+
+#### Growthrate - specific (d-1) 
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, Growthrate.specific.d.1))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="", x ="")+
+  geom_point(data=mean.new , aes(Treatment, mean.Growthrate.specific.d.1, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate.specific-1.png)<!-- -->
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_Growthrate.specific <- lm(data = mydata, Growthrate.specific.d.1 ~ (Species * Fe.level * Cu.level))
+summary(lm_all_Growthrate.specific) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Growthrate.specific.d.1 ~ (Species * Fe.level * 
+##     Cu.level), data = mydata)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.106667 -0.036667  0.001667  0.038333  0.133333 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             1.05333    0.04531  23.248
+## SpeciesTO 1005                          0.20667    0.06407   3.225
+## Fe.levellow                            -0.16667    0.06407  -2.601
+## Cu.levellow                            -0.54667    0.06407  -8.532
+## SpeciesTO 1005:Fe.levellow             -0.23333    0.09062  -2.575
+## SpeciesTO 1005:Cu.levellow              0.11000    0.09062   1.214
+## Fe.levellow:Cu.levellow                 0.25000    0.09062   2.759
+## SpeciesTO 1005:Fe.levellow:Cu.levellow -0.13667    0.12815  -1.066
+##                                        Pr(>|t|)    
+## (Intercept)                            9.29e-14 ***
+## SpeciesTO 1005                          0.00529 ** 
+## Fe.levellow                             0.01930 *  
+## Cu.levellow                            2.38e-07 ***
+## SpeciesTO 1005:Fe.levellow              0.02035 *  
+## SpeciesTO 1005:Cu.levellow              0.24239    
+## Fe.levellow:Cu.levellow                 0.01398 *  
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.30204    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.07848 on 16 degrees of freedom
+## Multiple R-squared:  0.9366,	Adjusted R-squared:  0.9089 
+## F-statistic: 33.77 on 7 and 16 DF,  p-value: 2.005e-08
+```
+
+```r
+anova(lm_all_Growthrate.specific) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Growthrate.specific.d.1
+##                           Df  Sum Sq Mean Sq  F value    Pr(>F)    
+## Species                    1 0.07370 0.07370  11.9682 0.0032281 ** 
+## Fe.level                   1 0.22234 0.22234  36.1035 1.822e-05 ***
+## Cu.level                   1 0.96400 0.96400 156.5365 1.121e-09 ***
+## Species:Fe.level           1 0.13650 0.13650  22.1658 0.0002369 ***
+## Species:Cu.level           1 0.00260 0.00260   0.4229 0.5247373    
+## Fe.level:Cu.level          1 0.04950 0.04950   8.0386 0.0119401 *  
+## Species:Fe.level:Cu.level  1 0.00700 0.00700   1.1373 0.3020422    
+## Residuals                 16 0.09853 0.00616                       
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+```r
+lm_Growthrate.specific <- lm(data = mydata, Growthrate.specific.d.1 ~ (Species * Fe.level * Cu.level))
+summary(lm_Growthrate.specific) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Growthrate.specific.d.1 ~ (Species * Fe.level * 
+##     Cu.level), data = mydata)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.106667 -0.036667  0.001667  0.038333  0.133333 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                             1.05333    0.04531  23.248
+## SpeciesTO 1005                          0.20667    0.06407   3.225
+## Fe.levellow                            -0.16667    0.06407  -2.601
+## Cu.levellow                            -0.54667    0.06407  -8.532
+## SpeciesTO 1005:Fe.levellow             -0.23333    0.09062  -2.575
+## SpeciesTO 1005:Cu.levellow              0.11000    0.09062   1.214
+## Fe.levellow:Cu.levellow                 0.25000    0.09062   2.759
+## SpeciesTO 1005:Fe.levellow:Cu.levellow -0.13667    0.12815  -1.066
+##                                        Pr(>|t|)    
+## (Intercept)                            9.29e-14 ***
+## SpeciesTO 1005                          0.00529 ** 
+## Fe.levellow                             0.01930 *  
+## Cu.levellow                            2.38e-07 ***
+## SpeciesTO 1005:Fe.levellow              0.02035 *  
+## SpeciesTO 1005:Cu.levellow              0.24239    
+## Fe.levellow:Cu.levellow                 0.01398 *  
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.30204    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.07848 on 16 degrees of freedom
+## Multiple R-squared:  0.9366,	Adjusted R-squared:  0.9089 
+## F-statistic: 33.77 on 7 and 16 DF,  p-value: 2.005e-08
+```
+
+```r
+plot.new()
+plot(lm_Growthrate.specific)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.specific-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.specific-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.specific-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.specific-4.png)<!-- -->
+
+```r
+anova(lm_Growthrate.specific) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Growthrate.specific.d.1
+##                           Df  Sum Sq Mean Sq  F value    Pr(>F)    
+## Species                    1 0.07370 0.07370  11.9682 0.0032281 ** 
+## Fe.level                   1 0.22234 0.22234  36.1035 1.822e-05 ***
+## Cu.level                   1 0.96400 0.96400 156.5365 1.121e-09 ***
+## Species:Fe.level           1 0.13650 0.13650  22.1658 0.0002369 ***
+## Species:Cu.level           1 0.00260 0.00260   0.4229 0.5247373    
+## Fe.level:Cu.level          1 0.04950 0.04950   8.0386 0.0119401 *  
+## Species:Fe.level:Cu.level  1 0.00700 0.00700   1.1373 0.3020422    
+## Residuals                 16 0.09853 0.00616                       
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - Growthrate.specific
+
+Looking at the ANOVA table for the linear model that _does not_ test for interaction between Cu.level and Species, for the data __Growthrate Percent of umax__, we see the following significant factors:
+
+
+* __Species__ has an effect 
+* __Fe. level__ has an effect on growthrate
+* __Cu level__ has an effect on growthrate now 
+* there is  an __interaction__ between __Species__ and __Fe level__ now: (F(1,16) = 22.17, p.val < 0.001)
+    + i.e. depending on the Species the growthrate is different under similar Fe conditions
+* there is an __interaction__ between __Fe level__ and __Cu level__: (F(1,16) = 8.04, p.val = 0.01)
+
+
+### Using the `phia` package to look into significant effects in growthrate percent of mu max?
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(Growthrate.specific.means <- interactionMeans(lm_Growthrate.specific))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high     1.0533333 0.04530759
+## 2 TO 1005     high     high     1.2600000 0.04530759
+## 3 TO 1003      low     high     0.8866667 0.04530759
+## 4 TO 1005      low     high     0.8600000 0.04530759
+## 5 TO 1003     high      low     0.5066667 0.04530759
+## 6 TO 1005     high      low     0.8233333 0.04530759
+## 7 TO 1003      low      low     0.5900000 0.04530759
+## 8 TO 1005      low      low     0.5366667 0.04530759
+```
+
+```r
+plot(Growthrate.specific.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Growthrate.specific-1.png)<!-- -->
+
+This plot shows us main effects (such as Cu.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do not seem to have an interaction effect. They change in the same way (lines are parallel). However, when we look at upper middle and middle left cell, we see that growthrate changes in a different way depending on Species and Fe level. And to a much lesser extend for Fe.level and Cu.level as seen in middle right and lower middle cell.
+
+#### Pairwise Comparisons
+
+<a id="phia_pairwise"></a>
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+
+```r
+testInteractions(lm_Growthrate.specific, fixed="Species", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F    Pr(>F)    
+## TO 1003   0.04167  1   0.00521  0.8457    0.3714    
+## TO 1005   0.34333  1   0.35363 57.4235 2.225e-06 ***
+## Residuals         16   0.09853                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two different Fe.levels I used (high and low) does not significantly change the growth rate in TO 1003 (F(1,16) = 0.85, p.val = 0.37) but it does change the growthrate significantly in TO 1005 (F(1,16) = 57.4, p-val < 0.0001))
+
+
+```r
+testInteractions(lm_Growthrate.specific, fixed="Fe.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq       F    Pr(>F)    
+## high      -0.26167  1  0.205408 33.3545 5.683e-05 ***
+##  low       0.04000  1  0.004800  0.7794    0.3904    
+## Residuals          16  0.098533                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two Species have  significantly different growthrates under high Fe conditions (F(1,16) = 33.35, p.val <0.0001) probably due to the integrated nature of this, using both highFe_highCu and highFe_lowCu . Under low iron their respective growthrates are the same
+
+
+
+```r
+testInteractions(lm_Growthrate.specific, fixed="Fe.level", across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F    Pr(>F)    
+## high      0.49167  1   0.72521 117.760 1.741e-08 ***
+##  low      0.31000  1   0.28830  46.815 3.958e-06 ***
+## Residuals         16   0.09853                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 117.76, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 46.81, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_Growthrate.specific, fixed=c("Fe.level", "Species"), across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                  Value Df Sum of Sq      F    Pr(>F)    
+## high : TO 1003 0.54667  1   0.44827 72.790 9.532e-07 ***
+##  low : TO 1003 0.29667  1   0.13202 21.437 0.0002781 ***
+## high : TO 1005 0.43667  1   0.28602 46.444 1.246e-05 ***
+##  low : TO 1005 0.32333  1   0.15682 25.464 0.0002385 ***
+## Residuals              16   0.09853                     
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 117.76, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 46.81, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_Growthrate.specific, fixed=c("Fe.level", "Cu.level"), across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                Value Df Sum of Sq       F    Pr(>F)    
+## high : high -0.20667  1  0.064067 10.4032 0.0158628 *  
+##  low : high  0.02667  1  0.001067  0.1732 0.8349107    
+## high :  low -0.31667  1  0.150417 24.4249 0.0005884 ***
+##  low :  low  0.05333  1  0.004267  0.6928 0.8349107    
+## Residuals            16  0.098533                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 117.76, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 46.81, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_Growthrate.specific, fixed="Cu.level", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F    Pr(>F)    
+## high      0.28333  1  0.240833 39.1069 2.304e-05 ***
+##  low      0.10167  1  0.031008  5.0352   0.03934 *  
+## Residuals         16  0.098533                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant growth reduction under high Cu when Fe is limiting (F(1,16) = 30.49, p.val < 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on growthrate. As discussed earlier, this makes sense when looking at the actual Cu concentrations used and is not in discrepancy to former studies that did find evidence of co limitation in both strains. 
+
+
+As it states just a tendnecy to lower growth rate under low Fe for TO 1003, I would like to look into what would happen if we just looked at the TO1003 data on itself (as this would not take into account the variances and data points):
+
 
 
 <a id="Growthrate.percent"></a>
@@ -834,7 +1161,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   guides(alpha = "none", size = "none", shape = "none")
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate.percent-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_Growthrate.percent-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -940,7 +1267,7 @@ plot.new()
 plot(lm_Growthrate.percent)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Growthrate.percent-4.png)<!-- -->
 
 ```r
 anova(lm_Growthrate.percent) # this shows, we can take out the interaction between Species: Cu.level
@@ -999,7 +1326,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(Growthrate.percent.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Growthrate.percent-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Growthrate.percent-1.png)<!-- -->
 
 This plot shows us main effects (such as Cu.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -1160,7 +1487,7 @@ anova(lm_TO03_Growthrate.percent) # this shows, we can take out the interaction 
 plot(Growthrate.percent.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Growthrate.percent_TO1003-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Growthrate.percent_TO1003-1.png)<!-- -->
 
 
 
@@ -1220,7 +1547,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 1 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_FvFm-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_FvFm-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -1328,7 +1655,7 @@ plot.new()
 plot(lm_FvFm)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FvFm-4.png)<!-- -->
 
 ```r
 anova(lm_FvFm) #
@@ -1386,7 +1713,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(FvFm.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FvFm-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FvFm-1.png)<!-- -->
 
 This plot shows us main effects (such as species in respect to Fe.level) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -1497,7 +1824,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 4 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_Sigma-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_Sigma-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -1605,7 +1932,7 @@ plot.new()
 plot(lm_Sigma)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Sigma-4.png)<!-- -->
 
 ```r
 anova(lm_Sigma) # this shows, we can take out the interaction between Species: Cu.level
@@ -1663,7 +1990,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(Sigma.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Sigma-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Sigma-1.png)<!-- -->
 
 This plot shows us main effects (such as Cu.level in regards to Fe.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -1786,7 +2113,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 4 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_PQ-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_PQ-1.png)<!-- -->
 
 ```r
 #I double checked the excel summary file I got from Nina for the "0" value in TO 1003 low Fe (B) treatment. All other values (Fv/Fm, Sigma, p, tau seem to be in the same league as the other two biological replicates... might have to double chekc with Nina, if she has some thoughts on what happened with PQ_size, here)
@@ -1897,7 +2224,7 @@ plot.new()
 plot(lm_PQ)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_PQ-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_PQ-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_PQ-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_PQ-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_PQ-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_PQ-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_PQ-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_PQ-4.png)<!-- -->
 
 ```r
 anova(lm_PQ) # this shows, we can take out the interaction between Species: Cu.level
@@ -1954,7 +2281,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(PQ.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_PQ-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_PQ-1.png)<!-- -->
 
 This plot shows us the main effect (i.e. Fe.level) and first order interactions (such as Species and Cu.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -2037,7 +2364,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_Chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_Chla-1.png)<!-- -->
 
 ```r
 #I double checked the excel summary file I got from Nina for the "0" value in TO 1003 low Fe (B) treatment. All other values (Fv/Fm, Sigma, p, tau seem to be in the same league as the other two biological replicates... might have to double chekc with Nina, if she has some thoughts on what happened with Chla_size, here)
@@ -2161,7 +2488,7 @@ plot.new()
 plot(lm_Chla)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_Chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_Chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Chla-4.png)<!-- -->
 
 ```r
 anova(lm_Chla)
@@ -2222,7 +2549,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(Chla.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Chla-1.png)<!-- -->
 
 This plot shows us the main effects (no single main effects here) and first order interactions (such as Species , Cu.level, Fe. level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -2359,7 +2686,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_Chla.cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_Chla.cell-1.png)<!-- -->
 
 
 Now we start with a linear model testing for all main effects and interactions possible:
@@ -2479,7 +2806,7 @@ plot.new()
 plot(lm_Chla.cell)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Chla.cell-4.png)<!-- -->
 
 ```r
 anova(lm_Chla.cell)
@@ -2540,7 +2867,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(Chla.cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Chla.cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Chla.cell-1.png)<!-- -->
 
 This plot shows us the main effects (no single main effects here) and first order interactions (such as Species , Cu.level, Fe. level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -2671,7 +2998,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_cell.size-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_cell.size-1.png)<!-- -->
 
 
 Now we start with a linear model testing for all main effects and interactions possible:
@@ -2779,7 +3106,7 @@ plot.new()
 plot(lm_cell.size)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.size-4.png)<!-- -->
 
 ```r
 anova(lm_cell.size)
@@ -2836,7 +3163,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(cell.size.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.size-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.size-1.png)<!-- -->
 
 This plot shows us the main effects (here Cu level) and first order interactions (here Species : Fe level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -2914,7 +3241,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_cell.vol-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_cell.vol-1.png)<!-- -->
 
 
 Now we start with a linear model testing for all main effects and interactions possible:
@@ -3022,7 +3349,7 @@ plot.new()
 plot(lm_cell.vol)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.vol-4.png)<!-- -->
 
 ```r
 anova(lm_cell.vol)
@@ -3079,7 +3406,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(cell.vol.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.vol-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.vol-1.png)<!-- -->
 
 This plot shows us the main effects (here Cu level) and first order interactions (here Species : Fe level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -3160,7 +3487,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_cell.SA.um2-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_cell.SA.um2-1.png)<!-- -->
 
 
 Now we start with a linear model testing for all main effects and interactions possible:
@@ -3278,7 +3605,7 @@ plot.new()
 plot(lm_cell.SA.um2)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.um2-4.png)<!-- -->
 
 ```r
 anova(lm_cell.SA.um2)
@@ -3338,7 +3665,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(cell.SA.um2.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.SA.um2-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.SA.um2-1.png)<!-- -->
 
  
 
@@ -3463,7 +3790,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_cell.SA.Vol.ratio-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_cell.SA.Vol.ratio-1.png)<!-- -->
 
 
 Now we start with a linear model testing for all main effects and interactions possible:
@@ -3583,7 +3910,7 @@ plot.new()
 plot(lm_cell.SA.Vol.ratio)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_cell.SA.Vol.ratio-4.png)<!-- -->
 
 ```r
 anova(lm_cell.SA.Vol.ratio)
@@ -3643,7 +3970,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(cell.SA.Vol.ratio.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.SA.Vol.ratio-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_cell.SA.Vol.ratio-1.png)<!-- -->
 
  
 
@@ -3769,7 +4096,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 2 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_FeDFB.cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_FeDFB.cell-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -3890,7 +4217,7 @@ plot.new()
 plot(lm_FeDFB.cell)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cell-4.png)<!-- -->
 
 ```r
 anova(lm_FeDFB.cell)
@@ -3952,7 +4279,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(FeDFB.cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FeDFB.cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FeDFB.cell-1.png)<!-- -->
 
 This plot shows us the main effects (here none) and first order interactions (e.g. Fe level : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -4142,7 +4469,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 2 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_FeDFB.cellvol-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_FeDFB.cellvol-1.png)<!-- -->
 
 OK, this looks really widely distributed!
 Now we start with a linear model testing for all main effects and interactions possible:
@@ -4253,7 +4580,7 @@ plot.new()
 plot(lm_FeDFB.cellvol)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_FeDFB.cellvol-4.png)<!-- -->
 
 ```r
 anova(lm_FeDFB.cellvol)
@@ -4312,7 +4639,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(FeDFB.cellvol.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FeDFB.cellvol-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_FeDFB.cellvol-1.png)<!-- -->
 
 This plot shows us the main effects (here Species in relation to Cu level) and first order interactions (here Fe level : Cu level, and species: Fe level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -4439,7 +4766,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_14C.alpha.cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_14C.alpha.cell-1.png)<!-- -->
 
 I double checked the raw data: Yes, some points look almost the same, but they are not!
 
@@ -4560,7 +4887,7 @@ plot.new()
 plot(lm_14C.alpha.cell)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.cell-4.png)<!-- -->
 
 ```r
 anova(lm_14C.alpha.cell)
@@ -4621,7 +4948,7 @@ Again, any main effects ( here Cu. level) that are included in interacting effec
 plot(C14.alpha.cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.alpha.cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.alpha.cell-1.png)<!-- -->
 
 This plot shows us the main effects (here Fe level) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -4737,7 +5064,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_14C.alpha.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_14C.alpha.chla-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -4856,7 +5183,7 @@ plot.new()
 plot(lm_14C.alpha.chla)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.alpha.chla-4.png)<!-- -->
 
 ```r
 anova(lm_14C.alpha.chla)
@@ -4917,7 +5244,7 @@ Again, any main effects ( none here) that are included in interacting effects wi
 plot(C14.alpha.cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.alpha.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.alpha.chla-1.png)<!-- -->
 
 This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -5036,7 +5363,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_14C.pmax.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_14C.pmax.chla-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -5155,7 +5482,7 @@ plot.new()
 plot(lm_14C.pmax.chla)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.pmax.chla-4.png)<!-- -->
 
 ```r
 anova(lm_14C.pmax.chla)
@@ -5216,7 +5543,7 @@ Again, any main effects ( none here) that are included in interacting effects wi
 plot(C14.alpha.cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.pmax.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.pmax.chla-1.png)<!-- -->
 
 This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -5397,7 +5724,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_14C.ek.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_14C.ek.chla-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -5516,7 +5843,7 @@ plot.new()
 plot(lm_14C.ek.chla)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.ek.chla-4.png)<!-- -->
 
 ```r
 anova(lm_14C.ek.chla)
@@ -5577,7 +5904,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(C14.alpha.cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.ek.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.ek.chla-1.png)<!-- -->
 
 This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -5738,7 +6065,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
   expand_limits(y=0)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_14C.155uEinstein.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_14C.155uEinstein.chla-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -5857,7 +6184,7 @@ plot.new()
 plot(lm_14C.155uEinstein.chla)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_14C.155uEinstein.chla-4.png)<!-- -->
 
 ```r
 anova(lm_14C.155uEinstein.chla)
@@ -5918,7 +6245,7 @@ Again, any main effects ( none here) that are included in interacting effects wi
 plot(C14.155uEinstein.chla.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.155uEinstein.chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_14C.155uEinstein.chla-1.png)<!-- -->
 
 This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -6104,7 +6431,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
 ## Warning: Removed 2 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_AOX-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_AOX-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -6212,7 +6539,7 @@ plot.new()
 plot(lm_TO03_AOX)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-1.png) ![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-2.png) ![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-3.png) ![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/TO1003lm_AOX-4.png)<!-- -->
 
 ```r
 anova(lm_TO03_AOX)
@@ -6271,7 +6598,7 @@ plot.new()
 plot(lm_TO05_AOX)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-1.png) ![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-2.png) ![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-3.png) ![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/TO1005lm_AOX-4.png)<!-- -->
 
 ```r
 anova(lm_TO05_AOX)
@@ -6324,7 +6651,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(TO03_AOX.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_TO03_AOX-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_TO03_AOX-1.png)<!-- -->
 
 This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -6401,7 +6728,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3, alpha=0.5)+
 ## Warning: Removed 2 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_O2.Chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_O2.Chla-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -6479,7 +6806,7 @@ plot.new()
 plot(lm_all_O2.Chla)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-1.png) ![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-2.png) ![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-3.png) ![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/plot lm_all_O2.Chla-4.png)<!-- -->
 
 ```r
 anova(lm_all_O2.Chla)
@@ -6541,7 +6868,7 @@ Again, any main effects that are included in interacting effects will be looked 
 plot(O2.Chla.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_O2.Chla-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_O2.Chla-1.png)<!-- -->
 
 This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -6778,7 +7105,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 2 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_O2.Cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_O2.Cell-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -6888,7 +7215,7 @@ plot.new()
 plot(lm_O2.Cell)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell-4.png)<!-- -->
 
 ```r
 anova(lm_O2.Cell)
@@ -6909,8 +7236,7 @@ anova(lm_O2.Cell)
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-### Anova Table - 14C Uptake per Chl a - alpha
-
+### Anova Table - 
 Looking at the ANOVA table for the linear model that tests for all interactions for the data __O2.Cell__, we see the following significant factors:
 
 
@@ -6947,7 +7273,7 @@ Again, any main effects ( none here) that are included in interacting effects wi
 plot(O2.Cell.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_O2.Cell-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_O2.Cell-1.png)<!-- -->
 
 This plot shows us the main effects (noen here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -7031,7 +7357,7 @@ testInteractions(lm_O2.Cell, fixed = "Cu.level", across="Fe.level")
 However, low Fe compared to control results also in a significant reduction in O2 production per cell across both strains (F(1, 16) = 28.73, p-val = 0.0001).
 
 
-###Summary 14C per cell vol - alpha
+###Summary 
 
 
 
@@ -7061,7 +7387,7 @@ p + geom_point(aes(group=Merged, colour=Species), size = 3)+
 ## Warning: Removed 2 rows containing missing values (geom_point).
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/graph_O2.Cell.vol-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/graph_O2.Cell.vol-1.png)<!-- -->
 
 Now we start with a linear model testing for all main effects and interactions possible:
 
@@ -7171,7 +7497,7 @@ plot.new()
 plot(lm_O2.Cell.vol)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-1.png) ![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-2.png) ![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-3.png) ![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-4.png) 
+![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_O2.Cell.vol-4.png)<!-- -->
 
 ```r
 anova(lm_O2.Cell.vol)
@@ -7230,7 +7556,7 @@ Again, any main effects ( none here) that are included in interacting effects wi
 plot(O2.Cell.vol.means)
 ```
 
-![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_O2.Cell.vol-1.png) 
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_O2.Cell.vol-1.png)<!-- -->
 
 This plot shows us the main effects (none here) and first order interactions (here Species : Cu level). As per the "marginality principle" (see J. A. Nelder, "A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
 
@@ -7313,8 +7639,442 @@ testInteractions(lm_O2.Cell.vol, fixed = "Cu.level", across="Fe.level")
 However, low Fe compared to control results also in a significant reduction in O2 production per cell vol across both strains (F(1, 16) = 9.25, p-val = 0.016).
 
 
-###Summary 14C per cell vol - alpha
+###Summary 
 
+
+<a id="Resp.O2.Chla"></a>
+
+#### Respiration per Chl a (mol O2 / mol Chla * h) 
+
+[Back Up](#BackUP)
+
+First a look at the graph: 
+
+
+```r
+p <- ggplot (mydata , aes(Treatment, Resp.mol.O2.mol.Chla.h))
+p + geom_point(aes(group=Merged, colour=Species), size = 3)+
+  labs(title="", x ="")+
+  geom_point(data=mean.new , aes(Treatment, mean.Resp.mol.O2.mol.Chla.h, size=2, colour=Species), shape = 45, size = 9)+
+  guides(alpha = "none", size = "none", shape = "none")
+```
+
+```
+## Warning: Removed 2 rows containing missing values (geom_point).
+```
+
+![](01_Linear_Model_Anova_files/figure-html/graph_Resp.O2.Chla-1.png)<!-- -->
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+lm_all_Resp.O2.Chla <- lm(data = mydata, Resp.mol.O2.mol.Chla.h ~ (Species * Fe.level * Cu.level))
+summary(lm_all_Resp.O2.Chla) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Resp.mol.O2.mol.Chla.h ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -24.413  -7.893  -3.370   8.415  32.267 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                              34.386      9.382   3.665
+## SpeciesTO 1005                           15.757     13.268   1.188
+## Fe.levellow                              22.613     14.834   1.524
+## Cu.levellow                              -9.599     13.268  -0.724
+## SpeciesTO 1005:Fe.levellow               -5.915     20.978  -0.282
+## SpeciesTO 1005:Cu.levellow               21.238     18.764   1.132
+## Fe.levellow:Cu.levellow                  24.440     19.902   1.228
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  -36.604     28.146  -1.301
+##                                        Pr(>|t|)   
+## (Intercept)                             0.00255 **
+## SpeciesTO 1005                          0.25474   
+## Fe.levellow                             0.14968   
+## Cu.levellow                             0.48129   
+## SpeciesTO 1005:Fe.levellow              0.78212   
+## SpeciesTO 1005:Cu.levellow              0.27671   
+## Fe.levellow:Cu.levellow                 0.23968   
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.21443   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 16.25 on 14 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.6062,	Adjusted R-squared:  0.4093 
+## F-statistic: 3.079 on 7 and 14 DF,  p-value: 0.03484
+```
+
+```r
+anova(lm_all_Resp.O2.Chla) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Resp.mol.O2.mol.Chla.h
+##                           Df Sum Sq Mean Sq F value   Pr(>F)   
+## Species                    1 1183.7 1183.68  4.4827 0.052627 . 
+## Fe.level                   1 2997.1 2997.09 11.3501 0.004587 **
+## Cu.level                   1   75.8   75.84  0.2872 0.600415   
+## Species:Fe.level           1  904.4  904.39  3.4250 0.085430 . 
+## Species:Cu.level           1   33.3   33.34  0.1263 0.727644   
+## Fe.level:Cu.level          1   50.2   50.24  0.1903 0.669347   
+## Species:Fe.level:Cu.level  1  446.6  446.61  1.6913 0.214425   
+## Residuals                 14 3696.8  264.06                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+```r
+lm_Resp.O2.Chla <- lm(data = mydata, Resp.mol.O2.mol.Chla.h ~ (Species * Fe.level * Cu.level))
+summary(lm_Resp.O2.Chla) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Resp.mol.O2.mol.Chla.h ~ (Species * Fe.level * Cu.level), 
+##     data = mydata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -24.413  -7.893  -3.370   8.415  32.267 
+## 
+## Coefficients:
+##                                        Estimate Std. Error t value
+## (Intercept)                              34.386      9.382   3.665
+## SpeciesTO 1005                           15.757     13.268   1.188
+## Fe.levellow                              22.613     14.834   1.524
+## Cu.levellow                              -9.599     13.268  -0.724
+## SpeciesTO 1005:Fe.levellow               -5.915     20.978  -0.282
+## SpeciesTO 1005:Cu.levellow               21.238     18.764   1.132
+## Fe.levellow:Cu.levellow                  24.440     19.902   1.228
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  -36.604     28.146  -1.301
+##                                        Pr(>|t|)   
+## (Intercept)                             0.00255 **
+## SpeciesTO 1005                          0.25474   
+## Fe.levellow                             0.14968   
+## Cu.levellow                             0.48129   
+## SpeciesTO 1005:Fe.levellow              0.78212   
+## SpeciesTO 1005:Cu.levellow              0.27671   
+## Fe.levellow:Cu.levellow                 0.23968   
+## SpeciesTO 1005:Fe.levellow:Cu.levellow  0.21443   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 16.25 on 14 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.6062,	Adjusted R-squared:  0.4093 
+## F-statistic: 3.079 on 7 and 14 DF,  p-value: 0.03484
+```
+
+```r
+plot.new()
+plot(lm_Resp.O2.Chla)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/lm_Resp.O2.Chla-1.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Resp.O2.Chla-2.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Resp.O2.Chla-3.png)<!-- -->![](01_Linear_Model_Anova_files/figure-html/lm_Resp.O2.Chla-4.png)<!-- -->
+
+```r
+anova(lm_Resp.O2.Chla) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Resp.mol.O2.mol.Chla.h
+##                           Df Sum Sq Mean Sq F value   Pr(>F)   
+## Species                    1 1183.7 1183.68  4.4827 0.052627 . 
+## Fe.level                   1 2997.1 2997.09 11.3501 0.004587 **
+## Cu.level                   1   75.8   75.84  0.2872 0.600415   
+## Species:Fe.level           1  904.4  904.39  3.4250 0.085430 . 
+## Species:Cu.level           1   33.3   33.34  0.1263 0.727644   
+## Fe.level:Cu.level          1   50.2   50.24  0.1903 0.669347   
+## Species:Fe.level:Cu.level  1  446.6  446.61  1.6913 0.214425   
+## Residuals                 14 3696.8  264.06                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+### Anova Table - Resp.O2.Chla
+
+Looking at the ANOVA table for the linear model for the data __Respiration normalized to Chla__, we see the following significant factors:
+
+blablabla just look don't read!
+* __Species__ has almost an effect 
+* __Fe. level__ has an effect on growthrate
+* __Cu level__ has an effect on growthrate now 
+* there is  an __interaction__ between __Species__ and __Fe level__ now: (F(1,16) = 22.17, p.val < 0.001)
+    + i.e. depending on the Species the growthrate is different under similar Fe conditions
+* there is an __interaction__ between __Fe level__ and __Cu level__: (F(1,16) = 8.04, p.val = 0.01)
+
+
+### Using the `phia` package to look into significant effects in __Respiration normalized to Chla__?
+
+Again, any main effects that are included in interacting effects will be looked at through pairwise comparisons of the interacting factors
+
+
+```r
+(Resp.O2.Chla.means <- interactionMeans(lm_Resp.O2.Chla))
+```
+
+```
+##   Species Fe.level Cu.level adjusted mean std. error
+## 1 TO 1003     high     high      34.38606   9.381863
+## 2 TO 1005     high     high      50.14333   9.381863
+## 3 TO 1003      low     high      56.99902  11.490389
+## 4 TO 1005      low     high      66.84171  11.490389
+## 5 TO 1003     high      low      24.78667   9.381863
+## 6 TO 1005     high      low      61.78171   9.381863
+## 7 TO 1003      low      low      71.84000   9.381863
+## 8 TO 1005      low      low      66.31667   9.381863
+```
+
+```r
+plot(Resp.O2.Chla.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Resp.O2.Chla-1.png)<!-- -->
+
+This plot shows us main effects (such as Cu.level) and first order interactions (such as Species and Fe.level). As per the "marginality principle" (see J. A. Nelder, \A reformulation of linear models," Journal of the Royal Statistical Society. Series A (General), vol. 140, no. 1, pp. 48{77, 1977.), those factors that are involved in interactions, should not be interpreted as single effects.
+
+As we see in the upper right and lower left corner, Species and Cu really do not seem to have an interaction effect. They change in the same way (lines are parallel). However, when we look at upper middle and middle left cell, we see that growthrate changes in a different way depending on Species and Fe level. And to a much lesser extend for Fe.level and Cu.level as seen in middle right and lower middle cell.
+
+#### Pairwise Comparisons
+
+<a id="phia_pairwise"></a>
+
+[Back Up](#BackUP)
+
+In order to put actual numbers for the significant differences, I will proceed with pairwise comparisons by having a fixed factor and testing how it changes dependend on another factor
+
+
+```r
+testInteractions(lm_Resp.O2.Chla, fixed="Species", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F   Pr(>F)   
+## TO 1003   -34.833  1    3235.6 12.2533 0.007064 **
+## TO 1005   -10.617  1     300.6  1.1383 0.304071   
+## Residuals         14    3696.8                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two different Fe.levels I used (high and low) does not significantly change the growth rate in TO 1003 (F(1,16) = 0.85, p.val = 0.37) but it does change the growthrate significantly in TO 1005 (F(1,16) = 57.4, p-val < 0.0001))
+
+
+```r
+testInteractions(lm_Resp.O2.Chla, fixed="Fe.level", across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq      F  Pr(>F)  
+## high      -26.3762  1    2087.1 7.9040 0.02773 *
+##  low       -2.1597  1      11.2 0.0424 0.83984  
+## Residuals          14    3696.8                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that the two Species have  significantly different growthrates under high Fe conditions (F(1,16) = 33.35, p.val <0.0001) probably due to the integrated nature of this, using both highFe_highCu and highFe_lowCu . Under low iron their respective growthrates are the same
+
+
+
+```r
+testInteractions(lm_Resp.O2.Chla, fixed="Fe.level", across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F Pr(>F)
+## high      -1.0195  1       3.1 0.0118      1
+##  low      -7.1580  1     123.0 0.4657      1
+## Residuals         14    3696.8
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 117.76, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 46.81, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_Resp.O2.Chla, fixed=c("Fe.level", "Species"), across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##                   Value Df Sum of Sq      F Pr(>F)
+## high : TO 1003   9.5994  1     138.2 0.5235      1
+##  low : TO 1003 -14.8410  1     264.3 1.0009      1
+## high : TO 1005 -11.6384  1     203.2 0.7694      1
+##  low : TO 1005   0.5250  1       0.3 0.0013      1
+## Residuals               14    3696.8
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 117.76, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 46.81, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_Resp.O2.Chla, fixed=c("Fe.level", "Cu.level"), across="Species")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##               Value Df Sum of Sq      F  Pr(>F)  
+## high : high -15.757  1     372.4 1.4104 0.76423  
+##  low : high  -9.843  1      96.9 0.3669 1.00000  
+## high :  low -36.995  1    2052.9 7.7746 0.05804 .
+##  low :  low   5.523  1      45.8 0.1733 1.00000  
+## Residuals           14    3696.8                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 117.76, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 46.81, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_Resp.O2.Chla, fixed="Cu.level", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq      F  Pr(>F)  
+## high      -19.656  1     927.2 3.5115 0.08197 .
+##  low      -25.794  1    1996.0 7.5590 0.03133 *
+## Residuals         14    3696.8                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+This means that there is significant growth reduction under high Cu when Fe is limiting (F(1,16) = 30.49, p.val < 0.0001). However, under low Cu, the additional Fe limitation does not have a significant additional effect on growthrate. As discussed earlier, this makes sense when looking at the actual Cu concentrations used and is not in discrepancy to former studies that did find evidence of co limitation in both strains. 
+
+
+As it states just a tendnecy to lower growth rate under low Fe for TO 1003, I would like to look into what would happen if we just looked at the TO1003 data on itself (as this would not take into account the variances and data points):
+
+### Growthrate percent only for TO 1003
+
+Now we start with a linear model testing for all main effects and interactions possible:
+
+
+```r
+TO1003 <- mydata %>% filter(Species =="TO 1003")
+
+lm_TO03_Resp.O2.Chla <- lm(data = TO1003, Resp.mol.O2.mol.Chla.h ~ ( Fe.level * Cu.level))
+summary(lm_TO03_Resp.O2.Chla) # we need to look at the actual anova to knwo where we need to look further
+```
+
+```
+## 
+## Call:
+## lm(formula = Resp.mol.O2.mol.Chla.h ~ (Fe.level * Cu.level), 
+##     data = TO1003)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -14.908  -8.068  -3.090  10.768  14.908 
+## 
+## Coefficients:
+##                         Estimate Std. Error t value Pr(>|t|)   
+## (Intercept)               34.386      7.400   4.647  0.00235 **
+## Fe.levellow               22.613     11.701   1.933  0.09455 . 
+## Cu.levellow               -9.599     10.465  -0.917  0.38952   
+## Fe.levellow:Cu.levellow   24.440     15.698   1.557  0.16345   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 12.82 on 7 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.7767,	Adjusted R-squared:  0.681 
+## F-statistic: 8.115 on 3 and 7 DF,  p-value: 0.01113
+```
+
+```r
+anova(lm_TO03_Resp.O2.Chla) # this shows, we can take out the interaction between Species: Cu.level
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: Resp.mol.O2.mol.Chla.h
+##                   Df Sum Sq Mean Sq F value   Pr(>F)   
+## Fe.level           1 3597.1  3597.1 21.8956 0.002263 **
+## Cu.level           1    4.3     4.3  0.0262 0.875948   
+## Fe.level:Cu.level  1  398.2   398.2  2.4240 0.163448   
+## Residuals          7 1150.0   164.3                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+
+```r
+(Resp.O2.Chla.means <- interactionMeans(lm_TO03_Resp.O2.Chla))
+```
+
+```
+##   Fe.level Cu.level adjusted mean std. error
+## 1     high     high      34.38606   7.400102
+## 2      low     high      56.99902   9.063237
+## 3     high      low      24.78667   7.400102
+## 4      low      low      71.84000   7.400102
+```
+
+```r
+plot(Resp.O2.Chla.means)
+```
+
+![](01_Linear_Model_Anova_files/figure-html/phia_interaction means_Resp.O2.Chla_TO1003-1.png)<!-- -->
+
+
+
+```r
+testInteractions(lm_TO03_Resp.O2.Chla, fixed="Fe.level", across="Cu.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##              Value Df Sum of Sq      F Pr(>F)
+## high        9.5994  1    138.22 0.8414 0.4904
+##  low      -14.8410  1    264.31 1.6088 0.4904
+## Residuals           7   1149.99
+```
+
+This means that there is significant growthrate changes from high Cu to low Cu in both Species (F(1,16) = 99.67, p.val < 0.00001) and that the same is true under low Fe conditions, that the additional lowering of Cu.level changes growth rates significantly (F(1,16) = 37.90, p.val < 0.00001)
+
+
+```r
+testInteractions(lm_TO03_Resp.O2.Chla, fixed="Cu.level", across="Fe.level")
+```
+
+```
+## F Test: 
+## P-value adjustment method: holm
+##             Value Df Sum of Sq       F   Pr(>F)   
+## high      -22.613  1     613.6  3.7351 0.094555 . 
+##  low      -47.053  1    3321.0 20.2151 0.005623 **
+## Residuals          7    1150.0                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
 
 
 ### Making the big Statistical Summary Tables
