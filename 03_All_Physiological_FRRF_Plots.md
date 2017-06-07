@@ -1199,7 +1199,7 @@ p40
 p <- ggplot(mydata.mean.stderr, aes(x=Treatment, y=mean.OOOOOOOO, fill = Species)) + 
   labs(title = bquote("Growthrate %" ~ mu/mu[max] ), y=bquote("% " ~ mu / mu[max]), x= "")
     
-p1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+p1b <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
   scale_fill_manual(values = Species_colours) +
   geom_errorbar(aes(ymin = mean.OOOOOOOO - sd.err.OOOOOOOO, ymax = mean.OOOOOOOO + sd.err.OOOOOOOO),
                   width = .15,                    # Width of the error bars
@@ -1208,7 +1208,7 @@ p1 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", 
   cleanup +
   theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
 
-p1
+p1b
 ```
 
 
@@ -1229,7 +1229,9 @@ mydata.growth.comb <- mydata.growth %>%
 mydata_growth.mean.stderr <- mydata.growth.comb %>%  #I double checked via calculating it by hand in excel, this works! 
   group_by(Trtmt_comb) %>% 
     summarize(mean.growthrate.dd = mean(growthrate.dd, na.rm=T),
-                sd.err.growthrate.dd = sd( growthrate.dd, na.rm=T)/sqrt(n()))
+                sd.err.growthrate.dd = sd( growthrate.dd, na.rm=T)/sqrt(n()),
+              mean.growthrate.d = mean(growthrate.d, na.rm=T),
+                sd.err.growthrate.d = sd( growthrate.d, na.rm=T)/sqrt(n()))
           
         
 
@@ -1255,20 +1257,20 @@ knitr::kable(mydata_growth.mean.stderr, format= "markdown")
 
 
 
-|Trtmt_comb |Species |Treatment | mean.growthrate.dd| sd.err.growthrate.dd| Factor|
-|:----------|:-------|:---------|------------------:|--------------------:|------:|
-|TO03 0.2   |TO03    |0.2       |          0.6909636|            0.0394708|   0.20|
-|TO03 1.96  |TO03    |1.96      |                NaN|                  NaN|   1.96|
-|TO03 10.2  |TO03    |10.2      |          1.5614000|            0.0547560|  10.20|
-|TO03 14.32 |TO03    |14.32     |          1.5874200|            0.0500432|  14.32|
-|TO03 18.44 |TO03    |18.44     |          1.5105273|            0.0770310|  18.44|
-|TO03 6.08  |TO03    |6.08      |                NaN|                  NaN|   6.08|
-|TO05 0.2   |TO05    |0.2       |                NaN|                  NaN|   0.20|
-|TO05 1.96  |TO05    |1.96      |                NaN|                  NaN|   1.96|
-|TO05 10.2  |TO05    |10.2      |          1.5592186|            0.0267513|  10.20|
-|TO05 14.32 |TO05    |14.32     |          1.7805719|            0.0399470|  14.32|
-|TO05 18.44 |TO05    |18.44     |          1.7185267|            0.0741560|  18.44|
-|TO05 6.08  |TO05    |6.08      |          1.2251167|            0.0312064|   6.08|
+|Trtmt_comb |Species |Treatment | mean.growthrate.dd| sd.err.growthrate.dd| mean.growthrate.d| sd.err.growthrate.d| Factor|
+|:----------|:-------|:---------|------------------:|--------------------:|-----------------:|-------------------:|------:|
+|TO03 0.2   |TO03    |0.2       |          0.6909636|            0.0394708|         0.4789395|           0.0273591|   0.20|
+|TO03 1.96  |TO03    |1.96      |                NaN|                  NaN|               NaN|                 NaN|   1.96|
+|TO03 10.2  |TO03    |10.2      |          1.5614000|            0.0547560|         1.0822800|           0.0379540|  10.20|
+|TO03 14.32 |TO03    |14.32     |          1.5874200|            0.0500432|         1.1003157|           0.0346873|  14.32|
+|TO03 18.44 |TO03    |18.44     |          1.5105273|            0.0770310|         1.0470177|           0.0533938|  18.44|
+|TO03 6.08  |TO03    |6.08      |                NaN|                  NaN|               NaN|                 NaN|   6.08|
+|TO05 0.2   |TO05    |0.2       |                NaN|                  NaN|               NaN|                 NaN|   0.20|
+|TO05 1.96  |TO05    |1.96      |                NaN|                  NaN|               NaN|                 NaN|   1.96|
+|TO05 10.2  |TO05    |10.2      |          1.5592186|            0.0267513|         1.0807680|           0.0185426|  10.20|
+|TO05 14.32 |TO05    |14.32     |          1.7805719|            0.0399470|         1.2341984|           0.0276892|  14.32|
+|TO05 18.44 |TO05    |18.44     |          1.7185267|            0.0741560|         1.1911919|           0.0514010|  18.44|
+|TO05 6.08  |TO05    |6.08      |          1.2251167|            0.0312064|         0.8491862|           0.0216307|   6.08|
 
 ```r
 #write.table(mydata_Phys.mean.stderr, file="Input_Data/ALL_Phys_Barplots/ALL_Phys_both_TO03_TO05_mean_stderror.txt", sep="\t", col.names=T, row.names = F) 
@@ -1278,7 +1280,7 @@ knitr::kable(mydata_growth.mean.stderr, format= "markdown")
 
 
 
-# p50 - growthrates of tubes
+# p50 - growthrates of tubes dd-1
 
 ```r
 p <- ggplot(mydata_growth.mean.stderr, aes(x=reorder(Treatment, Factor), y=mean.growthrate.dd, fill = Species)) + 
@@ -1308,7 +1310,33 @@ p50
 
 
 
+# p51 - specific growthrates of tubes d-1
 
+```r
+p <- ggplot(mydata_growth.mean.stderr, aes(x=reorder(Treatment, Factor), y=mean.growthrate.d, fill = Species)) + 
+  labs(title = bquote("Growthrate" ~  "comparison"), y=bquote(d^-1), x= Cu[tot]~ "(nmol)")
+    
+p51 <- p + geom_bar(color = "black", position=position_dodge(), stat="identity", width = .6) +
+  scale_fill_manual(values = Species_colours) +
+  geom_errorbar(aes(ymin = mean.growthrate.d - sd.err.growthrate.d, ymax = mean.growthrate.d + sd.err.growthrate.d),
+                  width = .15,                    # Width of the error bars
+                  position = position_dodge(.6), #so the error bars are dodged to the side
+                  colour = "black") +
+  cleanup +
+  theme (plot.title = element_text(size = rel(1.5), face = "bold", vjust = 2))
+
+p51
+```
+
+```
+## Warning: Removed 4 rows containing missing values (geom_bar).
+```
+
+```
+## Warning: Removed 4 rows containing missing values (geom_errorbar).
+```
+
+![](03_All_Physiological_FRRF_Plots_files/figure-html/plot specific growthrates of tubes-1.png)<!-- -->
 
 
 #OOOOOOOO
@@ -1336,7 +1364,7 @@ multiplot(p1, p2, p3, p4, cols=2)
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_01_a.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_01_a.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p1, p5, p9, p2, p6, p10,p3, p7, p11, p4, p8 , p12, cols=4)
 
@@ -1351,7 +1379,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_Results01.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_Results01.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p1, p9, p19, p2, p10, p30,p6, p11, p31, p27, p27_1 , p32, cols=4)
 
@@ -1365,7 +1393,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_Results01c.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_Results01c.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p1, p9, p19, p2, p10, p30,p6, p11, p31, p27, p19 , p32, cols=4)
 
@@ -1379,7 +1407,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_Results02.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_Results02.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p5  , cols=4)
 #(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
@@ -1393,7 +1421,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_Results02b.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_Results02b.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p13  ,p20  ,p17  ,p14  ,p21  ,p18  ,p15  ,p22  ,p12  ,p16  ,p23  ,p31  , cols=4)
 #(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
@@ -1407,7 +1435,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_X14C_normalization_Compare.png', width=1360, height = 960, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_X14C_normalization_Compare.png', width=1360, height = 960, units ="px", pointsize = 12)
 
 multiplot(p20  ,p33  ,p21  ,p34  ,p22  ,p35  ,p23  ,p36  , cols=4)
 #(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
@@ -1422,7 +1450,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_forPaper_Physiology_01.png', width=960, height = 1360, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_forPaper_Physiology_01.png', width=960, height = 1360, units ="px", pointsize = 12)
 
 multiplot(p1  ,p4  ,p9  ,p13  ,p20  ,p6  ,p23  ,p10  ,p14, p21  ,p16  ,p30  ,p19  ,p15  ,p22  ,  cols=3)
 #(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
@@ -1436,7 +1464,7 @@ dev.off()
 
 
 ```r
-png('plots/ALL_Phys_Barplots/multiplot_forPaper_Physiology_03.png', width=960, height = 1360, units ="px", pointsize = 12)
+png('plots/ALL_Phys_Barplots/lowCumultiplot_forPaper_Physiology_03.png', width=960, height = 1360, units ="px", pointsize = 12)
 
 multiplot(p1  ,p4  ,p20  ,p13  ,p12  ,p2  ,p9  ,p21  ,p14, p19  ,p6  ,p10  ,p22  ,p15  ,p37  ,  cols=3)
 #(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
@@ -1449,7 +1477,7 @@ dev.off()
 ```
 
 ```r
-pdf('plots/ALL_Phys_Barplots/multiplot_forPaper_Physiology_03.pdf', width=8.5, height = 11, useDingbats=FALSE)
+pdf('plots/ALL_Phys_Barplots/lowCumultiplot_forPaper_Physiology_03.pdf', width=8.5, height = 11, useDingbats=FALSE)
 
 print(qplot(multiplot(p1  ,p4  ,p20  ,p13  ,p12  ,p2  ,p9  ,p21  ,p14, p19  ,p6  ,p10  ,p22  ,p15  ,p37  ,  cols=3)))
 #(p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  ,p  )
